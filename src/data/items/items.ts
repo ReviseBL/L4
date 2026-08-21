@@ -1,0 +1,91 @@
+import type { ItemDefinition } from '../../domain/items/item-types';
+
+export const itemDefinitions = [
+  {
+    id: 'medicine',
+    displayName: 'LEKI',
+    description: 'Pakiet leków na wszelki wypadek.',
+  },
+  {
+    id: 'milk',
+    displayName: 'MLEKO',
+    description: 'Jedna niewinnie wyglądająca butelka mleka.',
+  },
+  {
+    id: 'coffee',
+    displayName: 'KAWA',
+    description: 'Kawa na wynos. Nadal ciepła, mimo planowania trasy patrolu.',
+  },
+  {
+    id: 'package',
+    displayName: 'PACZKA',
+    description: 'Generyczna paczka z automatu bez żadnego prawdziwego logo.',
+    carryVisual: { label: 'PACZKA', color: 0xc08552 },
+  },
+  {
+    id: 'nozzle-0-6',
+    displayName: 'DYSZA 0,6 MM',
+    description: 'Mniejsza precyzja, większe ambicje i szybsze drukowanie.',
+  },
+  {
+    id: 'petg-spool',
+    displayName: 'SZPULA PETG',
+    description: 'Ciężka paczka z bardzo ważnym tworzywem do jeszcze ważniejszego wydruku.',
+    sprintMultiplier: 0.86,
+    unavailableHideSpotIds: ['hedge-hide', 'parking-hide'],
+    carryVisual: { label: 'PETG', color: 0x2a9d8f },
+  },
+  {
+    id: 'usb-c-cable',
+    displayName: 'KABEL USB-C',
+    description: 'Nowy kabel do setupu. Ten poprzedni był bardziej taśmą niż kablem.',
+  },
+  {
+    id: 'pla-orange-spool',
+    displayName: 'PLA POMARAŃCZOWY',
+    description: 'Nowy kolor, którego absolutnie nie dało się nie kupić.',
+    sprintMultiplier: 0.94,
+    carryVisual: { label: 'PLA', color: 0xf77f00 },
+  },
+  {
+    id: 'groceries',
+    displayName: 'ZAKUPY',
+    description: 'Torba codziennych zakupów. Zupełnie niepodejrzana.',
+  },
+  {
+    id: 'large-package',
+    displayName: 'DUŻA PACZKA',
+    description: 'Paczka o gabarycie, który natychmiast unieważnia dyskrecję.',
+    sprintMultiplier: 0.82,
+    unavailableHideSpotIds: ['hedge-hide', 'parking-hide'],
+    carryVisual: { label: 'DUŻA', color: 0x9c6644, size: 'large' },
+  },
+  {
+    id: 'asa-black-spool',
+    displayName: 'ASA CZARNY',
+    description: 'Kolejna absolutnie niezbędna szpula do kolekcji.',
+    sprintMultiplier: 0.93,
+    carryVisual: { label: 'ASA', color: 0x343a40 },
+  },
+  {
+    id: 'l4-print-filament',
+    displayName: 'FILAMENT DO PROJEKTU L4',
+    description: 'Duże pudełko materiału na projekt o zdecydowanie nieproporcjonalnej skali.',
+    sprintMultiplier: 0.85,
+    unavailableHideSpotIds: ['hedge-hide', 'parking-hide'],
+    carryVisual: { label: 'L4 1,7 KG', color: 0xe63946, size: 'large' },
+  },
+  {
+    id: 'kebab',
+    displayName: 'KEBAB',
+    description: 'Ostatni spokojny posiłek przed ostatnim miesiącem L4.',
+    carryVisual: { label: 'KEBAB', color: 0xf4a261 },
+  },
+  {
+    id: 'tpu-purple-spool',
+    displayName: 'TPU FIOLETOWY',
+    description: 'Naprawdę ostatnia szpula. Tym razem prawie na pewno.',
+    sprintMultiplier: 0.93,
+    carryVisual: { label: 'TPU', color: 0x9d4edd },
+  },
+] as const satisfies readonly ItemDefinition[];

@@ -1,0 +1,88 @@
+import type { CampaignMonthDefinition } from '../../domain/campaign/campaign-types';
+
+export const campaignMonths = [
+  {
+    id: 1,
+    name: 'WRACAJ DO ZDROWIA',
+    startDay: 1,
+    endDay: 30,
+    difficulty: {
+      level: 1,
+      suspicionMultiplier: 1,
+      npcAwarenessMultiplier: 1,
+      npcSearchDurationMultiplier: 1,
+    },
+    activeEnemyTypes: ['coworker'],
+    transition: null,
+  },
+  {
+    id: 2,
+    name: 'A KIEDY WRACASZ?',
+    startDay: 31,
+    endDay: 60,
+    difficulty: {
+      level: 2,
+      suspicionMultiplier: 1.1,
+      npcAwarenessMultiplier: 1.02,
+      npcSearchDurationMultiplier: 1.03,
+    },
+    activeEnemyTypes: ['coworker'],
+    transition: { heading: '30 DNI ZA TOBĄ', message: 'L4 PRZEDŁUŻONE' },
+  },
+  {
+    id: 3,
+    name: 'HR CHCE TYLKO POROZMAWIAĆ',
+    startDay: 61,
+    endDay: 90,
+    difficulty: {
+      level: 3,
+      suspicionMultiplier: 1.15,
+      npcAwarenessMultiplier: 1.04,
+      npcSearchDurationMultiplier: 1.06,
+    },
+    activeEnemyTypes: ['coworker', 'hr'],
+    transition: { heading: '60 DNI ZA TOBĄ', message: 'HR CHCE TYLKO POROZMAWIAĆ' },
+  },
+  {
+    id: 4,
+    name: 'KTOŚ CIĘ WIDZIAŁ',
+    startDay: 91,
+    endDay: 120,
+    difficulty: {
+      level: 4,
+      suspicionMultiplier: 1.25,
+      npcAwarenessMultiplier: 1.06,
+      npcSearchDurationMultiplier: 1.09,
+    },
+    activeEnemyTypes: ['coworker', 'hr', 'companyCar'],
+    transition: { heading: '90 DNI L4 — MIESIĄC 3 UKOŃCZONY', message: 'L4 PRZEDŁUŻONE' },
+  },
+  {
+    id: 5,
+    name: 'KIEROWNIK ZACZYNA COŚ PODEJRZEWAĆ',
+    startDay: 121,
+    endDay: 150,
+    difficulty: {
+      level: 5,
+      suspicionMultiplier: 1.35,
+      npcAwarenessMultiplier: 1.08,
+      npcSearchDurationMultiplier: 1.12,
+    },
+    activeEnemyTypes: ['coworker', 'hr', 'companyCar', 'manager'],
+    transition: { heading: '120 DNI L4 — MIESIĄC 4 UKOŃCZONY', message: 'L4 PRZEDŁUŻONE' },
+  },
+  {
+    id: 6,
+    name: 'OSTATNI MIESIĄC',
+    startDay: 151,
+    endDay: 180,
+    difficulty: {
+      level: 6,
+      suspicionMultiplier: 1.4,
+      npcAwarenessMultiplier: 1.1,
+      npcSearchDurationMultiplier: 1.15,
+    },
+    activeEnemyTypes: ['coworker', 'hr', 'companyCar', 'manager', 'zus'],
+    transition: { heading: '150 DNI L4 — MIESIĄC 5 UKOŃCZONY', message: 'L4 PRZEDŁUŻONE' },
+  },
+] as const satisfies readonly CampaignMonthDefinition[];
