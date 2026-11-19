@@ -30,6 +30,7 @@ export class NpcStateMachine {
   private awarenessMs = 0;
   private lostSightMs = 0;
   private detectionCooldownRemainingMs = 0;
+  private graceRemainingMs = 0;
   private lastKnownPosition: Point2D | null = null;
   private difficultyModifiers: NpcDifficultyModifiers = {
     viewDistanceMultiplier: 1,
@@ -45,33 +46,36 @@ export class NpcStateMachine {
 
     this.stateElapsedMs += deltaMs;
     this.detectionCooldownRemainingMs = Math.max(0, this.detectionCooldownRemainingMs - deltaMs);
+    this.graceRemainingMs = Math.max(0, this.graceRemainingMs - deltaMs);
+    // After a confrontation the NPC deliberately looks away for a moment.
+    const visibility = this.graceRemainingMs > 0 ? VISIBILITY_LEVEL.None : observation.visibility;
 
-    if (observation.visibility !== VISIBILITY_LEVEL.None) {
+    if (visibility !== VISIBILITY_LEVEL.None) {
       this.lastKnownPosition = { ...observation.playerPosition };
     }
 
     switch (this.state) {
       case NPC_STATE.Patrol:
-        if (observation.visibility !== VISIBILITY_LEVEL.None) {
+        if (visibility !== VISIBILITY_LEVEL.None) {
           this.transitionTo(NPC_STATE.Suspicious);
-          detectionTriggered = this.gainAwareness(deltaMs, observation.visibility);
+          detectionTriggered = this.gainAwareness(deltaMs, visibility);
         }
         break;
 
       case NPC_STATE.Suspicious:
-        if (observation.visibility === VISIBILITY_LEVEL.None) {
+        if (visibility === VISIBILITY_LEVEL.None) {
           this.awarenessMs = Math.max(0, this.awarenessMs - deltaMs * 0.9);
 
           if (this.stateElapsedMs >= 1_000 && this.awarenessMs === 0) {
             this.transitionTo(NPC_STATE.Patrol);
           }
         } else {
-          detectionTriggered = this.gainAwareness(deltaMs, observation.visibility);
+          detectionTriggered = this.gainAwareness(deltaMs, visibility);
         }
         break;
 
       case NPC_STATE.Detected:
-        if (observation.visibility === VISIBILITY_LEVEL.None) {
+        if (visibility === VISIBILITY_LEVEL.None) {
           this.lostSightMs += deltaMs;
 
           if (this.lostSightMs >= this.config.loseSightTimeMs) {
@@ -83,9 +87,9 @@ export class NpcStateMachine {
         break;
 
       case NPC_STATE.Searching:
-        if (observation.visibility === VISIBILITY_LEVEL.Clear) {
+        if (visibility === VISIBILITY_LEVEL.Clear) {
           detectionTriggered = this.enterDetected();
-        } else if (observation.visibility === VISIBILITY_LEVEL.Peripheral) {
+        } else if (visibility === VISIBILITY_LEVEL.Peripheral) {
           this.transitionTo(NPC_STATE.Suspicious);
           this.awarenessMs = this.config.recognitionTimeMs * 0.25;
         } else if (
@@ -97,9 +101,9 @@ export class NpcStateMachine {
         break;
 
       case NPC_STATE.Returning:
-        if (observation.visibility !== VISIBILITY_LEVEL.None) {
+        if (visibility !== VISIBILITY_LEVEL.None) {
           this.transitionTo(NPC_STATE.Suspicious);
-          detectionTriggered = this.gainAwareness(deltaMs, observation.visibility);
+          detectionTriggered = this.gainAwareness(deltaMs, visibility);
         }
         break;
     }
@@ -115,6 +119,18 @@ export class NpcStateMachine {
     if (this.state === NPC_STATE.Returning) {
       this.transitionTo(NPC_STATE.Patrol);
     }
+  }
+
+  /** Ends a "caught you" talk: the NPC walks back to patrol and ignores the player for graceMs. */
+  public releaseAfterConfrontation(graceMs: number): void {
+    this.graceRemainingMs = Math.max(0, graceMs);
+    this.awarenessMs = 0;
+    this.lostSightMs = 0;
+    this.transitionTo(NPC_STATE.Returning);
+  }
+
+  public isInGracePeriod(): boolean {
+    return this.graceRemainingMs > 0;
   }
 
   public getState(): NpcState {

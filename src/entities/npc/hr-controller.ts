@@ -5,7 +5,7 @@ import type { NpcPatrolSetup } from '../../domain/npcs/npc-types';
 import { HR_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { HrStateMachine } from '../../systems/hr-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
-import type { PlayerStealthTarget } from './npc-controller';
+import { VISION_RAY_COUNT, type PlayerStealthTarget } from './npc-controller';
 import { Npc } from './npc';
 
 export interface HrControllerCallbacks {
@@ -34,7 +34,7 @@ export class HrController {
     occluders: readonly ObstacleBounds[],
     private readonly callbacks: HrControllerCallbacks,
   ) {
-    this.npc = new Npc(scene, patrol.spawn.x, patrol.spawn.y, definition.displayName, HR_TEXTURE_KEY);
+    this.npc = new Npc(scene, patrol.spawn.x, patrol.spawn.y, definition.displayName, HR_TEXTURE_KEY, 'hr');
     this.brain = new HrStateMachine(definition);
     this.perception = new PerceptionSystem(occluders);
     this.collider = scene.physics.add.collider(this.npc, obstacles);
@@ -42,20 +42,22 @@ export class HrController {
   }
 
   public update(deltaMs: number, player: PlayerStealthTarget): void {
-    if (!this.enabled || this.paused) { this.npc.setVelocity(0, 0); return; }
+    if (!this.enabled || this.paused) { this.npc.setVelocity(0, 0); this.npc.refreshAnimation(); return; }
     const halfAngle = Phaser.Math.DegToRad(this.definition.viewHalfAngleDegrees);
     const rangeMultiplier = player.sprinting ? 1.18 : 1;
     const result = this.perception.evaluate({
       observer: this.npc, target: player, facingRadians: this.facingRadians,
       range: this.definition.viewDistance * this.difficulty.viewDistanceMultiplier,
       halfAngleRadians: halfAngle, rangeMultiplier, targetHidden: player.hidden,
+      profile: this.visionProfile(),
     });
     const snapshot = this.brain.update(deltaMs, result.visibility, player, result.distance);
     if (snapshot.detectionTriggered) this.callbacks.onDetected();
     if (snapshot.conversationRequested) this.callbacks.onConversationRequested();
     this.updateMovement(deltaMs, snapshot.state);
     this.visionPoints = this.perception.castVisionRays(this.npc, this.facingRadians, halfAngle,
-      this.definition.viewDistance * this.difficulty.viewDistanceMultiplier * rangeMultiplier);
+      this.definition.viewDistance * this.difficulty.viewDistanceMultiplier * rangeMultiplier,
+      VISION_RAY_COUNT, this.visionProfile());
     this.npc.updatePresentation(snapshot.state, this.visionPoints);
     this.npc.setVisionVisible(this.visionVisible);
   }
@@ -66,6 +68,7 @@ export class HrController {
   public getVisionPoints(): readonly Point2D[] { return this.visionPoints; }
   public isEnabled(): boolean { return this.enabled; }
   public setEnabled(enabled: boolean): void { this.enabled = enabled; this.npc.setNpcVisible(enabled); if (!enabled) this.npc.setVelocity(0, 0); }
+  public holdStill(): void { this.npc.setVelocity(0, 0); this.npc.refreshAnimation(this.visionPoints); }
   public setPaused(paused: boolean): void { this.paused = paused; if (paused) this.npc.setVelocity(0, 0); }
   public setVisionVisible(visible: boolean): void { this.visionVisible = visible; this.npc.setVisionVisible(visible); }
   public isVisionVisible(): boolean { return this.visionVisible; }
@@ -85,6 +88,12 @@ export class HrController {
     else if (state === HR_STATE.Approaching) this.moveTowards(lastKnown, this.definition.approachSpeed);
     else if (state === HR_STATE.Searching) { if (!this.moveTowards(lastKnown, this.definition.searchSpeed)) { this.npc.setVelocity(0, 0); this.facingRadians += deltaMs * 0.001; } }
     else if (state === HR_STATE.Returning && !this.moveTowards(this.patrol.route[this.patrolIndex] ?? null, this.definition.patrolSpeed)) { this.brain.completeReturnToPatrol(); this.advancePatrol(); }
+  }
+  private visionProfile(): { focusHalfAngleRadians: number; peripheralRangeMultiplier: number } {
+    return {
+      focusHalfAngleRadians: Phaser.Math.DegToRad(this.definition.focusHalfAngleDegrees),
+      peripheralRangeMultiplier: this.definition.peripheralRangeMultiplier,
+    };
   }
   private followPatrol(): void { const point = this.patrol.route[this.patrolIndex]; if (!point || !this.moveTowards(point, this.definition.patrolSpeed)) this.advancePatrol(); }
   private advancePatrol(): void { this.patrolIndex = (this.patrolIndex + 1) % this.patrol.route.length; }

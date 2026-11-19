@@ -7,7 +7,10 @@ import {
   HUBI_SPRITESHEET_URL,
   HUBI_TEXTURE_KEY,
 } from '../data/player/player-animation-config';
+import { NPC_SPRITES } from '../data/npcs/npc-sprite-config';
+import { WORLD_ART_TEXTURES, WORLD_TILE_TEXTURES } from '../data/world/world-art';
 import { createPlaceholderTextures } from '../game/create-placeholder-textures';
+import { registerNpcAnimations } from '../game/register-npc-animations';
 import { registerPlayerAnimations } from '../game/register-player-animations';
 
 export class BootScene extends Phaser.Scene {
@@ -26,11 +29,21 @@ export class BootScene extends Phaser.Scene {
       frameWidth: HUBI_FRAME_WIDTH,
       frameHeight: HUBI_FRAME_HEIGHT,
     });
+    for (const sprite of Object.values(NPC_SPRITES)) {
+      this.load.spritesheet(sprite.textureKey, sprite.url, {
+        frameWidth: sprite.frameWidth,
+        frameHeight: sprite.frameHeight,
+      });
+    }
+    for (const texture of [...Object.values(WORLD_TILE_TEXTURES), ...WORLD_ART_TEXTURES]) {
+      this.load.image(texture.key, texture.url);
+    }
   }
 
   public create(): void {
     createPlaceholderTextures(this);
     registerPlayerAnimations(this);
+    registerNpcAnimations(this);
     void this.startInitialSceneAfterFontsLoad();
   }
 

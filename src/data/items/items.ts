@@ -33,6 +33,7 @@ export const itemDefinitions = [
     description: 'Ciężka paczka z bardzo ważnym tworzywem do jeszcze ważniejszego wydruku.',
     sprintMultiplier: 0.86,
     unavailableHideSpotIds: ['hedge-hide', 'parking-hide'],
+    heavyCarry: { walkMultiplier: 0.75 },
     carryVisual: { label: 'PETG', color: 0x2a9d8f },
   },
   {
@@ -45,6 +46,7 @@ export const itemDefinitions = [
     displayName: 'PLA POMARAŃCZOWY',
     description: 'Nowy kolor, którego absolutnie nie dało się nie kupić.',
     sprintMultiplier: 0.94,
+    heavyCarry: { walkMultiplier: 0.8 },
     carryVisual: { label: 'PLA', color: 0xf77f00 },
   },
   {
@@ -58,6 +60,7 @@ export const itemDefinitions = [
     description: 'Paczka o gabarycie, który natychmiast unieważnia dyskrecję.',
     sprintMultiplier: 0.82,
     unavailableHideSpotIds: ['hedge-hide', 'parking-hide'],
+    heavyCarry: { walkMultiplier: 0.68 },
     carryVisual: { label: 'DUŻA', color: 0x9c6644, size: 'large' },
   },
   {
@@ -65,6 +68,7 @@ export const itemDefinitions = [
     displayName: 'ASA CZARNY',
     description: 'Kolejna absolutnie niezbędna szpula do kolekcji.',
     sprintMultiplier: 0.93,
+    heavyCarry: { walkMultiplier: 0.8 },
     carryVisual: { label: 'ASA', color: 0x343a40 },
   },
   {
@@ -73,6 +77,7 @@ export const itemDefinitions = [
     description: 'Duże pudełko materiału na projekt o zdecydowanie nieproporcjonalnej skali.',
     sprintMultiplier: 0.85,
     unavailableHideSpotIds: ['hedge-hide', 'parking-hide'],
+    heavyCarry: { walkMultiplier: 0.7 },
     carryVisual: { label: 'L4 1,7 KG', color: 0xe63946, size: 'large' },
   },
   {
@@ -86,6 +91,7 @@ export const itemDefinitions = [
     displayName: 'TPU FIOLETOWY',
     description: 'Naprawdę ostatnia szpula. Tym razem prawie na pewno.',
     sprintMultiplier: 0.93,
+    heavyCarry: { walkMultiplier: 0.8 },
     carryVisual: { label: 'TPU', color: 0x9d4edd },
   },
 ] as const satisfies readonly ItemDefinition[];

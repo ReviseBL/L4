@@ -11,9 +11,9 @@ import {
 
 describe('Hubi animation configuration', () => {
   it('matches the frozen player frame and physics geometry', () => {
-    expect({ width: HUBI_FRAME_WIDTH, height: HUBI_FRAME_HEIGHT }).toEqual({ width: 32, height: 44 });
+    expect({ width: HUBI_FRAME_WIDTH, height: HUBI_FRAME_HEIGHT }).toEqual({ width: 64, height: 48 });
     expect(HUBI_ORIGIN).toEqual({ x: 0.5, y: 0.5 });
-    expect(HUBI_PHYSICS_BODY).toEqual({ width: 24, height: 25, offsetX: 4, offsetY: 17 });
+    expect(HUBI_PHYSICS_BODY).toEqual({ width: 24, height: 25, offsetX: 20, offsetY: 19 });
   });
 
   it('defines every production animation for all four directions', () => {
@@ -34,8 +34,8 @@ describe('Hubi animation configuration', () => {
     const frames = HUBI_ANIMATION_DEFINITIONS.flatMap((definition) => definition.frames);
     expect(new Set(keys).size).toBe(keys.length);
     expect(Math.min(...frames)).toBe(0);
-    expect(Math.max(...frames)).toBe(103);
-    expect(new Set(frames).size).toBe(104);
+    expect(Math.max(...frames)).toBe(71);
+    expect(new Set(frames).size).toBe(72);
   });
 });
 

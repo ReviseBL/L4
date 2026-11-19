@@ -15,6 +15,7 @@ export class ManagerStateMachine {
   private stateElapsedMs = 0;
   private lostSightMs = 0;
   private detectionCooldownMs = 0;
+  private graceRemainingMs = 0;
   private lastKnownPlayer: Point2D | null = null;
   private investigationTarget: Point2D | null = null;
   private interestPoints: readonly ManagerInterestPoint[] = [];
@@ -31,10 +32,12 @@ export class ManagerStateMachine {
 
   public update(
     deltaMs: number,
-    visibility: VisibilityLevel,
+    observedVisibility: VisibilityLevel,
     playerPosition: Point2D,
     reachedMovementTarget: boolean,
   ): ManagerBrainSnapshot {
+    this.graceRemainingMs = Math.max(0, this.graceRemainingMs - deltaMs);
+    const visibility = this.graceRemainingMs > 0 ? VISIBILITY_LEVEL.None : observedVisibility;
     this.stateElapsedMs += deltaMs;
     this.detectionCooldownMs = Math.max(0, this.detectionCooldownMs - deltaMs);
     if (visibility !== VISIBILITY_LEVEL.None) this.lastKnownPlayer = { ...playerPosition };
@@ -135,6 +138,18 @@ export class ManagerStateMachine {
     if (state === MANAGER_STATE.Investigating && playerPosition) this.investigationTarget = { ...playerPosition };
     if (state === MANAGER_STATE.CheckingLocation) this.beginChecking(playerPosition ?? this.lastKnownPlayer);
     else this.transitionTo(state);
+  }
+
+  /** Ends a "caught you" talk: the manager returns to patrol and ignores the player for graceMs. */
+  public releaseAfterConfrontation(graceMs: number): void {
+    this.graceRemainingMs = Math.max(0, graceMs);
+    this.awarenessMs = 0;
+    this.lostSightMs = 0;
+    this.transitionTo(MANAGER_STATE.Returning);
+  }
+
+  public isInGracePeriod(): boolean {
+    return this.graceRemainingMs > 0;
   }
 
   public forceDetection(playerPosition: Point2D): boolean {

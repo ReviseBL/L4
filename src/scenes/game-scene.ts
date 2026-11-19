@@ -69,6 +69,13 @@ import { MonthTransitionOverlay } from '../ui/month-transition-overlay';
 import { PhoneHud } from '../ui/phone-hud';
 import { createTestWorld } from '../world/test-world-builder';
 import { ZUS_FINALE_PHASE } from '../domain/finale/zus-finale-types';
+import { confrontationConfig } from '../data/confrontation/confrontation-config';
+import { confrontationScenarios } from '../data/confrontation/confrontation-scenarios';
+import type {
+  ConfrontationSource,
+  PreparedConfrontation,
+} from '../domain/confrontation/confrontation-types';
+import { ConfrontationSystem } from '../systems/confrontation-system';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -85,6 +92,10 @@ export class GameScene extends Phaser.Scene {
   private companyCarController!: CompanyCarController;
   private managerController!: ManagerController;
   private readonly positionReportSystem = new PositionReportSystem(positionReportConfig);
+  private readonly confrontationSystem = new ConfrontationSystem(
+    confrontationScenarios,
+    confrontationConfig,
+  );
   private printerSystem!: Printer3DSystem;
   private homeProgressionSystem!: HomeProgressionSystem;
   private campaignSystem!: CampaignSystem;
@@ -168,7 +179,14 @@ export class GameScene extends Phaser.Scene {
     this.printerSystem = new Printer3DSystem(printJobDefinitions, savedState.home.currentPrintId);
     this.homeProgressionSystem = new HomeProgressionSystem(this.gameState, homeVisualDefinitions);
     this.missionSystem = new MissionSystem(verticalSliceMissions);
-    this.interactionSystem = new InteractionSystem(world.interactionTargets);
+    this.interactionSystem = new InteractionSystem(
+      world.interactionTargets,
+      (target) =>
+        !target.requiresHomeVisualId ||
+        this.homeProgressionSystem
+          .getVisibleDefinitions()
+          .some((definition) => definition.id === target.requiresHomeVisualId),
+    );
     this.areaTriggerSystem = new AreaTriggerSystem(world.areas);
     this.hidingSystem = new HidingSystem(world.hideSpots);
     this.dialogueSystem = new DialogueSystem(dialogueConfig);
@@ -416,6 +434,7 @@ export class GameScene extends Phaser.Scene {
     this.phoneHud.update(this.phoneSystem.getSnapshot());
 
     if (this.isGameplayLocked()) {
+      this.holdNpcsStill();
       this.debugOverlay.update(time, this.player, this.npcController, this.hrController);
       this.updateHud(null);
       return;
@@ -425,6 +444,7 @@ export class GameScene extends Phaser.Scene {
       if (!pauseWorldForDialogue && !dialogueSnapshot.pauseWorld) {
         this.updateNpcAndDebug(time, delta);
       } else {
+        this.holdNpcsStill();
         this.debugOverlay.update(time, this.player, this.npcController, this.hrController);
       }
       this.updateHud(null);
@@ -625,6 +645,11 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private getInventoryHudText(): string {
+    const text = this.inventorySystem.getDisplayText();
+    return this.inventorySystem.getCarryMovement().sprintAllowed ? text : `${text} · BEZ SPRINTU`;
+  }
+
   private updateHud(interactionPrompt: string | null): void {
     this.hud.update(
       this.campaignSystem.getCurrentMonth().id,
@@ -633,7 +658,7 @@ export class GameScene extends Phaser.Scene {
       this.suspicionSystem.getLevel(),
       this.missionSystem.getCurrentMissionTitle(),
       this.missionSystem.getCurrentObjectiveText(),
-      this.inventorySystem.getDisplayText(),
+      this.getInventoryHudText(),
       interactionPrompt,
       this.hidingSystem.isHidden(),
     );
@@ -859,6 +884,17 @@ export class GameScene extends Phaser.Scene {
     this.playerController.setMovementEnabled(canMove);
   }
 
+  /**
+   * "Pausing the world" only skips NPC thinking; Arcade physics would keep pushing
+   * bodies with their last velocity, so zero it every frozen frame.
+   */
+  private holdNpcsStill(): void {
+    this.npcController.holdStill();
+    this.hrController.holdStill();
+    this.companyCarController.holdStill();
+    this.managerController.holdStill();
+  }
+
   private updateNpcAndDebug(time: number, delta: number): void {
     const target = {
       x: this.player.x,
@@ -873,6 +909,7 @@ export class GameScene extends Phaser.Scene {
     if (this.suspicionSystem.getThreshold().shareApproximatePlayerPositionWithManager) {
       this.managerController.maybeReceiveCriticalSignal(time, target);
     }
+    this.checkForConfrontation(target);
     this.hud.setManagerNearby(this.managerController.isNear(target));
     if (this.positionReportSystem.update(time)) this.hud.showMessage('POSZUKIWANIA ZAKOŃCZONE');
     this.debugOverlay.update(time, this.player, this.npcController, this.hrController);
@@ -992,7 +1029,9 @@ export class GameScene extends Phaser.Scene {
   private startHrConversation(): void {
     const previousChoice = this.gameState.getDialogueChoice(HR_FIRST_MEETING_ID);
     if (previousChoice) {
-      this.dialogueSystem.showSequence(hrRepeatMeetingDialogue, {
+      // After the first meeting every HR encounter becomes an "explain yourself" talk.
+      if (this.confrontationSystem.hasScenarios('hr')) this.startConfrontation('hr');
+      else this.dialogueSystem.showSequence(hrRepeatMeetingDialogue, {
         onComplete: () => this.hrController.completeConversation(),
       });
       return;
@@ -1001,6 +1040,69 @@ export class GameScene extends Phaser.Scene {
     this.dialogueSystem.showSequence(hrFirstMeetingDialogue, {
       onChoice: (choiceId) => this.resolveHrChoice(choiceId),
     });
+  }
+
+  /** A chasing colleague or manager who reaches Hubi stops him for a talk. */
+  private checkForConfrontation(target: { x: number; y: number; hidden: boolean }): void {
+    if (target.hidden || this.dialogueSystem.isActive() || this.isGameplayLocked()) return;
+    const distance = confrontationConfig.catchDistance;
+    if (this.npcController.isCatching(target, distance)) this.startConfrontation('coworker');
+    else if (this.managerController.isCatching(target, distance)) this.startConfrontation('manager');
+  }
+
+  private startConfrontation(source: ConfrontationSource): void {
+    const prepared = this.confrontationSystem.prepare(source, {
+      carrying: this.inventorySystem.getVisibleCarriedItem() !== null,
+      heavy: !this.inventorySystem.getCarryMovement().sprintAllowed,
+    });
+    const speaker = getConfrontationSpeaker(source);
+    this.playerController.setMovementEnabled(false);
+    this.dialogueSystem.showSequence({
+      id: `confrontation-${prepared.scenario.id}`,
+      pauseWorld: true,
+      lockPlayerMovement: true,
+      lines: [{
+        speaker,
+        text: prepared.scenario.opening,
+        tone: 'warning',
+        choices: prepared.excuses.map((excuse) => ({ id: excuse.id, text: excuse.text })),
+      }],
+    }, {
+      onChoice: (choiceId) => this.resolveConfrontation(prepared, choiceId, speaker),
+    });
+  }
+
+  private resolveConfrontation(
+    prepared: PreparedConfrontation,
+    choiceId: string,
+    speaker: string,
+  ): void {
+    const outcome = this.confrontationSystem.resolve(prepared, choiceId);
+    if (outcome.penalty > 0) {
+      const change = this.suspicionSystem.applyPenalty(outcome.penalty);
+      this.hud.showAlert(`SŁABA WYMÓWKA  +${change.appliedDelta}%`);
+      this.handleSuspicionChange(change);
+      this.applyNpcDifficulty();
+    }
+    this.persistCurrentState();
+    this.dialogueSystem.showSequence({
+      id: `confrontation-reply-${outcome.excuseId}`,
+      pauseWorld: true,
+      lockPlayerMovement: true,
+      lines: [{ speaker, text: outcome.reply, tone: outcome.quality === 'good' ? 'success' : 'warning' }],
+    }, {
+      onComplete: () => {
+        this.releaseConfrontation(outcome.source);
+        if (outcome.quality === 'good') this.hud.showMessage('Udało się wybrnąć.');
+      },
+    });
+  }
+
+  private releaseConfrontation(source: ConfrontationSource): void {
+    const graceMs = confrontationConfig.releaseGraceMs;
+    if (source === 'coworker') this.npcController.releaseAfterConfrontation(graceMs);
+    else if (source === 'manager') this.managerController.releaseAfterConfrontation(graceMs);
+    else this.hrController.completeConversation();
   }
 
   private resolveHrChoice(choiceId: string): void {
@@ -1317,4 +1419,15 @@ export class GameScene extends Phaser.Scene {
 
 function formatDebugPoint(point: { x: number; y: number } | null): string {
   return point ? `LAST ${Math.round(point.x)}/${Math.round(point.y)}` : 'LAST NONE';
+}
+
+function getConfrontationSpeaker(source: ConfrontationSource): string {
+  switch (source) {
+    case 'coworker':
+      return workColleagueDefinition.displayName;
+    case 'hr':
+      return hrDefinition.displayName;
+    case 'manager':
+      return managerDefinition.displayName;
+  }
 }

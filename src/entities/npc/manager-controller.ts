@@ -10,7 +10,7 @@ import {
 import { MANAGER_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { ManagerStateMachine } from '../../systems/manager-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
-import type { PlayerStealthTarget } from './npc-controller';
+import { VISION_RAY_COUNT, type PlayerStealthTarget } from './npc-controller';
 import { Npc } from './npc';
 
 export interface ManagerControllerCallbacks {
@@ -53,7 +53,7 @@ export class ManagerController {
   ) {
     this.interestPoints = interestPoints;
     this.previousPosition = { ...spawn };
-    this.npc = new Npc(scene, spawn.x, spawn.y, definition.displayName, MANAGER_TEXTURE_KEY);
+    this.npc = new Npc(scene, spawn.x, spawn.y, definition.displayName, MANAGER_TEXTURE_KEY, 'manager');
     this.brain = new ManagerStateMachine(definition);
     this.brain.setInterestPoints(interestPoints);
     this.perception = new PerceptionSystem(occluders);
@@ -65,6 +65,7 @@ export class ManagerController {
   public update(deltaMs: number, player: PlayerStealthTarget): void {
     if (!this.enabled || this.paused) {
       this.npc.setVelocity(0, 0);
+      this.npc.refreshAnimation();
       this.resetStallTracking();
       return;
     }
@@ -80,6 +81,7 @@ export class ManagerController {
       halfAngleRadians: halfAngle,
       rangeMultiplier: player.sprinting ? 1.12 : 1,
       targetHidden: player.hidden,
+      profile: this.visionProfile(),
     });
     const snapshot = this.brain.update(deltaMs, result.visibility, player, this.reachedMovementTarget);
     if (snapshot.detectionTriggered) this.callbacks.onDetected();
@@ -89,9 +91,18 @@ export class ManagerController {
       this.facingRadians,
       halfAngle,
       this.definition.viewDistance * this.difficulty.viewDistanceMultiplier,
+      VISION_RAY_COUNT,
+      this.visionProfile(),
     );
     this.renderPresentation(snapshot.state);
     this.renderDebug();
+  }
+
+  private visionProfile(): { focusHalfAngleRadians: number; peripheralRangeMultiplier: number } {
+    return {
+      focusHalfAngleRadians: Phaser.Math.DegToRad(this.definition.focusHalfAngleDegrees),
+      peripheralRangeMultiplier: this.definition.peripheralRangeMultiplier,
+    };
   }
 
   public setInterestPoints(points: readonly ManagerInterestPoint[]): void {
@@ -101,6 +112,17 @@ export class ManagerController {
   }
 
   public investigate(position: Point2D): void { this.brain.investigate(position); }
+
+  /** True when the manager, chasing the player, got close enough to grab them. */
+  public isCatching(player: Point2D, catchDistance: number): boolean {
+    return (
+      this.enabled &&
+      this.brain.getState() === MANAGER_STATE.Chase &&
+      Math.hypot(player.x - this.npc.x, player.y - this.npc.y) <= catchDistance
+    );
+  }
+
+  public releaseAfterConfrontation(graceMs: number): void { this.brain.releaseAfterConfrontation(graceMs); }
 
   public maybeReceiveCriticalSignal(timeMs: number, player: Point2D): boolean {
     if (!this.enabled || timeMs < this.nextCriticalSignalAtMs || this.brain.getState() === MANAGER_STATE.Chase) return false;
@@ -141,6 +163,11 @@ export class ManagerController {
       this.resetStallTracking();
     }
   }
+  public holdStill(): void {
+    this.npc.setVelocity(0, 0);
+    this.npc.refreshAnimation(this.visionPoints);
+  }
+
   public setPaused(paused: boolean): void {
     this.paused = paused;
     if (paused) {

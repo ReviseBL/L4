@@ -2,10 +2,14 @@ import type { PlayerDirection, PlayerVisualAction } from '../../domain/player/pl
 
 export const HUBI_TEXTURE_KEY = 'hubi-spritesheet';
 export const HUBI_SPRITESHEET_URL = 'assets/characters/hubi-spritesheet.png';
-export const HUBI_FRAME_WIDTH = 32;
-export const HUBI_FRAME_HEIGHT = 44;
+// Character Pass 1.2: 6 kolumn × 12 wierszy (idle / walk / sprint × down, up, left, right).
+// Szersza klatka mieści sprint z boku; Hubi ma na ekranie tę samą wysokość co poprzedni draft.
+export const HUBI_FRAME_WIDTH = 64;
+export const HUBI_FRAME_HEIGHT = 48;
 export const HUBI_ORIGIN = { x: 0.5, y: 0.5 } as const;
-export const HUBI_PHYSICS_BODY = { width: 24, height: 25, offsetX: 4, offsetY: 17 } as const;
+// Rozmiar ciała bez zmian (24×25); offset przeliczony tak, by ciało zostało w tym samym miejscu
+// względem środka sprite'a co przy klatce 32×44 (środek −12…+12 w poziomie, −5…+20 w pionie).
+export const HUBI_PHYSICS_BODY = { width: 24, height: 25, offsetX: 20, offsetY: 19 } as const;
 
 export const PLAYER_DIRECTIONS = ['down', 'up', 'left', 'right'] as const satisfies readonly PlayerDirection[];
 
@@ -25,13 +29,15 @@ const directionOrder: Readonly<Record<PlayerDirection, number>> = {
 };
 
 const actionLayout: Readonly<Record<PlayerVisualAction, { start: number; count: number; frameRate: number; repeat: number }>> = {
-  idle: { start: 0, count: 2, frameRate: 3, repeat: -1 },
-  walk: { start: 8, count: 6, frameRate: 8, repeat: -1 },
-  sprint: { start: 32, count: 6, frameRate: 12, repeat: -1 },
-  'carry-idle': { start: 56, count: 2, frameRate: 3, repeat: -1 },
-  'carry-walk': { start: 64, count: 4, frameRate: 7, repeat: -1 },
-  phone: { start: 80, count: 3, frameRate: 3, repeat: -1 },
-  interact: { start: 92, count: 3, frameRate: 10, repeat: 0 },
+  idle: { start: 0, count: 6, frameRate: 3, repeat: -1 },
+  walk: { start: 24, count: 6, frameRate: 12, repeat: -1 },
+  sprint: { start: 48, count: 6, frameRate: 12, repeat: -1 },
+  // Character Pass 1.2 nie ma jeszcze osobnych klatek carry/phone/interact.
+  // Do czasu kolejnej planszy korzystają z idle/walk; przedmiot pokazuje osobna nakładka.
+  'carry-idle': { start: 0, count: 6, frameRate: 3, repeat: -1 },
+  'carry-walk': { start: 24, count: 6, frameRate: 12, repeat: -1 },
+  phone: { start: 0, count: 6, frameRate: 3, repeat: -1 },
+  interact: { start: 0, count: 6, frameRate: 10, repeat: 0 },
 };
 
 export const HUBI_ANIMATION_DEFINITIONS: readonly AnimationDefinition[] = (

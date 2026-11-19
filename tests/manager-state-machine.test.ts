@@ -65,4 +65,17 @@ describe('ManagerStateMachine', () => {
     expect(brain.getState()).toBe(MANAGER_STATE.PatrolArea);
     expect(brain.getMovementTarget()).toEqual({ id: 'parking', x: 500, y: 500 });
   });
+
+  it('after a confrontation returns to patrol and ignores the player for a while', () => {
+    const brain = createBrain();
+    brain.forceDetection(PLAYER);
+    expect(brain.getState()).toBe(MANAGER_STATE.Chase);
+
+    brain.releaseAfterConfrontation(5_000);
+    expect(brain.getState()).toBe(MANAGER_STATE.Returning);
+    expect(brain.update(3_000, VISIBILITY_LEVEL.Clear, PLAYER, false).state).toBe(MANAGER_STATE.Returning);
+
+    brain.update(2_100, VISIBILITY_LEVEL.None, PLAYER, false);
+    expect(brain.update(100, VISIBILITY_LEVEL.Clear, PLAYER, false).state).toBe(MANAGER_STATE.Suspicious);
+  });
 });

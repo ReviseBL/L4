@@ -112,6 +112,7 @@ export class MissionEffectExecutor {
     const carriedItem = this.inventory.getVisibleCarriedItem();
     this.player.setCarriedItemVisual(carriedItem?.carryVisual ?? null);
     this.playerController.setSprintSpeedMultiplier(this.inventory.getSprintMultiplier());
+    this.playerController.setCarryMovement(this.inventory.getCarryMovement());
     this.hidingSystem.setUnavailableSpotIds(this.inventory.getUnavailableHideSpotIds());
   }
 

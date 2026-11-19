@@ -18,4 +18,18 @@ describe('InventorySystem', () => {
     expect(inventory.getSprintMultiplier()).toBe(1);
     expect(inventory.getVisibleCarriedItem()).toBeNull();
   });
+
+  it('heavy items slow the walk and block sprint until unloaded', () => {
+    const inventory = new InventorySystem(itemDefinitions);
+    expect(inventory.getCarryMovement()).toEqual({ walkMultiplier: 1, sprintAllowed: true });
+
+    inventory.add('medicine');
+    expect(inventory.getCarryMovement().sprintAllowed).toBe(true);
+
+    inventory.add('l4-print-filament');
+    expect(inventory.getCarryMovement()).toEqual({ walkMultiplier: 0.7, sprintAllowed: false });
+
+    inventory.remove('l4-print-filament');
+    expect(inventory.getCarryMovement()).toEqual({ walkMultiplier: 1, sprintAllowed: true });
+  });
 });

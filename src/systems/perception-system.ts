@@ -16,6 +16,30 @@ export interface PerceptionQuery {
   halfAngleRadians: number;
   rangeMultiplier?: number;
   targetHidden?: boolean;
+  /**
+   * Optional human-like vision profile. Inside the focus cone the observer sees
+   * at full range; outside it (up to halfAngleRadians) only peripheral vision
+   * works, at a reduced range. Omit for the classic single cone.
+   */
+  profile?: VisionProfile;
+}
+
+export interface VisionProfile {
+  focusHalfAngleRadians: number;
+  peripheralRangeMultiplier: number;
+}
+
+/** Width of the smooth transition between focus range and peripheral range. */
+const PROFILE_BLEND_RADIANS = (12 * Math.PI) / 180;
+
+/** Fraction of the full range visible at a given angle off the facing direction. */
+export function getVisionRangeFactor(absAngleRadians: number, profile?: VisionProfile): number {
+  if (!profile) return 1;
+  const { focusHalfAngleRadians, peripheralRangeMultiplier } = profile;
+  if (absAngleRadians <= focusHalfAngleRadians) return 1;
+  const progress = Math.min(1, (absAngleRadians - focusHalfAngleRadians) / PROFILE_BLEND_RADIANS);
+  const eased = progress * progress * (3 - 2 * progress);
+  return 1 + (peripheralRangeMultiplier - 1) * eased;
 }
 
 export interface PerceptionResult {
@@ -34,9 +58,11 @@ export class PerceptionSystem {
     const distance = Math.hypot(deltaX, deltaY);
     const targetAngle = Math.atan2(deltaY, deltaX);
     const angleOffsetRadians = normalizeAngle(targetAngle - query.facingRadians);
+    const absAngle = Math.abs(angleOffsetRadians);
     const effectiveRange = query.range * (query.rangeMultiplier ?? 1);
+    const rangeAtAngle = effectiveRange * getVisionRangeFactor(absAngle, query.profile);
 
-    if (query.targetHidden || distance > effectiveRange || Math.abs(angleOffsetRadians) > query.halfAngleRadians) {
+    if (query.targetHidden || distance > rangeAtAngle || absAngle > query.halfAngleRadians) {
       return {
         visibility: VISIBILITY_LEVEL.None,
         distance,
@@ -56,8 +82,8 @@ export class PerceptionSystem {
       };
     }
 
-    const isPeripheral =
-      Math.abs(angleOffsetRadians) > query.halfAngleRadians * 0.68 || distance > effectiveRange * 0.82;
+    const clearHalfAngle = (query.profile?.focusHalfAngleRadians ?? query.halfAngleRadians) * 0.68;
+    const isPeripheral = absAngle > clearHalfAngle || distance > effectiveRange * 0.82;
 
     return {
       visibility: isPeripheral ? VISIBILITY_LEVEL.Peripheral : VISIBILITY_LEVEL.Clear,
@@ -73,15 +99,18 @@ export class PerceptionSystem {
     halfAngleRadians: number,
     range: number,
     rayCount = 24,
+    profile?: VisionProfile,
   ): Point2D[] {
     const points: Point2D[] = [];
 
     for (let index = 0; index <= rayCount; index += 1) {
       const progress = index / rayCount;
-      const angle = facingRadians - halfAngleRadians + progress * halfAngleRadians * 2;
+      const offset = -halfAngleRadians + progress * halfAngleRadians * 2;
+      const angle = facingRadians + offset;
+      const rayRange = range * getVisionRangeFactor(Math.abs(offset), profile);
       const end = {
-        x: observer.x + Math.cos(angle) * range,
-        y: observer.y + Math.sin(angle) * range,
+        x: observer.x + Math.cos(angle) * rayRange,
+        y: observer.y + Math.sin(angle) * rayRange,
       };
       const intersectionProgress = this.findNearestIntersectionProgress(observer, end);
       const safeProgress = intersectionProgress === null ? 1 : Math.max(0, intersectionProgress - 0.004);

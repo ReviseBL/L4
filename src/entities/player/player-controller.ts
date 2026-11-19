@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import type { PlayerDirection } from '../../domain/player/player-visual-types';
 import { Player } from './player';
 
-const WALK_SPEED = 175;
+// 150 = tempo pogoni kolegi z pracy: do oderwania się potrzebny jest sprint lub osłona.
+const WALK_SPEED = 150;
 const SPRINT_SPEED = 285;
 
 interface MovementKeys {
@@ -20,6 +21,8 @@ export class PlayerController {
   private movementEnabled = true;
   private sprinting = false;
   private sprintSpeedMultiplier = 1;
+  private walkSpeedMultiplier = 1;
+  private sprintAllowed = true;
 
   public constructor(
     scene: Phaser.Scene,
@@ -59,8 +62,12 @@ export class PlayerController {
     }
 
     this.sprinting =
-      this.direction.lengthSq() > 0 && (this.keys.sprint.isDown || this.cursors.shift?.isDown === true);
-    const speed = this.sprinting ? SPRINT_SPEED * this.sprintSpeedMultiplier : WALK_SPEED;
+      this.sprintAllowed &&
+      this.direction.lengthSq() > 0 &&
+      (this.keys.sprint.isDown || this.cursors.shift?.isDown === true);
+    const speed = this.sprinting
+      ? SPRINT_SPEED * this.sprintSpeedMultiplier
+      : WALK_SPEED * this.walkSpeedMultiplier;
 
     this.player.setVelocity(this.direction.x * speed, this.direction.y * speed);
     this.player.setMovementVisual(
@@ -86,6 +93,12 @@ export class PlayerController {
 
   public setSprintSpeedMultiplier(multiplier: number): void {
     this.sprintSpeedMultiplier = Phaser.Math.Clamp(multiplier, 0.5, 1);
+  }
+
+  /** Heavy items slow the walk down and block sprinting entirely. */
+  public setCarryMovement(movement: { walkMultiplier: number; sprintAllowed: boolean }): void {
+    this.walkSpeedMultiplier = Phaser.Math.Clamp(movement.walkMultiplier, 0.4, 1);
+    this.sprintAllowed = movement.sprintAllowed;
   }
 
   private getAxis(

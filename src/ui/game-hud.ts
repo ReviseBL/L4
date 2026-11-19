@@ -2,9 +2,19 @@ import Phaser from 'phaser';
 import type { CampaignMonthId } from '../domain/campaign/campaign-types';
 import type { CompanySuspicionLevel } from '../domain/suspicion/suspicion-types';
 
+/** Kompaktowy HUD: lewy górny róg, ~370×50 px zamiast 610×154, żeby nie zasłaniać mapy. */
+const PANEL_X = 10;
+const PANEL_Y = 10;
+const PANEL_WIDTH = 372;
+const PANEL_PADDING = 8;
+const SUSPICION_BAR_WIDTH = 96;
+const SUSPICION_BAR_HEIGHT = 8;
+
 export class GameHud {
+  private readonly panel: Phaser.GameObjects.Rectangle;
   private readonly dayText: Phaser.GameObjects.Text;
   private readonly suspicionText: Phaser.GameObjects.Text;
+  private readonly suspicionBarFill: Phaser.GameObjects.Rectangle;
   private readonly companyStatusText: Phaser.GameObjects.Text;
   private readonly objectiveText: Phaser.GameObjects.Text;
   private readonly missionText: Phaser.GameObjects.Text;
@@ -19,90 +29,98 @@ export class GameHud {
   private dialogueActive = false;
 
   public constructor(private readonly scene: Phaser.Scene) {
-    const panel = scene.add
-      .rectangle(18, 18, 610, 154, 0x0b0f14, 0.88)
-      .setOrigin(0)
-      .setStrokeStyle(3, 0xf4a261)
-      .setScrollFactor(0)
-      .setDepth(100_000);
+    const left = PANEL_X + PANEL_PADDING;
+    const right = PANEL_X + PANEL_WIDTH - PANEL_PADDING;
+    const fixed = <T extends Phaser.GameObjects.Components.ScrollFactor & Phaser.GameObjects.Components.Depth>(
+      object: T,
+      depth = 100_001,
+    ): T => object.setScrollFactor(0).setDepth(depth);
 
-    this.dayText = scene.add
-      .text(panel.x + 18, panel.y + 14, 'DZIEŃ L4: 23', hudStyle(21, '#f4f1de'))
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.panel = fixed(
+      scene.add
+        .rectangle(PANEL_X, PANEL_Y, PANEL_WIDTH, 48, 0x0b0f14, 0.78)
+        .setOrigin(0)
+        .setStrokeStyle(2, 0xf4a261, 0.9),
+      100_000,
+    );
 
-    this.suspicionText = scene.add
-      .text(panel.x + 285, panel.y + 14, 'PODEJRZLIWOŚĆ: 0%', hudStyle(19, '#8ecae6'))
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.dayText = fixed(scene.add.text(left, PANEL_Y + 6, 'M1 · DZIEŃ 23', hudStyle(12, '#f4f1de')));
+    this.suspicionText = fixed(
+      scene.add.text(right, PANEL_Y + 6, '0%', hudStyle(12, '#8ecae6')).setOrigin(1, 0),
+    );
+    const barX = right - 34 - SUSPICION_BAR_WIDTH;
+    fixed(
+      scene.add
+        .rectangle(barX, PANEL_Y + 10, SUSPICION_BAR_WIDTH, SUSPICION_BAR_HEIGHT, 0x22303a)
+        .setOrigin(0)
+        .setStrokeStyle(1, 0x8ecae6, 0.6),
+    );
+    this.suspicionBarFill = fixed(
+      scene.add.rectangle(barX, PANEL_Y + 10, 0, SUSPICION_BAR_HEIGHT, 0x90be6d).setOrigin(0),
+      100_002,
+    );
+    fixed(scene.add.text(barX - 6, PANEL_Y + 7, 'PODEJRZ.', hudStyle(10, '#8ecae6')).setOrigin(1, 0));
 
-    this.companyStatusText = scene.add
-      .text(942, 102, 'FIRMA: NORMAL', hudStyle(14, '#90be6d'))
-      .setOrigin(1, 0)
-      .setPadding(8, 6)
-      .setBackgroundColor('#0b0f14dd')
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.missionText = fixed(scene.add.text(left, PANEL_Y + 22, '', hudStyle(10, '#f4a261')));
+    this.objectiveText = fixed(
+      scene.add
+        .text(left, PANEL_Y + 34, '', hudStyle(11, '#ffd166'))
+        .setWordWrapWidth(PANEL_WIDTH - PANEL_PADDING * 2, true),
+    );
+    this.inventoryText = fixed(scene.add.text(left, PANEL_Y + 48, '', hudStyle(10, '#8ecae6')));
 
-    this.missionText = scene.add
-      .text(panel.x + 18, panel.y + 50, '', hudStyle(15, '#f4a261'))
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.companyStatusText = fixed(
+      scene.add
+        .text(950, 100, 'FIRMA: NORMAL', hudStyle(11, '#90be6d'))
+        .setOrigin(1, 0)
+        .setPadding(6, 4)
+        .setBackgroundColor('#0b0f14cc'),
+    );
 
-    this.objectiveText = scene.add
-      .text(panel.x + 18, panel.y + 78, '', hudStyle(15, '#ffd166'))
-      .setWordWrapWidth(570)
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.interactionText = fixed(
+      scene.add
+        .text(480, 512, '', hudStyle(13, '#ffffff'))
+        .setOrigin(0.5)
+        .setPadding(10, 5)
+        .setBackgroundColor('#111820cc'),
+    );
 
-    this.inventoryText = scene.add
-      .text(panel.x + 18, panel.y + 122, '', hudStyle(13, '#8ecae6'))
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.messageText = fixed(
+      scene.add
+        .text(480, 440, '', hudStyle(12, '#f4f1de'))
+        .setOrigin(0.5)
+        .setPadding(10, 6)
+        .setBackgroundColor('#264653e6')
+        .setVisible(false),
+    );
 
-    this.interactionText = scene.add
-      .text(480, 486, '', hudStyle(18, '#ffffff'))
-      .setOrigin(0.5)
-      .setPadding(14, 8)
-      .setBackgroundColor('#111820dd')
-      .setScrollFactor(0)
-      .setDepth(100_001);
+    this.alertText = fixed(
+      scene.add
+        .text(480, 96, '', hudStyle(15, '#ffffff'))
+        .setOrigin(0.5)
+        .setPadding(12, 7)
+        .setBackgroundColor('#b00020e6')
+        .setVisible(false),
+      100_005,
+    );
 
-    this.messageText = scene.add
-      .text(480, 350, '', hudStyle(16, '#f4f1de'))
-      .setOrigin(0.5)
-      .setPadding(16, 10)
-      .setBackgroundColor('#264653ee')
-      .setScrollFactor(0)
-      .setDepth(100_001)
-      .setVisible(false);
+    this.hiddenText = fixed(
+      scene.add
+        .text(950, 74, 'STATUS: UKRYTY', hudStyle(11, '#8ecae6'))
+        .setOrigin(1, 0)
+        .setPadding(6, 4)
+        .setBackgroundColor('#0b0f14cc')
+        .setVisible(false),
+    );
 
-    this.alertText = scene.add
-      .text(480, 165, '', hudStyle(24, '#ffffff'))
-      .setOrigin(0.5)
-      .setPadding(20, 13)
-      .setBackgroundColor('#b00020ee')
-      .setScrollFactor(0)
-      .setDepth(100_005)
-      .setVisible(false);
-
-    this.hiddenText = scene.add
-      .text(942, 62, 'STATUS: UKRYTY', hudStyle(15, '#8ecae6'))
-      .setOrigin(1, 0)
-      .setPadding(8, 6)
-      .setBackgroundColor('#0b0f14dd')
-      .setScrollFactor(0)
-      .setDepth(100_001)
-      .setVisible(false);
-
-    this.managerNearbyText = scene.add
-      .text(942, 142, 'KIEROWNIK W POBLIŻU', hudStyle(15, '#ffb703'))
-      .setOrigin(1, 0)
-      .setPadding(8, 6)
-      .setBackgroundColor('#0b0f14dd')
-      .setScrollFactor(0)
-      .setDepth(100_001)
-      .setVisible(false);
+    this.managerNearbyText = fixed(
+      scene.add
+        .text(950, 126, 'KIEROWNIK W POBLIŻU', hudStyle(11, '#ffb703'))
+        .setOrigin(1, 0)
+        .setPadding(6, 4)
+        .setBackgroundColor('#0b0f14cc')
+        .setVisible(false),
+    );
   }
 
   public update(
@@ -116,15 +134,29 @@ export class GameHud {
     interactionPrompt: string | null,
     isHidden: boolean,
   ): void {
-    this.dayText.setText(`MIESIĄC ${month} | DZIEŃ L4: ${day}`).setFontSize(18);
-    this.suspicionText.setText(`PODEJRZLIWOŚĆ: ${Math.round(suspicion)}%`);
+    const suspicionPercent = Phaser.Math.Clamp(Math.round(suspicion), 0, 100);
+    this.dayText.setText(`M${month} · DZIEŃ L4: ${day}`);
+    this.suspicionText.setText(`${suspicionPercent}%`).setColor(levelColor(companyLevel));
+    this.suspicionBarFill
+      .setSize((SUSPICION_BAR_WIDTH * suspicionPercent) / 100, SUSPICION_BAR_HEIGHT)
+      .setFillStyle(Phaser.Display.Color.HexStringToColor(levelColor(companyLevel)).color);
     this.companyStatusText
       .setText(`FIRMA: ${companyLevel}`)
       .setColor(levelColor(companyLevel))
       .setVisible(companyLevel !== 'NORMAL');
     this.missionText.setText(`MISJA: ${missionTitle}`);
     this.objectiveText.setText(`CEL: ${objective}`);
-    this.inventoryText.setText(`EKWIPUNEK: ${inventory}`);
+
+    // Ekwipunek tylko, gdy coś jest niesione; panel dopasowuje wysokość do treści.
+    const showInventory = inventory.trim() !== '' && inventory.trim().toUpperCase() !== 'PUSTO';
+    const inventoryY = this.objectiveText.y + this.objectiveText.height + 2;
+    this.inventoryText
+      .setText(showInventory ? `NIESIESZ: ${inventory}` : '')
+      .setY(inventoryY)
+      .setVisible(showInventory);
+    const contentBottom = showInventory ? inventoryY + this.inventoryText.height : inventoryY;
+    this.panel.setSize(PANEL_WIDTH, contentBottom - PANEL_Y + PANEL_PADDING - 2);
+
     this.interactionText.setText(interactionPrompt ?? '').setVisible(interactionPrompt !== null);
     this.hiddenText.setVisible(isHidden);
   }
@@ -189,6 +221,6 @@ function hudStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Tex
     fontStyle: 'bold',
     color,
     stroke: '#0b0f14',
-    strokeThickness: 3,
+    strokeThickness: 2,
   };
 }

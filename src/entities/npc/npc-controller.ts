@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { Npc } from './npc';
+import { WORK_COLLEAGUE_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import {
   NPC_STATE,
   type NpcDefinition,
@@ -10,7 +11,10 @@ import {
 } from '../../domain/npcs/npc-types';
 import type { EnemyType } from '../../domain/campaign/campaign-types';
 import { NpcStateMachine } from '../../systems/npc-state-machine';
-import { PerceptionSystem } from '../../systems/perception-system';
+import { PerceptionSystem, type VisionProfile } from '../../systems/perception-system';
+
+/** 180° cone needs more rays than the old narrow one to keep its outline smooth. */
+export const VISION_RAY_COUNT = 40;
 
 export interface PlayerStealthTarget extends Point2D {
   hidden: boolean;
@@ -27,6 +31,7 @@ export class NpcController {
   private readonly brain: NpcStateMachine;
   private readonly collider: Phaser.Physics.Arcade.Collider;
   private readonly halfAngleRadians: number;
+  private readonly visionProfile: VisionProfile;
   private patrolIndex = 0;
   private facingRadians = 0;
   private visionPoints: Point2D[] = [];
@@ -46,16 +51,28 @@ export class NpcController {
     occluders: readonly ObstacleBounds[],
     private readonly callbacks: NpcControllerCallbacks,
   ) {
-    this.npc = new Npc(scene, patrol.spawn.x, patrol.spawn.y, definition.displayName);
+    this.npc = new Npc(
+      scene,
+      patrol.spawn.x,
+      patrol.spawn.y,
+      definition.displayName,
+      WORK_COLLEAGUE_TEXTURE_KEY,
+      'coworker',
+    );
     this.perceptionSystem = new PerceptionSystem(occluders);
     this.brain = new NpcStateMachine(definition);
     this.halfAngleRadians = Phaser.Math.DegToRad(definition.viewHalfAngleDegrees);
+    this.visionProfile = {
+      focusHalfAngleRadians: Phaser.Math.DegToRad(definition.focusHalfAngleDegrees),
+      peripheralRangeMultiplier: definition.peripheralRangeMultiplier,
+    };
     this.collider = scene.physics.add.collider(this.npc, obstacles);
   }
 
   public update(deltaMs: number, player: PlayerStealthTarget): void {
     if (!this.enabled || this.paused) {
       this.npc.setVelocity(0, 0);
+      this.npc.refreshAnimation();
       return;
     }
 
@@ -68,6 +85,7 @@ export class NpcController {
       halfAngleRadians: this.halfAngleRadians,
       rangeMultiplier,
       targetHidden: player.hidden,
+      profile: this.visionProfile,
     });
     const brainUpdate = this.brain.update(deltaMs, {
       visibility: perception.visibility,
@@ -85,6 +103,8 @@ export class NpcController {
       this.facingRadians,
       this.halfAngleRadians,
       this.definition.viewDistance * this.difficultyModifiers.viewDistanceMultiplier * rangeMultiplier,
+      VISION_RAY_COUNT,
+      this.visionProfile,
     );
     this.npc.updatePresentation(brainUpdate.state, this.visionPoints);
   }
@@ -113,6 +133,12 @@ export class NpcController {
     }
   }
 
+  /** Stops physics motion while the world is frozen (dialogue, overlays). */
+  public holdStill(): void {
+    this.npc.setVelocity(0, 0);
+    this.npc.refreshAnimation(this.visionPoints);
+  }
+
   public setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     this.npc.setNpcVisible(enabled);
@@ -129,6 +155,19 @@ export class NpcController {
 
   public investigate(position: Point2D): void {
     this.brain.investigate(position);
+  }
+
+  /** True when the colleague, chasing the player, got close enough to grab them. */
+  public isCatching(player: Point2D, catchDistance: number): boolean {
+    return (
+      this.enabled &&
+      this.brain.getState() === NPC_STATE.Detected &&
+      Math.hypot(player.x - this.npc.x, player.y - this.npc.y) <= catchDistance
+    );
+  }
+
+  public releaseAfterConfrontation(graceMs: number): void {
+    this.brain.releaseAfterConfrontation(graceMs);
   }
 
   public setDifficultyModifiers(modifiers: NpcDifficultyModifiers): void {

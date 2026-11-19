@@ -64,4 +64,22 @@ describe('NpcStateMachine', () => {
     brain.update(900, { visibility: VISIBILITY_LEVEL.None, playerPosition });
     expect(brain.getState()).toBe(NPC_STATE.Returning);
   });
+
+  it('after a confrontation walks back and ignores the player during the grace period', () => {
+    const brain = new NpcStateMachine(config);
+    brain.update(700, { visibility: VISIBILITY_LEVEL.Clear, playerPosition });
+    expect(brain.getState()).toBe(NPC_STATE.Detected);
+
+    brain.releaseAfterConfrontation(5_000);
+    expect(brain.getState()).toBe(NPC_STATE.Returning);
+
+    const during = brain.update(4_000, { visibility: VISIBILITY_LEVEL.Clear, playerPosition });
+    expect(during.state).toBe(NPC_STATE.Returning);
+    expect(brain.isInGracePeriod()).toBe(true);
+
+    brain.update(1_100, { visibility: VISIBILITY_LEVEL.None, playerPosition });
+    expect(brain.isInGracePeriod()).toBe(false);
+    brain.update(100, { visibility: VISIBILITY_LEVEL.Clear, playerPosition });
+    expect(brain.getState()).toBe(NPC_STATE.Suspicious);
+  });
 });

@@ -124,6 +124,11 @@ export class SuspicionSystem {
     return this.applyDelta(value - this.value);
   }
 
+  /** Flat penalty (e.g. a bad excuse when caught), reported like any other change. */
+  public applyPenalty(amount: number): SuspicionChangeResult {
+    return this.applyDelta(Math.abs(amount));
+  }
+
   public increase(amount: number): number {
     return this.applyDelta(Math.abs(amount)).currentValue;
   }

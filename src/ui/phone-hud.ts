@@ -13,29 +13,29 @@ export class PhoneHud {
 
   public constructor(private readonly scene: Phaser.Scene) {
     this.icon = scene.add
-      .text(930, 20, '📱', phoneStyle(24, '#f4f1de'))
+      .text(950, 14, '📱', phoneStyle(18, '#f4f1de'))
       .setOrigin(1, 0)
-      .setPadding(8, 5)
+      .setPadding(6, 3)
       .setBackgroundColor('#0b0f14dd')
       .setScrollFactor(0)
       .setDepth(100_010)
       .setVisible(false);
 
     const background = scene.add
-      .rectangle(0, 0, 320, 230, 0x111820, 0.95)
+      .rectangle(0, 0, 260, 156, 0x0b0f14, 0.9)
       .setOrigin(0)
-      .setStrokeStyle(4, 0x8ecae6);
-    this.heading = scene.add.text(16, 14, 'TELEFON SŁUŻBOWY', phoneStyle(17, '#8ecae6'));
-    this.caller = scene.add.text(16, 48, '', phoneStyle(17, '#ffd166'));
+      .setStrokeStyle(2, 0x8ecae6, 0.85);
+    this.heading = scene.add.text(12, 9, 'TELEFON SŁUŻBOWY', phoneStyle(11, '#8ecae6'));
+    this.caller = scene.add.text(12, 26, '', phoneStyle(13, '#ffd166'));
     this.body = scene.add
-      .text(16, 82, '', phoneStyle(12, '#f4f1de'))
-      .setWordWrapWidth(288)
-      .setLineSpacing(5);
+      .text(12, 46, '', phoneStyle(11, '#f4f1de'))
+      .setWordWrapWidth(236)
+      .setLineSpacing(3);
     this.controls = scene.add
-      .text(16, 160, '', phoneStyle(13, '#ffffff'))
-      .setLineSpacing(6);
+      .text(12, 98, '', phoneStyle(11, '#ffffff'))
+      .setLineSpacing(4);
     this.panel = scene.add
-      .container(620, 120, [background, this.heading, this.caller, this.body, this.controls])
+      .container(690, 150, [background, this.heading, this.caller, this.body, this.controls])
       .setScrollFactor(0)
       .setDepth(100_009)
       .setVisible(false);
@@ -96,11 +96,11 @@ export class PhoneHud {
   private handleStateChanged(snapshot: PhoneSnapshot): void {
     this.vibrationTween?.stop();
     this.vibrationTween = null;
-    this.icon.setX(930);
+    this.icon.setX(950);
     if (snapshot.state === 'RINGING') {
       this.vibrationTween = this.scene.tweens.add({
         targets: this.icon,
-        x: { from: 925, to: 935 },
+        x: { from: 946, to: 954 },
         duration: 70,
         yoyo: true,
         repeat: -1,
@@ -120,6 +120,6 @@ function phoneStyle(fontSize: number, color: string): Phaser.Types.GameObjects.T
     fontStyle: 'bold',
     color,
     stroke: '#06090d',
-    strokeThickness: 3,
+    strokeThickness: 2,
   };
 }

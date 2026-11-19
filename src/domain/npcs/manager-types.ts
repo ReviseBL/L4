@@ -22,7 +22,12 @@ export interface ManagerDefinition {
   id: string;
   displayName: string;
   viewDistance: number;
+  /** Total field of view (half angle). 90 = 180° like a human. */
   viewHalfAngleDegrees: number;
+  /** Sharp central vision at full range. */
+  focusHalfAngleDegrees: number;
+  /** Range of peripheral (side) vision as a fraction of viewDistance. */
+  peripheralRangeMultiplier: number;
   patrolSpeed: number;
   investigateSpeed: number;
   chaseSpeed: number;

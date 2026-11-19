@@ -5,7 +5,14 @@ export interface InteractionTarget {
   radius: number;
   prompt: string;
   message: string;
+  /**
+   * Punkt jest aktywny tylko wtedy, gdy w mieszkaniu widoczny jest element o tym id
+   * (np. ukończony wydruk). Bez tego pola punkt jest zawsze dostępny.
+   */
+  requiresHomeVisualId?: string;
 }
+
+export type InteractionAvailability = (target: InteractionTarget) => boolean;
 
 export interface InteractionResult {
   target: InteractionTarget;
@@ -13,7 +20,10 @@ export interface InteractionResult {
 }
 
 export class InteractionSystem {
-  public constructor(private readonly targets: readonly InteractionTarget[]) {}
+  public constructor(
+    private readonly targets: readonly InteractionTarget[],
+    private readonly isAvailable: InteractionAvailability = () => true,
+  ) {}
 
   public findNearby(
     x: number,
@@ -25,7 +35,8 @@ export class InteractionSystem {
 
       if (
         preferredTarget &&
-        (preferredTarget.x - x) ** 2 + (preferredTarget.y - y) ** 2 <= preferredTarget.radius ** 2
+        (preferredTarget.x - x) ** 2 + (preferredTarget.y - y) ** 2 <= preferredTarget.radius ** 2 &&
+        this.isAvailable(preferredTarget)
       ) {
         return preferredTarget;
       }
@@ -37,7 +48,11 @@ export class InteractionSystem {
     for (const target of this.targets) {
       const distanceSquared = (target.x - x) ** 2 + (target.y - y) ** 2;
 
-      if (distanceSquared <= target.radius ** 2 && distanceSquared < closestDistanceSquared) {
+      if (
+        distanceSquared <= target.radius ** 2 &&
+        distanceSquared < closestDistanceSquared &&
+        this.isAvailable(target)
+      ) {
         closest = target;
         closestDistanceSquared = distanceSquared;
       }

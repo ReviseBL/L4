@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { COMPANY_CAR_STATE, type CompanyCarDefinition, type CompanyCarState } from '../../domain/npcs/company-car-types';
+import { COMPANY_CAR_ART } from '../../data/world/world-art';
 import { COMPANY_CAR_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { CompanyCarStateMachine } from '../../systems/company-car-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
@@ -23,10 +24,16 @@ export class CompanyCarController {
   private enabled = false;
   private paused = false;
   private debugVisible = false;
+  /** Grafika auta jest widokiem z boku: zamiast obracać, odbijamy ją w poziomie. */
+  private readonly sideViewArt: boolean;
 
   public constructor(scene: Phaser.Scene, private readonly definition: CompanyCarDefinition, spawn: Point2D, route: readonly Point2D[], obstacles: Phaser.Physics.Arcade.StaticGroup, occluders: readonly ObstacleBounds[], private readonly callbacks: CompanyCarCallbacks) {
     this.route = route;
-    this.sprite = scene.physics.add.sprite(spawn.x, spawn.y, COMPANY_CAR_TEXTURE_KEY).setDepth(spawn.y).setBodySize(64, 36);
+    this.sideViewArt = scene.textures.exists(COMPANY_CAR_ART.key);
+    this.sprite = scene.physics.add
+      .sprite(spawn.x, spawn.y, this.sideViewArt ? COMPANY_CAR_ART.key : COMPANY_CAR_TEXTURE_KEY)
+      .setDepth(spawn.y)
+      .setBodySize(64, 36);
     this.perception = new PerceptionSystem(occluders);
     this.brain = new CompanyCarStateMachine(definition);
     this.visionGraphics = scene.add.graphics().setDepth(90_000);
@@ -51,6 +58,7 @@ export class CompanyCarController {
   public setRoute(route: readonly Point2D[]): void { if (!route.length) throw new Error('Company car route requires waypoints.'); this.route = route; this.routeIndex = 0; this.renderRoute(); }
   public setEnabled(enabled: boolean): void { this.enabled = enabled; this.sprite.setVisible(enabled).setActive(enabled); if (this.sprite.body) this.sprite.body.enable = enabled; this.statusText.setVisible(enabled); if (!enabled) this.sprite.setVelocity(0, 0); this.renderRoute(); this.visionGraphics.setVisible(enabled); }
   public isEnabled(): boolean { return this.enabled; }
+  public holdStill(): void { this.sprite.setVelocity(0, 0); }
   public setPaused(paused: boolean): void { this.paused = paused; if (paused) this.sprite.setVelocity(0, 0); }
   public isPaused(): boolean { return this.paused; }
   public setDebugVisible(visible: boolean): void { this.debugVisible = visible; this.visionGraphics.setVisible(this.enabled); this.renderRoute(); }
@@ -68,7 +76,13 @@ export class CompanyCarController {
     const dx = target.x - this.sprite.x; const dy = target.y - this.sprite.y; const distance = Math.hypot(dx, dy);
     if (distance < 20) { this.routeIndex = (this.routeIndex + 1) % this.route.length; return; }
     this.facingRadians = Math.atan2(dy, dx);
-    this.sprite.setRotation(this.facingRadians).setVelocity(dx / distance * this.definition.drivingSpeed, dy / distance * this.definition.drivingSpeed);
+    if (this.sideViewArt) {
+      // Na krótkich odcinkach pionowych auto zachowuje ostatni kierunek poziomy.
+      if (Math.abs(dx) > Math.abs(dy)) this.sprite.setFlipX(dx < 0);
+    } else {
+      this.sprite.setRotation(this.facingRadians);
+    }
+    this.sprite.setVelocity(dx / distance * this.definition.drivingSpeed, dy / distance * this.definition.drivingSpeed);
   }
   private renderVision(state: CompanyCarState): void {
     this.visionGraphics.clear();

@@ -60,6 +60,20 @@ export class InventorySystem {
     }, 1);
   }
 
+  /** Walking speed factor and sprint availability for everything currently carried. */
+  public getCarryMovement(): { walkMultiplier: number; sprintAllowed: boolean } {
+    let walkMultiplier = 1;
+    let sprintAllowed = true;
+    for (const itemId of this.quantities.keys()) {
+      const heavy = this.requireDefinition(itemId).heavyCarry;
+      if (heavy) {
+        walkMultiplier = Math.min(walkMultiplier, heavy.walkMultiplier);
+        sprintAllowed = false;
+      }
+    }
+    return { walkMultiplier, sprintAllowed };
+  }
+
   public getUnavailableHideSpotIds(): readonly string[] {
     const ids = new Set<string>();
 

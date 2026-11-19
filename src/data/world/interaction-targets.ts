@@ -56,6 +56,7 @@ export const worldInteractionTargets = [
     radius: 72,
     prompt: '[E] OBEJRZYJ L4 400%',
     message: 'BOHATER: Piękne.',
+    requiresHomeVisualId: 'l4-400-finished-print',
   },
   {
     id: 'l4-filament-pallet',
