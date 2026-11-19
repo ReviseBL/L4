@@ -5,6 +5,7 @@ import { MenuScene } from '../scenes/menu-scene';
 import { OpeningScene } from '../scenes/opening-scene';
 import { HubiShowcaseScene } from '../scenes/hubi-showcase-scene';
 import { ZusScene } from '../scenes/zus-scene';
+import { MinigameScene } from '../scenes/minigame-scene';
 import { resolveDeveloperToolsEnabled } from '../config/developer-tools';
 
 export const GAME_WIDTH = 960;
@@ -37,6 +38,6 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   scene: DEVELOPER_TOOLS_ENABLED
-    ? [BootScene, MenuScene, OpeningScene, GameScene, ZusScene, HubiShowcaseScene]
-    : [BootScene, MenuScene, OpeningScene, GameScene, ZusScene],
+    ? [BootScene, MenuScene, OpeningScene, GameScene, MinigameScene, ZusScene, HubiShowcaseScene]
+    : [BootScene, MenuScene, OpeningScene, GameScene, MinigameScene, ZusScene],
 };

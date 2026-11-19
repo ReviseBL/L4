@@ -18,7 +18,8 @@ export const month3FilamentMission = {
     { id: 'buy-orange-pla', objective: 'Kup pomarańczową szpulę PLA w sklepie 3D.', trigger: { type: 'interaction', targetId: 'orange-filament-shelf' }, interactionPrompt: '[E] KUP FILAMENT', effects: [
       { type: 'add-item', itemId: 'pla-orange-spool' }, { type: 'show-sequence', entries: [{ speaker: 'ZDOBYTO', text: 'PLA — NOWA SZPULA', tone: 'success' }] },
     ] },
-    { id: 'return-orange-pla', objective: 'Wróć ze szpulą do mieszkania.', trigger: { type: 'area-entered', areaId: 'home' }, effects: [
+    { id: 'return-orange-pla', objective: 'Wróć do mieszkania i załaduj szpulę do drukarki.', trigger: { type: 'interaction', targetId: 'home-printer' }, interactionPrompt: '[E] ZAŁADUJ FILAMENT PLA', effects: [
+      { type: 'play-minigame', minigame: { kind: 'threading', variant: 'pla' } },
       { type: 'remove-item', itemId: 'pla-orange-spool' }, { type: 'add-filament-spool', spoolId: 'pla-orange' },
       { type: 'show-sequence', entries: [{ speaker: 'BOHATER', text: 'Było warto.', tone: 'speech' }] },
     ] },

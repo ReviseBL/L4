@@ -49,6 +49,7 @@ export const filamentMission = {
       trigger: { type: 'interaction', targetId: 'home-printer' },
       interactionPrompt: '[E] ZAŁADUJ FILAMENT PETG',
       effects: [
+        { type: 'play-minigame', minigame: { kind: 'threading', variant: 'petg' } },
         { type: 'remove-item', itemId: 'petg-spool' },
         { type: 'add-filament-spool', spoolId: 'petg' },
         { type: 'start-print', printJobId: 'cable-holder' },

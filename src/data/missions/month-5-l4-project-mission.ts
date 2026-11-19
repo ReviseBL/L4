@@ -59,6 +59,7 @@ export const month5L4ProjectMission = {
       trigger: { type: 'interaction', targetId: 'home-printer' },
       interactionPrompt: '[E] ZAŁADUJ FILAMENT',
       effects: [
+        { type: 'play-minigame', minigame: { kind: 'threading', variant: 'l4' } },
         { type: 'remove-item', itemId: 'l4-print-filament' },
         { type: 'start-print', printJobId: 'l4-400' },
         { type: 'show-sequence', entries: [

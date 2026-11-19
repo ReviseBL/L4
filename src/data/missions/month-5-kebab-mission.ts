@@ -22,6 +22,11 @@ export const month5KebabMission = {
     { id: 'call-m5-03-02', caller: 'manager', trigger: { type: 'returningHome', afterStepId: 'collect-kebab', delaySeconds: 10 }, ringDuration: 6, answerDuration: 4, dialogue: statusUpdateDialogue },
   ],
   intro: [
+    { type: 'show-sequence', entries: [
+      { speaker: 'DRUKARKA 3D', text: 'BEEP BEEP\nPROJEKT L4 — WERSJA 400%: GOTOWE', tone: 'success' },
+      { speaker: 'BOHATER', text: 'Teraz tylko odkleić to od stołu.', tone: 'speech' },
+    ] },
+    { type: 'play-minigame', minigame: { kind: 'timing', variant: 'print-removal' } },
     { type: 'complete-print', printJobId: 'l4-400' },
     { type: 'show-sequence', entries: [
       { speaker: 'BOHATER', text: 'Piękne.', tone: 'speech' },

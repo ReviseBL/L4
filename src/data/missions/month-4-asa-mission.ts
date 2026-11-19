@@ -17,6 +17,6 @@ export const month4AsaMission = {
   ] }],
   steps: [
     { id: 'buy-asa', objective: 'Kup czarną szpulę ASA w sklepie 3D.', trigger: { type: 'interaction', targetId: 'asa-filament-shelf' }, interactionPrompt: '[E] KUP FILAMENT', effects: [{ type: 'add-item', itemId: 'asa-black-spool' }, { type: 'show-sequence', entries: [{ speaker: 'ZDOBYTO', text: 'ASA — NOWA SZPULA', tone: 'success' }] }] },
-    { id: 'return-asa', objective: 'Wróć ze szpulą do mieszkania.', trigger: { type: 'area-entered', areaId: 'home' }, effects: [{ type: 'remove-item', itemId: 'asa-black-spool' }, { type: 'add-filament-spool', spoolId: 'asa-black' }, { type: 'show-sequence', entries: [{ speaker: 'BOHATER', text: 'Teraz mam komplet.', tone: 'speech' }] }] },
+    { id: 'return-asa', objective: 'Wróć do mieszkania i załaduj szpulę do drukarki.', trigger: { type: 'interaction', targetId: 'home-printer' }, interactionPrompt: '[E] ZAŁADUJ FILAMENT ASA', effects: [{ type: 'play-minigame', minigame: { kind: 'threading', variant: 'asa' } }, { type: 'remove-item', itemId: 'asa-black-spool' }, { type: 'add-filament-spool', spoolId: 'asa-black' }, { type: 'show-sequence', entries: [{ speaker: 'BOHATER', text: 'Teraz mam komplet.', tone: 'speech' }] }] },
   ],
 } as const satisfies MissionDefinition;

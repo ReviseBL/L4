@@ -24,7 +24,11 @@ const L4_FILAMENT = { x: 1705, y: 405 };
 const KEBAB = { x: 980, y: 970 };
 const TPU = { x: 1845, y: 405 };
 
-function twoStepCheckpoints(objective: { x: number; y: number }, itemId: string): readonly DebugMissionCheckpointDefinition[] {
+function twoStepCheckpoints(
+  objective: { x: number; y: number },
+  itemId: string,
+  finalStart: { x: number; y: number } = HOME_APPROACH,
+): readonly DebugMissionCheckpointDefinition[] {
   return [
     { stage: 'MISSION_START', stepIndex: 0, playerStart: HOME },
     { stage: 'AFTER_INTRO', stepIndex: 0, playerStart: HOME },
@@ -32,7 +36,7 @@ function twoStepCheckpoints(objective: { x: number; y: number }, itemId: string)
     { stage: 'OBJECTIVE_READY', stepIndex: 0, playerStart: objective },
     { stage: 'OBJECTIVE_COLLECTED', stepIndex: 1, playerStart: objective, inventory: { [itemId]: 1 } },
     { stage: 'RETURNING_HOME', stepIndex: 1, playerStart: HOME_APPROACH, inventory: { [itemId]: 1 } },
-    { stage: 'FINAL_INTERACTION_READY', stepIndex: 1, playerStart: HOME_APPROACH, inventory: { [itemId]: 1 } },
+    { stage: 'FINAL_INTERACTION_READY', stepIndex: 1, playerStart: finalStart, inventory: { [itemId]: 1 } },
   ];
 }
 
@@ -72,14 +76,14 @@ export const debugMissionTestDefinitions = [
   { missionId: 'm2-nozzle-run', label: 'M2-03 DYSZA', month: 2, day: 51, phoneEnabled: true, coworkerEnabled: true, hrEnabled: false, companyCarEnabled: false, managerEnabled: false, checkpoints: printerMissionCheckpoints(NOZZLE, 'nozzle-0-6') },
   { missionId: 'm3-medicine-run', label: 'M3-01 LEKI', month: 3, day: 61, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: false, managerEnabled: false, checkpoints: twoStepCheckpoints(PHARMACY, 'medicine') },
   { missionId: 'm3-usb-c-run', label: 'M3-02 USB-C', month: 3, day: 71, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: false, managerEnabled: false, checkpoints: twoStepCheckpoints(TECH, 'usb-c-cable') },
-  { missionId: 'm3-orange-filament-run', label: 'M3-03 PLA ORANGE', month: 3, day: 81, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: false, managerEnabled: false, checkpoints: twoStepCheckpoints(ORANGE_PLA, 'pla-orange-spool') },
+  { missionId: 'm3-orange-filament-run', label: 'M3-03 PLA ORANGE', month: 3, day: 81, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: false, managerEnabled: false, checkpoints: twoStepCheckpoints(ORANGE_PLA, 'pla-orange-spool', PRINTER) },
   { missionId: 'm4-shopping-run', label: 'M4-01 ZAKUPY', month: 4, day: 91, phoneEnabled: true, coworkerEnabled: true, hrEnabled: false, companyCarEnabled: true, managerEnabled: false, checkpoints: twoStepCheckpoints(GROCERY, 'groceries') },
   { missionId: 'm4-large-package-run', label: 'M4-02 DUŻA PACZKA', month: 4, day: 101, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: false, checkpoints: twoStepCheckpoints(PARCEL, 'large-package') },
-  { missionId: 'm4-asa-filament-run', label: 'M4-03 ASA', month: 4, day: 111, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: false, checkpoints: twoStepCheckpoints(ASA, 'asa-black-spool') },
+  { missionId: 'm4-asa-filament-run', label: 'M4-03 ASA', month: 4, day: 111, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: false, checkpoints: twoStepCheckpoints(ASA, 'asa-black-spool', PRINTER) },
   { missionId: 'm5-shopping-run', label: 'M5-01 KIEROWNIK', month: 5, day: 121, phoneEnabled: true, coworkerEnabled: true, hrEnabled: false, companyCarEnabled: false, managerEnabled: true, checkpoints: twoStepCheckpoints(GROCERY, 'groceries') },
   { missionId: 'm5-l4-project-run', label: 'M5-02 L4 400%', month: 5, day: 131, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: true, checkpoints: l4ProjectCheckpoints() },
   { missionId: 'm5-kebab-run', label: 'M5-03 KEBAB', month: 5, day: 141, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: true, checkpoints: twoStepCheckpoints(KEBAB, 'kebab') },
-  { missionId: 'm6-final-spool-run', label: 'M6-01 OSTATNIA SZPULA', month: 6, day: 151, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: true, checkpoints: twoStepCheckpoints(TPU, 'tpu-purple-spool') },
+  { missionId: 'm6-final-spool-run', label: 'M6-01 OSTATNIA SZPULA', month: 6, day: 151, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: true, checkpoints: twoStepCheckpoints(TPU, 'tpu-purple-spool', PRINTER) },
   { missionId: 'm6-food-run', label: 'M6-02 TYLKO PO JEDZENIE', month: 6, day: 165, phoneEnabled: true, coworkerEnabled: true, hrEnabled: true, companyCarEnabled: true, managerEnabled: true, checkpoints: twoStepCheckpoints(KEBAB, 'kebab') },
 ] as const satisfies readonly DebugMissionTestDefinition[];
 

@@ -9,6 +9,7 @@ import type { InventorySystem } from './inventory-system';
 import type { Printer3DSystem } from './printer-3d-system';
 import type { HomeProgressionSystem } from './home-progression-system';
 import type { DialogueSystem } from './dialogue-system';
+import type { MinigameRunner } from '../domain/minigames/minigame-types';
 
 export class MissionEffectExecutor {
   private dialogueSequenceNumber = 0;
@@ -24,6 +25,7 @@ export class MissionEffectExecutor {
     private readonly player: Player,
     private readonly playerController: PlayerController,
     private readonly hidingSystem: HidingSystem,
+    private readonly minigameRunner: MinigameRunner | null = null,
   ) {
     this.synchronizeCarryState();
     this.synchronizeHomeState();
@@ -104,6 +106,11 @@ export class MissionEffectExecutor {
           },
           { onComplete: continueWithNext },
         );
+        break;
+      case 'play-minigame':
+        // Without a runner (tests, headless tools) the minigame counts as solved.
+        if (this.minigameRunner) this.minigameRunner.play(effect.minigame, () => continueWithNext());
+        else continueWithNext();
         break;
     }
   }

@@ -6,6 +6,7 @@ import type { PhoneCallDefinition, PhoneMissionStats } from '../phone/phone-type
 import type { DialogueTone } from '../dialogue/dialogue-types';
 import type { ManagerInterestPoint } from '../npcs/manager-types';
 import type { PrintProjectState } from '../printing/print-job-types';
+import type { MinigameRequest } from '../minigames/minigame-types';
 
 export interface MissionSequenceEntry {
   speaker?: string;
@@ -22,7 +23,9 @@ export type MissionEffect =
   | { type: 'add-filament-spool'; spoolId: string }
   | { type: 'add-desk-item'; itemId: string }
   | { type: 'increment-campaign-stat'; stat: 'threeDShopVisits' | 'kebabsCollected'; amount?: number }
-  | { type: 'set-print-project-state'; printJobId: string; state: PrintProjectState };
+  | { type: 'set-print-project-state'; printJobId: string; state: PrintProjectState }
+  /** Short interactive break (threading filament, tightening the nozzle...). Waits until solved. */
+  | { type: 'play-minigame'; minigame: MinigameRequest };
 
 export type MissionTrigger =
   | { type: 'interaction'; targetId: string }

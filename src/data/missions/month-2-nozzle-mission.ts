@@ -74,6 +74,7 @@ export const month2NozzleMission = {
       trigger: { type: 'interaction', targetId: 'home-printer' },
       interactionPrompt: '[E] ZAINSTALUJ DYSZĘ 0,6 MM',
       effects: [
+        { type: 'play-minigame', minigame: { kind: 'timing', variant: 'nozzle' } },
         { type: 'remove-item', itemId: 'nozzle-0-6' },
         { type: 'add-desk-item', itemId: 'nozzle-0-6-installed' },
         {

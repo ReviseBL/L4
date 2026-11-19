@@ -46,9 +46,11 @@ export const month6FinalSpoolMission = {
     },
     {
       id: 'return-final-spool',
-      objective: 'Wróć z ostatnią szpulą do mieszkania.',
-      trigger: { type: 'area-entered', areaId: 'home' },
+      objective: 'Wróć do mieszkania i załaduj ostatnią szpulę.',
+      trigger: { type: 'interaction', targetId: 'home-printer' },
+      interactionPrompt: '[E] ZAŁADUJ FILAMENT TPU',
       effects: [
+        { type: 'play-minigame', minigame: { kind: 'threading', variant: 'tpu' } },
         { type: 'remove-item', itemId: 'tpu-purple-spool' },
         { type: 'add-filament-spool', spoolId: 'tpu-purple' },
       ],

@@ -135,7 +135,8 @@ describe('vertical slice mission data', () => {
     system.startNext({ nowMs: 6_000, suspicion: 20 });
     const filament = system.handleEvent({ type: 'interaction', targetId: 'orange-filament-shelf' }, { nowMs: 7_000, suspicion: 20 });
     expect(filament.effects).toContainEqual({ type: 'add-item', itemId: 'pla-orange-spool' });
-    const done = system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 8_000, suspicion: 20 });
+    const done = system.handleEvent({ type: 'interaction', targetId: 'home-printer' }, { nowMs: 8_000, suspicion: 20 });
+    expect(done.effects).toContainEqual({ type: 'play-minigame', minigame: { kind: 'threading', variant: 'pla' } });
     expect(done.effects).toContainEqual({ type: 'add-filament-spool', spoolId: 'pla-orange' });
     expect(done.summary).toMatchObject({ missionId: 'm3-orange-filament-run', daysPassed: 10 });
     expect(system.hasNextMission()).toBe(true);
@@ -151,7 +152,8 @@ describe('vertical slice mission data', () => {
     system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 5, suspicion: 20 });
     system.startNext({ nowMs: 6, suspicion: 20 });
     expect(system.handleEvent({ type: 'interaction', targetId: 'asa-filament-shelf' }, { nowMs: 7, suspicion: 20 }).effects).toContainEqual({ type: 'add-item', itemId: 'asa-black-spool' });
-    const completed = system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 8, suspicion: 20 });
+    const completed = system.handleEvent({ type: 'interaction', targetId: 'home-printer' }, { nowMs: 8, suspicion: 20 });
+    expect(completed.effects).toContainEqual({ type: 'play-minigame', minigame: { kind: 'threading', variant: 'asa' } });
     expect(completed.effects).toContainEqual({ type: 'add-filament-spool', spoolId: 'asa-black' });
     expect(completed.summary).toMatchObject({ missionId: 'm4-asa-filament-run', daysPassed: 10 });
   });
@@ -185,7 +187,8 @@ describe('vertical slice mission data', () => {
     expect(spoolMission.mission.daysPassed).toBe(14);
     const spool = system.handleEvent({ type: 'interaction', targetId: 'tpu-filament-shelf' }, { nowMs: 1, suspicion: 55 });
     expect(spool.effects).toContainEqual({ type: 'add-item', itemId: 'tpu-purple-spool' });
-    const spoolHome = system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 2, suspicion: 55 });
+    const spoolHome = system.handleEvent({ type: 'interaction', targetId: 'home-printer' }, { nowMs: 2, suspicion: 55 });
+    expect(spoolHome.effects).toContainEqual({ type: 'play-minigame', minigame: { kind: 'threading', variant: 'tpu' } });
     expect(spoolHome.effects).toContainEqual({ type: 'add-filament-spool', spoolId: 'tpu-purple' });
     expect(spoolHome.summary?.daysPassed).toBe(14);
 

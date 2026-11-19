@@ -76,6 +76,8 @@ import type {
   PreparedConfrontation,
 } from '../domain/confrontation/confrontation-types';
 import { ConfrontationSystem } from '../systems/confrontation-system';
+import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
+import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -206,6 +208,7 @@ export class GameScene extends Phaser.Scene {
       this.player,
       this.playerController,
       this.hidingSystem,
+      this.createMinigameRunner(),
     );
 
     if (
@@ -1040,6 +1043,32 @@ export class GameScene extends Phaser.Scene {
     this.dialogueSystem.showSequence(hrFirstMeetingDialogue, {
       onChoice: (choiceId) => this.resolveHrChoice(choiceId),
     });
+  }
+
+  /**
+   * At-home minigames run in their own overlay scene; the whole estate is
+   * paused meanwhile, so nothing can catch Hubi mid-threading.
+   */
+  private createMinigameRunner(): MinigameRunner {
+    return {
+      play: (request: MinigameRequest, onDone: (result: MinigameResult) => void) => {
+        this.playerController.setMovementEnabled(false);
+        const data: MinigameSceneData = {
+          request,
+          stress: this.suspicionSystem.getValue() / 100,
+          onDone: (result) => {
+            this.scene.resume();
+            onDone(result);
+          },
+        };
+        // Deferred one tick: pausing is ignored while the scene is still in create().
+        this.time.delayedCall(0, () => {
+          this.scene.launch(MINIGAME_SCENE_KEY, data);
+          this.scene.bringToTop(MINIGAME_SCENE_KEY);
+          this.scene.pause();
+        });
+      },
+    };
   }
 
   /** A chasing colleague or manager who reaches Hubi stops him for a talk. */
