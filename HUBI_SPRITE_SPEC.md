@@ -1,12 +1,12 @@
 # Hubert „Hubi L4” — specyfikacja sprite'a
 
-Status: **produkcyjny draft pixel-artowy**
+Status: **Character Pass 1.2 — wdrożony (idle / walk / sprint)**
 
 Zakres: główny bohater gameplayu
 
 Canon: **L4: The Office Escape — The story of Hubert “Hubi L4”**
 
-Draft jest kompletnym, działającym zestawem do testów wizualnych i może pozostać mechanicznym fallbackiem. Nie jest jeszcze ręcznie dopieszczonym finalnym sprite'em ilustratora.
+Źródło: zatwierdzona plansza `art/hubi-character-pass-1.2/hubi-board-approved-1536x1024.png`. Idle to oryginalny Hubi z planszy z animacją oddechu. W walk i sprint głowa, tułów i ręce pochodzą z planszy, a nogi są rysowane klatka po klatce w cyklu kroku i biegu, bo plansza miała w każdym rzędzie 6 prawie identycznych póz nóg. Narzędzia i master 128×96 są w `art/hubi-character-pass-1.2/`. Poprzedni draft 32×44 zachowano jako `legacy-hubi-spritesheet-32x44.png`.
 
 ## Character
 
@@ -22,14 +22,15 @@ Najważniejsza kolejność czytelności w małej skali:
 
 ## Frame size
 
-- Klatka: **32×44 px**.
-- Arkusz: **256×572 px**.
-- Siatka: 8 kolumn × 13 wierszy.
-- Liczba klatek: **104**.
+- Klatka: **64×48 px** (master 128×96 w `art/`).
+- Arkusz: **384×576 px**.
+- Siatka: 6 kolumn × 12 wierszy (wiersze 0–3 idle, 4–7 walk, 8–11 sprint; kierunki down, up, left, right).
+- Liczba klatek: **72**.
+- Hubi ma ok. 43 px wysokości, tyle samo co poprzedni draft; szersza klatka mieści sprint z boku.
 - Format: PNG RGBA z przezroczystością.
 - Skalowanie runtime: 1× w świecie gry, nearest-neighbor przez `pixelArt: true`.
 
-Wybrano 32×44 zamiast 32×48, ponieważ dokładnie taki rozmiar posiadał działający placeholder. Pozwala to zachować dotychczasową geometrię bez kompensowania pozycji ciała fizycznego.
+Zatwierdzone wcześniej 64×88 nie mieściło sprintu z boku bez zmniejszania postaci, dlatego klatka ma 64×48 przy skali 1×.
 
 ## Anchor / origin
 
@@ -40,26 +41,28 @@ Wybrano 32×44 zamiast 32×48, ponieważ dokładnie taki rozmiar posiadał dzia�
 
 ## Physics body
 
-Parametry są zamrożone i identyczne z wersją gameplay beta:
+Rozmiar ciała jest bez zmian względem gameplay beta. Offset przeliczono na nową klatkę tak, by ciało leżało w tym samym miejscu względem środka sprite'a:
 
 - szerokość: **24 px**,
 - wysokość: **25 px**,
-- offset X: **4 px**,
-- offset Y: **17 px**.
+- offset X: **20 px** (wcześniej 4 przy klatce 32 px),
+- offset Y: **19 px** (wcześniej 17 przy klatce 44 px).
 
-Kształt sprite'a nie wyznacza kolizji. Wymiana PNG nie może zmieniać tych wartości.
+Kształt sprite'a nie wyznacza kolizji.
 
 ## Animations
 
 | Animacja | Kierunki | Klatki / kierunek | FPS | Loop | Uwagi |
 |---|---|---:|---:|---|---|
-| `hubi-idle-*` | down/up/left/right | 2 | 3 | tak | Subtelny oddech. |
-| `hubi-walk-*` | down/up/left/right | 6 | 8 | tak | Cięższy krok i umiarkowany ruch tułowia. |
-| `hubi-sprint-*` | down/up/left/right | 6 | 12 | tak | Większy wykrok i lekko pochylona sylwetka. |
-| `hubi-carry-idle-*` | down/up/left/right | 2 | 3 | tak | Ręce przygotowane pod osobną nakładkę. |
-| `hubi-carry-walk-*` | down/up/left/right | 4 | 7 | tak | Wspólna animacja dla paczek i filamentu. |
-| `hubi-phone-*` | down/up/left/right | 3 | 3 | tak | Telefon przy uchu, zachowuje ostatni kierunek. |
-| `hubi-interact-*` | down/up/left/right | 3 | 10 | nie | Asset-ready; nie podłączono globalnie do interakcji. |
+| `hubi-idle-*` | down/up/left/right | 6 | 3 | tak | Oddech; zaakceptowane. |
+| `hubi-walk-*` | down/up/left/right | 6 | 12 | tak | Pełny cykl kroku, rysowane nogi; zaakceptowane. |
+| `hubi-sprint-*` | down/up/left/right | 6 | 12 | tak | Bieg z wysokim kolanem, ręce z planszy; zaakceptowane. |
+| `hubi-carry-idle-*` | down/up/left/right | 6 | 3 | tak | Tymczasowo klatki idle + nakładka przedmiotu. |
+| `hubi-carry-walk-*` | down/up/left/right | 6 | 12 | tak | Tymczasowo klatki walk + nakładka przedmiotu. |
+| `hubi-phone-*` | down/up/left/right | 6 | 3 | tak | Tymczasowo klatki idle; brak telefonu przy uchu. |
+| `hubi-interact-*` | down/up/left/right | 6 | 10 | nie | Tymczasowo klatki idle; nie podłączono globalnie. |
+
+Prędkość chodu gracza: **150** (wcześniej 175), sprint bez zmian **285**.
 
 Gwiazdka oznacza kierunek: `down`, `up`, `left`, `right`.
 
@@ -116,8 +119,9 @@ Paleta pozostaje kolorowa i przygaszona. Noir nie jest nakładany na gameplayowe
 
 ## Integration
 
-- Produkcyjny draft PNG: `public/assets/characters/hubi-spritesheet.png`.
-- Generator deterministycznego draftu: `scripts/generate-hubi-sprites.mjs`.
+- Produkcyjny PNG: `public/assets/characters/hubi-spritesheet.png` (Character Pass 1.2).
+- Narzędzia Character Pass 1.2: `art/hubi-character-pass-1.2/tools/`.
+- Generator starego draftu 32×44 (nieużywany): `scripts/generate-hubi-sprites.mjs`.
 - Referencyjny concept: `docs/hubi-concept-sheet.png`.
 - Dane klatek i animacji: `src/data/player/player-animation-config.ts`.
 - Rejestracja Phaser: `src/game/register-player-animations.ts`.
