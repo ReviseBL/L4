@@ -58,6 +58,7 @@ export class MissionSummaryOverlay {
     hasNextMission: boolean,
     onContinue: () => void,
     continueLabel?: string,
+    notes: readonly string[] = [],
   ): void {
     this.titleText.setText(summary.title);
     this.statsText.setText(
@@ -91,7 +92,7 @@ export class MissionSummaryOverlay {
       .setText(
         summary.criticalSuspicionIncident
           ? 'INCYDENT KRYTYCZNY\nPODEJRZLIWOŚĆ OSIĄGNĘŁA 100%\nFIRMA ŻĄDA WYJAŚNIEŃ'
-          : summary.stealthMessage.join('\n'),
+          : [...summary.stealthMessage, ...notes].join('\n'),
       );
     this.buttonText.setText(
       continueLabel ?? (hasNextMission ? '[E] NASTĘPNA MISJA' : '[E] WRÓĆ DO MENU'),

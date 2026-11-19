@@ -15,6 +15,7 @@ export const itemDefinitions = [
     id: 'coffee',
     displayName: 'KAWA',
     description: 'Kawa na wynos. Nadal ciepła, mimo planowania trasy patrolu.',
+    spillable: { sprintDrainPerSecond: 0.22 },
   },
   {
     id: 'package',

@@ -74,6 +74,15 @@ export class InventorySystem {
     return { walkMultiplier, sprintAllowed };
   }
 
+  /** The carried item that can spill (coffee), if any. */
+  public getCarriedSpillable(): { id: string; sprintDrainPerSecond: number } | null {
+    for (const itemId of this.quantities.keys()) {
+      const spillable = this.requireDefinition(itemId).spillable;
+      if (spillable) return { id: itemId, sprintDrainPerSecond: spillable.sprintDrainPerSecond };
+    }
+    return null;
+  }
+
   public getUnavailableHideSpotIds(): readonly string[] {
     const ids = new Set<string>();
 

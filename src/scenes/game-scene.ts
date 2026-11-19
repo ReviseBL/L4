@@ -79,6 +79,8 @@ import { ConfrontationSystem } from '../systems/confrontation-system';
 import { callNoiseConfig, callNoiseLabels, callNoiseManagerLines } from '../data/phone/call-noise-config';
 import type { CallNoiseResult } from '../domain/phone/call-noise-types';
 import { evaluateCallNoise } from '../systems/call-noise-system';
+import { SpillTracker } from '../systems/spill-tracker';
+import { getCoffeeDeliveryComment } from '../data/items/spill-comments';
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
@@ -97,6 +99,7 @@ export class GameScene extends Phaser.Scene {
   private companyCarController!: CompanyCarController;
   private managerController!: ManagerController;
   private readonly positionReportSystem = new PositionReportSystem(positionReportConfig);
+  private readonly spillTracker = new SpillTracker();
   private readonly confrontationSystem = new ConfrontationSystem(
     confrontationScenarios,
     confrontationConfig,
@@ -459,6 +462,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.playerController.update();
+    this.updateSpill(delta);
 
     const playerPosition = { x: this.player.x, y: this.player.y };
 
@@ -572,6 +576,25 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  /** Open coffee cup: sprinting spills it. */
+  private updateSpill(delta: number): void {
+    const events = this.spillTracker.update(
+      delta,
+      this.inventorySystem.getCarriedSpillable(),
+      this.playerController.isSprinting(),
+    );
+    if (events.includes('started-spilling')) this.hud.showMessage('Kawa się rozlewa! Sprint wylewa kawę.');
+    if (events.includes('emptied')) this.hud.showMessage('Kubek pusty.');
+  }
+
+  /** Extra lines for the mission summary (e.g. how much coffee survived). */
+  private collectSummaryNotes(): string[] {
+    this.spillTracker.update(0, this.inventorySystem.getCarriedSpillable(), false);
+    const delivered = this.spillTracker.takeDelivered();
+    if (!delivered) return [];
+    return [`KAWA: ${Math.round(delivered.fullness * 100)}%  „${getCoffeeDeliveryComment(delivered.fullness)}”`];
+  }
+
   private showMissionSummary(summary: MissionCompletionSummary): void {
     this.missionTransitionPending = false;
     this.summaryVisible = true;
@@ -585,6 +608,7 @@ export class GameScene extends Phaser.Scene {
       this.missionSystem.hasNextMission() || summary.monthTransition !== null || continuesToFinale,
       () => this.continueAfterSummary(),
       continuesToFinale ? '[E] DALEJ — DZIEŃ 179' : undefined,
+      this.collectSummaryNotes(),
     );
   }
 
@@ -654,7 +678,9 @@ export class GameScene extends Phaser.Scene {
 
   private getInventoryHudText(): string {
     const text = this.inventorySystem.getDisplayText();
-    return this.inventorySystem.getCarryMovement().sprintAllowed ? text : `${text} · BEZ SPRINTU`;
+    const fullness = this.spillTracker.getFullness();
+    const withCup = fullness === null ? text : `${text} · ${Math.round(fullness * 100)}%`;
+    return this.inventorySystem.getCarryMovement().sprintAllowed ? withCup : `${withCup} · BEZ SPRINTU`;
   }
 
   private updateHud(interactionPrompt: string | null): void {

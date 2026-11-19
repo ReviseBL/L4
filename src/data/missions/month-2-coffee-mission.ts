@@ -39,7 +39,10 @@ export const month2CoffeeMission = {
         { type: 'add-item', itemId: 'coffee' },
         {
           type: 'show-sequence',
-          entries: [{ speaker: 'ZDOBYTO', text: 'KAWA', tone: 'success' }],
+          entries: [
+            { speaker: 'ZDOBYTO', text: 'KAWA', tone: 'success' },
+            { speaker: 'BOHATER', text: 'Bez pokrywki. Lepiej nie biegać.', tone: 'speech' },
+          ],
         },
       ],
     },
@@ -51,7 +54,7 @@ export const month2CoffeeMission = {
         { type: 'remove-item', itemId: 'coffee' },
         {
           type: 'show-sequence',
-          entries: [{ text: 'KAWA URATOWANA', tone: 'success' }],
+          entries: [{ text: 'KAWA DONIESIONA', tone: 'success' }],
         },
       ],
     },
