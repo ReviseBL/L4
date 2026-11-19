@@ -11,6 +11,7 @@ export const suspicionConfig = {
   detectionEscalation: 0.25,
   suspicionEvents: {
     missedWorkCall: 2,
+    noisyWorkCall: 4,
     declinedWorkCall: 3,
     hrDialogueGettingBetter: 3,
     hrDialogueGreat: 8,

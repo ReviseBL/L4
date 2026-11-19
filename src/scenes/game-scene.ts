@@ -76,6 +76,9 @@ import type {
   PreparedConfrontation,
 } from '../domain/confrontation/confrontation-types';
 import { ConfrontationSystem } from '../systems/confrontation-system';
+import { callNoiseConfig, callNoiseLabels, callNoiseManagerLines } from '../data/phone/call-noise-config';
+import type { CallNoiseResult } from '../domain/phone/call-noise-types';
+import { evaluateCallNoise } from '../systems/call-noise-system';
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
@@ -435,6 +438,7 @@ export class GameScene extends Phaser.Scene {
     this.player.setPhoneActive(this.phoneSystem.isConversationActive());
     this.synchronizeMovementLock(dialogueSnapshot.lockPlayerMovement);
     this.phoneHud.update(this.phoneSystem.getSnapshot());
+    this.updateCallNoiseHint();
 
     if (this.isGameplayLocked()) {
       this.holdNpcsStill();
@@ -827,16 +831,59 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private evaluateCallNoiseNow(): CallNoiseResult {
+    const cars = this.companyCarController.isEnabled() ? [this.companyCarController.getPosition()] : [];
+    return evaluateCallNoise(
+      { position: { x: this.player.x, y: this.player.y }, hidden: this.hidingSystem.isHidden(), cars },
+      callNoiseConfig,
+    );
+  }
+
+  /** While the phone rings, the panel tells whether answering here would be heard. */
+  private updateCallNoiseHint(): void {
+    if (this.phoneSystem.getSnapshot().state !== 'RINGING') {
+      this.phoneHud.setBackgroundNoise(null, false);
+      return;
+    }
+    const noise = this.evaluateCallNoiseNow();
+    this.phoneHud.setBackgroundNoise(callNoiseLabels[noise.reason], noise.loud);
+  }
+
   private answerPhoneCall(): void {
     const call = this.phoneSystem.getSnapshot().activeCall;
     if (!call || !this.phoneSystem.answer()) return;
+
+    const noise = this.evaluateCallNoiseNow();
+    const noiseLines: { speaker?: string; text: string; tone: 'speech' | 'warning' }[] = [];
+    if (noise.loud && (noise.reason === 'street' || noise.reason === 'car')) {
+      const change = this.suspicionSystem.registerEvent({
+        type: 'noisyWorkCall',
+        missionId: this.missionSystem.getCurrentMission()?.id ?? 'free-roam',
+        month: this.campaignSystem.getCurrentMonth().id,
+      });
+      this.hud.showAlert(`HAŁAS W TLE  +${change.appliedDelta}%`);
+      this.handleSuspicionChange(change);
+      this.applyNpcDifficulty();
+      this.persistCurrentState();
+      noiseLines.push(
+        { speaker: 'KIEROWNIK', text: callNoiseManagerLines[noise.reason], tone: 'warning' },
+        {
+          speaker: 'HAŁAS W TLE',
+          text: `Kierownik słyszy ${noise.reason === 'car' ? 'samochód' : 'ulicę'}. Odbieraj w budynku albo w kryjówce.`,
+          tone: 'warning',
+        },
+      );
+    }
 
     this.dialogueSystem.showSequence(
       {
         id: `phone-${call.id}`,
         pauseWorld: false,
         lockPlayerMovement: true,
-        lines: call.dialogue.lines.map((line) => ({ ...line, tone: 'speech' as const })),
+        lines: [
+          ...noiseLines,
+          ...call.dialogue.lines.map((line) => ({ ...line, tone: 'speech' as const })),
+        ],
       },
       { onComplete: () => this.phoneSystem.completeAnsweredCall() },
     );

@@ -8,6 +8,7 @@ export class PhoneHud {
   private readonly caller: Phaser.GameObjects.Text;
   private readonly body: Phaser.GameObjects.Text;
   private readonly controls: Phaser.GameObjects.Text;
+  private readonly noise: Phaser.GameObjects.Text;
   private lastState: PhoneSnapshot['state'] | null = null;
   private vibrationTween: Phaser.Tweens.Tween | null = null;
 
@@ -22,7 +23,7 @@ export class PhoneHud {
       .setVisible(false);
 
     const background = scene.add
-      .rectangle(0, 0, 260, 156, 0x0b0f14, 0.9)
+      .rectangle(0, 0, 260, 176, 0x0b0f14, 0.9)
       .setOrigin(0)
       .setStrokeStyle(2, 0x8ecae6, 0.85);
     this.heading = scene.add.text(12, 9, 'TELEFON SŁUŻBOWY', phoneStyle(11, '#8ecae6'));
@@ -34,8 +35,9 @@ export class PhoneHud {
     this.controls = scene.add
       .text(12, 98, '', phoneStyle(11, '#ffffff'))
       .setLineSpacing(4);
+    this.noise = scene.add.text(12, 154, '', phoneStyle(11, '#90be6d'));
     this.panel = scene.add
-      .container(690, 150, [background, this.heading, this.caller, this.body, this.controls])
+      .container(690, 150, [background, this.heading, this.caller, this.body, this.controls, this.noise])
       .setScrollFactor(0)
       .setDepth(100_009)
       .setVisible(false);
@@ -84,6 +86,13 @@ export class PhoneHud {
     }
 
     this.panel.setVisible(false);
+  }
+
+  /** Background noise hint while ringing: answer only where it is quiet. */
+  public setBackgroundNoise(label: string | null, loud: boolean): void {
+    this.noise
+      .setText(label ? `TŁO: ${label}` : '')
+      .setColor(loud ? '#ff8c69' : '#90be6d');
   }
 
   public destroy(): void {

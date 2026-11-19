@@ -5,6 +5,7 @@ export type CompanySuspicionLevel = 'NORMAL' | 'SUSPICIOUS' | 'HIGH_ALERT' | 'CR
 export type SuspicionDomainEvent = 'SUSPICION_MAX_REACHED';
 export type SuspicionEventType =
   | 'missedWorkCall'
+  | 'noisyWorkCall'
   | 'declinedWorkCall'
   | 'hrDialogueGettingBetter'
   | 'hrDialogueGreat';
