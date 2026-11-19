@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.wrangler/
+.openai/
+
+.env
+.env.*
+!.env.example
+
+*.log
+npm-debug.log*
+*.tsbuildinfo
+.DS_Store
+
