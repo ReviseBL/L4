@@ -33,12 +33,21 @@ export type MissionTrigger =
 
 export type MissionEvent = MissionTrigger;
 
+/**
+ * Something the player must get through in the world before an interaction
+ * step counts (the estate keeps running meanwhile).
+ */
+export type MissionStepChallenge =
+  | { type: 'parcel-code'; codeLength: number }
+  | { type: 'pharmacy-queue'; queueId: string };
+
 export interface MissionStepDefinition {
   id: string;
   objective: string;
   trigger: MissionTrigger;
   interactionPrompt?: string;
   effects?: readonly MissionEffect[];
+  challenge?: MissionStepChallenge;
 }
 
 export interface MissionDefinition {

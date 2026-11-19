@@ -81,6 +81,10 @@ import type { CallNoiseResult } from '../domain/phone/call-noise-types';
 import { evaluateCallNoise } from '../systems/call-noise-system';
 import { SpillTracker } from '../systems/spill-tracker';
 import { getCoffeeDeliveryComment } from '../data/items/spill-comments';
+import { parcelCodeConfig } from '../data/challenges/parcel-code-config';
+import type { MissionStepChallenge } from '../domain/missions/mission-types';
+import { ParcelCodeChallenge } from '../systems/challenges/parcel-code-challenge';
+import { ParcelLockerPanel } from '../ui/parcel-locker-panel';
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
@@ -121,6 +125,13 @@ export class GameScene extends Phaser.Scene {
   private summaryOverlay!: MissionSummaryOverlay;
   private monthTransitionOverlay!: MonthTransitionOverlay;
   private phoneHud!: PhoneHud;
+  private parcelPanel!: ParcelLockerPanel;
+  private activeParcel: { challenge: ParcelCodeChallenge; onSolved: () => void } | null = null;
+  /** Raw key presses for typed input (parcel code), drained in the gameplay frame. */
+  private readonly typedKeys: string[] = [];
+  private readonly onTypedKey = (event: KeyboardEvent): void => {
+    if (this.activeParcel) this.typedKeys.push(event.key);
+  };
   private dialogueBox!: DialogueBox;
   private homeProgressionView!: HomeProgressionView;
   private homeSpawn!: Phaser.Math.Vector2;
@@ -200,6 +211,8 @@ export class GameScene extends Phaser.Scene {
     this.dialogueSystem = new DialogueSystem(dialogueConfig);
     this.hud = new GameHud(this);
     this.phoneHud = new PhoneHud(this);
+    this.parcelPanel = new ParcelLockerPanel(this);
+    this.input.keyboard?.on('keydown', this.onTypedKey);
     this.dialogueBox = new DialogueBox(this);
     this.summaryOverlay = new MissionSummaryOverlay(this);
     this.monthTransitionOverlay = new MonthTransitionOverlay(this);
@@ -348,6 +361,9 @@ export class GameScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       world.printerView.destroy();
       world.homeProgressionView.destroy();
+      this.input.keyboard?.off('keydown', this.onTypedKey);
+      this.parcelPanel.destroy();
+      this.activeParcel = null;
       this.handleShutdown();
     });
 
@@ -432,7 +448,9 @@ export class GameScene extends Phaser.Scene {
 
     this.dialogueSystem.update(delta);
     if (!pauseWorldForDialogue) this.phoneSystem.update(delta);
-    if (!dialogueHandledThisFrame && !this.dialogueSystem.isActive()) this.handlePhoneInput();
+    // While typing a parcel code, digits belong to the keypad unless the phone rings.
+    const parcelOwnsDigits = this.activeParcel !== null && this.phoneSystem.getSnapshot().state !== 'RINGING';
+    if (!dialogueHandledThisFrame && !this.dialogueSystem.isActive() && !parcelOwnsDigits) this.handlePhoneInput();
 
     const dialogueSnapshot = this.dialogueSystem.getSnapshot();
     const dialogueFrameActive = dialogueHandledThisFrame || dialogueSnapshot.active;
@@ -463,6 +481,7 @@ export class GameScene extends Phaser.Scene {
 
     this.playerController.update();
     this.updateSpill(delta);
+    this.updateParcelChallenge(delta);
 
     const playerPosition = { x: this.player.x, y: this.player.y };
 
@@ -504,14 +523,14 @@ export class GameScene extends Phaser.Scene {
           preferredInteractionTargetId,
         );
 
-        if (interaction) {
-          const matchedMission = this.processMissionEvent({
-            type: 'interaction',
-            targetId: interaction.target.id,
-          });
-
-          if (!matchedMission) {
-            this.hud.showMessage(interaction.message);
+        if (interaction && !this.activeParcel) {
+          const step = this.missionSystem.getCurrentStep();
+          const targetId = interaction.target.id;
+          if (step?.challenge && step.trigger.type === 'interaction' && step.trigger.targetId === targetId) {
+            this.startStepChallenge(step.challenge, () => this.processMissionEvent({ type: 'interaction', targetId }));
+          } else {
+            const matchedMission = this.processMissionEvent({ type: 'interaction', targetId });
+            if (!matchedMission) this.hud.showMessage(interaction.message);
           }
         }
       }
@@ -574,6 +593,55 @@ export class GameScene extends Phaser.Scene {
       this.persistCurrentState(false);
       this.showMissionSummary(completionSummary);
     });
+  }
+
+  /** In-world challenges that gate an interaction step (the estate keeps running). */
+  private startStepChallenge(challenge: MissionStepChallenge, onSolved: () => void): void {
+    if (challenge.type === 'parcel-code') {
+      this.activeParcel = {
+        challenge: new ParcelCodeChallenge(challenge.codeLength, parcelCodeConfig),
+        onSolved,
+      };
+      this.typedKeys.length = 0;
+      this.parcelPanel.show();
+      this.playerController.setMovementEnabled(false);
+      return;
+    }
+    // Pharmacy queue is handled by its own system (added separately).
+    onSolved();
+  }
+
+  private updateParcelChallenge(delta: number): void {
+    const active = this.activeParcel;
+    if (!active) return;
+    const { challenge } = active;
+    challenge.update(delta);
+    const phoneRinging = this.phoneSystem.getSnapshot().state === 'RINGING';
+
+    for (const key of this.typedKeys.splice(0)) {
+      if (key === 'Escape') {
+        this.closeParcelChallenge();
+        this.hud.showMessage('Odchodzisz od automatu. Kod przepadł.');
+        return;
+      }
+      if (key === 'q' || key === 'Q') {
+        if (challenge.peek()) this.hud.showMessage('Zerkasz w SMS. Stoisz dłużej na widoku.');
+      } else if (key === 'Backspace') {
+        challenge.backspace();
+      } else if (!phoneRinging && challenge.typeDigit(key) === 'correct') {
+        this.parcelPanel.render(challenge, phoneRinging);
+        this.closeParcelChallenge();
+        active.onSolved();
+        return;
+      }
+    }
+    this.parcelPanel.render(challenge, phoneRinging);
+  }
+
+  private closeParcelChallenge(): void {
+    this.activeParcel = null;
+    this.typedKeys.length = 0;
+    this.parcelPanel.hide();
   }
 
   /** Open coffee cup: sprinting spills it. */
@@ -956,6 +1024,7 @@ export class GameScene extends Phaser.Scene {
       !dialogueLocksMovement &&
       !this.phoneSystem.isConversationActive() &&
       !this.hidingSystem.isHidden() &&
+      this.activeParcel === null &&
       !this.isGameplayLocked();
     this.playerController.setMovementEnabled(canMove);
   }

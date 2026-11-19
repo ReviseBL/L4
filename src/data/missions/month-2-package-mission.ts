@@ -41,6 +41,7 @@ export const month2PackageMission = {
       objective: 'Odbierz paczkę z automatu paczkowego.',
       trigger: { type: 'interaction', targetId: 'parcel-locker' },
       interactionPrompt: '[E] ODBIERZ PACZKĘ',
+      challenge: { type: 'parcel-code', codeLength: 4 },
       effects: [
         { type: 'add-item', itemId: 'package' },
         {
