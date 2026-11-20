@@ -11,6 +11,7 @@ import { NPC_SPRITES } from '../data/npcs/npc-sprite-config';
 import { WORLD_ART_TEXTURES, WORLD_TILE_TEXTURES } from '../data/world/world-art';
 import { MINIGAME_ART_TEXTURES } from '../data/minigames/minigame-art';
 import { WATCHER_TEXTURES } from '../data/watchers/neighbor-watchers';
+import { EXTRA_ART_TEXTURES } from '../data/world/extra-art';
 import { createPlaceholderTextures } from '../game/create-placeholder-textures';
 import { registerNpcAnimations } from '../game/register-npc-animations';
 import { registerPlayerAnimations } from '../game/register-player-animations';
@@ -37,7 +38,7 @@ export class BootScene extends Phaser.Scene {
         frameHeight: sprite.frameHeight,
       });
     }
-    for (const texture of [...Object.values(WORLD_TILE_TEXTURES), ...WORLD_ART_TEXTURES, ...MINIGAME_ART_TEXTURES, ...WATCHER_TEXTURES]) {
+    for (const texture of [...Object.values(WORLD_TILE_TEXTURES), ...WORLD_ART_TEXTURES, ...MINIGAME_ART_TEXTURES, ...WATCHER_TEXTURES, ...EXTRA_ART_TEXTURES]) {
       this.load.image(texture.key, texture.url);
     }
   }

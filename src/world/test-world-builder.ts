@@ -156,6 +156,11 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
 }
 
 function addKebabStand(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.StaticGroup): void {
+  if (placeExtraArt(scene, 'world-kebab-kiosk-v2', 1610, 1240)) {
+    // Kiosk body blocks; the chairs and table in front stay walkable.
+    addInvisibleObstacle(obstacles, scene, 1597, 1272, 105, 36);
+    return;
+  }
   if (placeArtGroup(scene, 'kebab-kiosk')) {
     placeArtGroup(scene, 'sign-kebab');
     // Budka z grafiką dostaje bryłę przy podstawie; lada (punkt interakcji) zostaje od strony chodnika.
@@ -284,9 +289,20 @@ function addShop(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.StaticGro
   });
 
   placeArtGroup(scene, 'chwilka-doormat');
-  addFurniture(scene, obstacles, 950, 335, 180, 44, 0x33691e, 'LADA: KAWA / PĄCZKI', placeArtGroup(scene, 'chwilka-counter'));
+  if (scene.textures.exists('shop-checkout')) {
+    // Full corner-shop interior (customers enter from the door at the bottom).
+    placeExtraArt(scene, 'shop-checkout', 950, 322);
+    addInvisibleObstacle(obstacles, scene, 950, 345, 120, 40);
+    for (const prop of CHWILKA_PROPS) {
+      if (placeExtraArt(scene, prop.key, prop.x, prop.y)) {
+        addInvisibleObstacle(obstacles, scene, prop.collision.x, prop.collision.y, prop.collision.width, prop.collision.height);
+      }
+    }
+  } else {
+    addFurniture(scene, obstacles, 950, 335, 180, 44, 0x33691e, 'LADA: KAWA / PĄCZKI', placeArtGroup(scene, 'chwilka-counter'));
+  }
   // Cashier behind the counter (customers come in from the door at the bottom).
-  addStandingNpc(scene, { x: 950, y: 300, label: 'KASJERKA', textureKey: 'npc-cashier', placeholderColor: 0xe9e3d5, apronColor: 0x2d6a4f });
+  addStandingNpc(scene, { x: 950, y: 296, label: 'KASJERKA', textureKey: 'npc-cashier', placeholderColor: 0xe9e3d5, apronColor: 0x2d6a4f });
   addFurniture(scene, obstacles, 1085, 210, 62, 110, 0xffca3a, 'CHIPSY', placeArtGroup(scene, 'chwilka-chips'));
 }
 
@@ -478,6 +494,24 @@ function addSolidObstacle(
   obstacle.setDepth(Math.round(y));
   obstacle.setVisible(!artDrawn);
   if (!artDrawn) scene.add.text(x, y, label, labelStyle(13)).setOrigin(0.5).setDepth(Math.round(y + 1));
+}
+
+/** Corner-shop props: art centre and a collision box at the base. */
+const CHWILKA_PROPS = [
+  { key: 'shop-news-shelf', x: 900, y: 205, collision: { x: 900, y: 228, width: 110, height: 36 } },
+  { key: 'shop-bread-shelf', x: 838, y: 300, collision: { x: 838, y: 322, width: 64, height: 28 } },
+  { key: 'shop-fridge', x: 1112, y: 330, collision: { x: 1112, y: 356, width: 40, height: 28 } },
+  { key: 'shop-freezer', x: 846, y: 420, collision: { x: 846, y: 434, width: 72, height: 34 } },
+  { key: 'shop-crates', x: 1118, y: 440, collision: { x: 1118, y: 456, width: 27, height: 18 } },
+  { key: 'shop-baskets', x: 1040, y: 445, collision: { x: 1040, y: 460, width: 28, height: 14 } },
+] as const;
+
+/** Places a standalone image (depth = its bottom edge); false if the texture is missing. */
+function placeExtraArt(scene: Phaser.Scene, key: string, x: number, y: number): boolean {
+  if (!scene.textures.exists(key)) return false;
+  const image = scene.add.image(x, y, key);
+  image.setDepth(Math.round(y + image.height / 2));
+  return true;
 }
 
 /**

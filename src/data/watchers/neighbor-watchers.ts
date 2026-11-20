@@ -46,4 +46,6 @@ export const neighborWatchers = [
 export const WATCHER_TEXTURES = [
   { key: 'npc-neighbor-seba', url: 'assets/characters/npc-neighbor-seba.png' },
   { key: 'npc-neighbor-seba-side', url: 'assets/characters/npc-neighbor-seba-side.png' },
+  { key: 'npc-neighbor-grazyna', url: 'assets/characters/npc-neighbor-grazyna.png' },
+  { key: 'npc-neighbor-grazyna-side', url: 'assets/characters/npc-neighbor-grazyna-side.png' },
 ] as const;
