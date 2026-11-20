@@ -11,7 +11,7 @@ describe('HrStateMachine', () => {
     const brain = new HrStateMachine(hrDefinition);
     brain.update(100, VISIBILITY_LEVEL.Peripheral, player, 200);
     expect(brain.getState()).toBe(HR_STATE.Suspicious);
-    const detected = brain.update(600, VISIBILITY_LEVEL.Clear, player, 180);
+    const detected = brain.update(hrDefinition.recognitionTimeMs + 100, VISIBILITY_LEVEL.Clear, player, 180);
     expect(detected.detectionTriggered).toBe(true);
     expect(brain.getState()).toBe(HR_STATE.Approaching);
     const conversation = brain.update(16, VISIBILITY_LEVEL.Clear, player, 40);
@@ -25,7 +25,7 @@ describe('HrStateMachine', () => {
   it('leaves Hubi alone for a while after a talk so he can walk away', () => {
     const brain = new HrStateMachine(hrDefinition);
     brain.update(16, VISIBILITY_LEVEL.Clear, player, 200);
-    brain.update(600, VISIBILITY_LEVEL.Clear, player, 200);
+    brain.update(hrDefinition.recognitionTimeMs + 100, VISIBILITY_LEVEL.Clear, player, 200);
     brain.update(16, VISIBILITY_LEVEL.Clear, player, 40);
     expect(brain.getState()).toBe(HR_STATE.Conversation);
     brain.completeConversation();
@@ -41,7 +41,7 @@ describe('HrStateMachine', () => {
   it('searches the last known position after an escape and then returns', () => {
     const brain = new HrStateMachine(hrDefinition);
     brain.update(16, VISIBILITY_LEVEL.Clear, player, 200);
-    brain.update(600, VISIBILITY_LEVEL.Clear, player, 200);
+    brain.update(hrDefinition.recognitionTimeMs + 100, VISIBILITY_LEVEL.Clear, player, 200);
     brain.update(hrDefinition.loseSightTimeMs, VISIBILITY_LEVEL.None, player, 300);
     expect(brain.getState()).toBe(HR_STATE.Searching);
     expect(brain.getLastKnownPosition()).toEqual(player);
@@ -52,7 +52,7 @@ describe('HrStateMachine', () => {
   it('does not charge detection every frame', () => {
     const brain = new HrStateMachine(hrDefinition);
     brain.update(16, VISIBILITY_LEVEL.Clear, player, 180);
-    const first = brain.update(600, VISIBILITY_LEVEL.Clear, player, 180);
+    const first = brain.update(hrDefinition.recognitionTimeMs + 100, VISIBILITY_LEVEL.Clear, player, 180);
     const repeated = brain.update(100, VISIBILITY_LEVEL.Clear, player, 170);
     expect(first.detectionTriggered).toBe(true);
     expect(repeated.detectionTriggered).toBe(false);

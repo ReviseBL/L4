@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { PatrolPoint } from '../../data/world/pedestrian-routes';
 import { ObstacleAvoider } from '../../systems/navigation/stall-detector';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { HR_STATE, type HrDefinition, type HrDifficultyModifiers, type HrState } from '../../domain/npcs/hr-types';
@@ -58,6 +59,8 @@ export class HrController {
     const snapshot = this.brain.update(deltaMs, result.visibility, player, result.distance);
     if (snapshot.detectionTriggered) this.callbacks.onDetected();
     if (snapshot.conversationRequested) this.callbacks.onConversationRequested();
+    if (snapshot.state === HR_STATE.Returning && this.lastBrainState !== HR_STATE.Returning) this.rejoinNearestWaypoint();
+    this.lastBrainState = snapshot.state;
     this.updateMovement(deltaMs, snapshot.state);
     this.visionPoints = this.perception.castVisionRays(this.npc, this.facingRadians, halfAngle,
       this.definition.viewDistance * this.difficulty.viewDistanceMultiplier * rangeMultiplier,
@@ -91,12 +94,12 @@ export class HrController {
     };
   }
   public teleportTo(point: Point2D): void { this.npc.setPosition(point.x, point.y); (this.npc.body as Phaser.Physics.Arcade.Body | null)?.reset(point.x, point.y); this.avoider.reset(); }
-  public setPatrolRoute(route: readonly Point2D[]): void { if (!route.length) return; this.patrol = { spawn: this.patrol.spawn, route }; this.patrolIndex = 0; }
+  public setPatrolRoute(route: readonly Point2D[]): void { if (!route.length) return; this.patrol = { spawn: this.patrol.spawn, route }; this.patrolIndex = 0; this.lingerRemainingMs = null; }
   public destroy(): void { this.collider.destroy(); this.npc.destroyNpc(); }
 
   private updateMovement(deltaMs: number, state: HrState): void {
     const lastKnown = this.brain.getLastKnownPosition();
-    if (state === HR_STATE.Patrol) this.followPatrol();
+    if (state === HR_STATE.Patrol) this.followPatrol(deltaMs);
     else if (state === HR_STATE.Suspicious || state === HR_STATE.Conversation) { this.npc.setVelocity(0, 0); this.facePoint(lastKnown); }
     else if (state === HR_STATE.Approaching) this.moveTowards(lastKnown, this.definition.approachSpeed);
     else if (state === HR_STATE.Searching) { if (!this.moveTowards(lastKnown, this.definition.searchSpeed)) { this.npc.setVelocity(0, 0); this.facingRadians += deltaMs * 0.001; } }
@@ -108,7 +111,37 @@ export class HrController {
       peripheralRangeMultiplier: this.definition.peripheralRangeMultiplier,
     };
   }
-  private followPatrol(): void { const point = this.patrol.route[this.patrolIndex]; if (!point || !this.moveTowards(point, this.definition.patrolSpeed)) this.advancePatrol(); }
+  /** Walks the route; at a lingering point she stops and looks left and right before moving on. */
+  private followPatrol(deltaMs: number): void {
+    const point = this.patrol.route[this.patrolIndex] as PatrolPoint | undefined;
+    if (point && this.lingerRemainingMs === null && this.moveTowards(point, this.definition.patrolSpeed)) return;
+    if (point?.lingerMs && this.lingerRemainingMs === null) {
+      this.lingerRemainingMs = point.lingerMs;
+      this.lingerFacing = this.facingRadians;
+    }
+    if (this.lingerRemainingMs !== null && this.lingerRemainingMs > 0) {
+      this.lingerRemainingMs -= deltaMs;
+      this.npc.setVelocity(0, 0);
+      this.facingRadians = this.lingerFacing + Math.sin(this.lingerRemainingMs / 600) * 1.1;
+      return;
+    }
+    this.lingerRemainingMs = null;
+    this.advancePatrol();
+  }
+  private lingerRemainingMs: number | null = null;
+  private lingerFacing = 0;
+  private lastBrainState: HrState = HR_STATE.Patrol;
+  /** After a talk or a search she rejoins the route at its nearest point, not wherever she was heading. */
+  private rejoinNearestWaypoint(): void {
+    let best = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    this.patrol.route.forEach((point, index) => {
+      const distance = Math.hypot(point.x - this.npc.x, point.y - this.npc.y);
+      if (distance < bestDistance) { bestDistance = distance; best = index; }
+    });
+    this.patrolIndex = best;
+    this.lingerRemainingMs = null;
+  }
   private advancePatrol(): void { this.patrolIndex = (this.patrolIndex + 1) % this.patrol.route.length; }
   private readonly avoider = new ObstacleAvoider();
   private frameDeltaMs = 0;

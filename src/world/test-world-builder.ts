@@ -106,10 +106,23 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
     '3d-shop-loop': joinWalks(north(zebra, 2000), north(2000, zebra)),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
   const hrPatrolRoutes = {
-    // Along the south sidewalk with a look at the pharmacy door (from outside).
-    'pharmacy-loop': joinWalks(south(zebra, 780), [{ x: 780, y: 975 }], south(780, 1060), south(1060, zebra)),
-    'tech-loop': joinWalks(south(1190, 2000), south(2000, 1190)),
-    'filament-loop': joinWalks(north(1100, 2000), north(2000, 1100)),
+    // HR inspects places rather than pacing: she stops and looks around at the
+    // pharmacy door, the parcel locker, the office parking and the shop doors.
+    'pharmacy-loop': joinWalks(
+      south(zebra, 780), [{ x: 780, y: 975, lingerMs: 2_500 }],
+      south(780, 1320), [{ x: 1320, y: 940, lingerMs: 2_000 }],
+      south(1320, zebra),
+    ),
+    'tech-loop': joinWalks(
+      south(1190, 1680), [{ x: 1680, y: 990, lingerMs: 3_000 }],
+      south(1680, 2000), south(2000, 1320), [{ x: 1320, y: 940, lingerMs: 2_000 }],
+      south(1320, 1190),
+    ),
+    'filament-loop': joinWalks(
+      north(1100, 1630), [{ x: 1630, y: 528, lingerMs: 2_500 }],
+      north(1630, 2000), north(2000, 970), [{ x: 970, y: 518, lingerMs: 2_500 }],
+      north(970, 1100),
+    ),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
   const companyCarRoutes = {
     // Turns happen west of the zebra, so the car drives over it and yields.
@@ -404,7 +417,6 @@ function addStreetObstacles(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcad
   addSolidObstacle(scene, obstacles, 760, 550, 70, 46, 0x31572c, 'KRZAK', placeArtGroup(scene, 'street-hedge'));
   addSolidObstacle(scene, obstacles, 1270, 600, 84, 52, 0x495057, 'KONTENER', placeArtGroup(scene, 'street-dumpster'));
   const planterArt = placeArtGroup(scene, 'street-planter');
-  addSolidObstacle(scene, obstacles, 1140, 875, 64, 64, 0x588157, 'DONICA', planterArt);
   addSolidObstacle(scene, obstacles, 215, 900, 64, 64, 0x588157, 'DONICA', planterArt);
 }
 

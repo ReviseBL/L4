@@ -38,7 +38,8 @@ export class RiverView {
     if (scene.textures.exists(RIVER_ART.streak.key)) {
       for (const outfall of SEWAGE_OUTFALLS) {
         this.streaks.push(
-          scene.add.image(outfall.x - 4, RIVER.waterTop + RIVER_ART.streak.height / 2 - 4, RIVER_ART.streak.key).setOrigin(0, 0.5).setDepth(2).setAlpha(0.95),
+          // Foamy head of the streak right under the pipe's mouth, flowing downstream.
+          scene.add.image(outfall.x, RIVER.waterTop + 6, RIVER_ART.streak.key).setOrigin(0.04, 0.42).setDepth(2).setAlpha(0.95),
         );
       }
     }

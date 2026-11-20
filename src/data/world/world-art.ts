@@ -132,7 +132,6 @@ export const WORLD_ART_PLACEMENTS: readonly WorldArtPlacement[] = [
   { group: "street-hedge", key: "world-hedge-76x54", x: 760, y: 546.0, depth: 573 },
   { group: "hide-hedge", key: "world-hedge-66x47", x: 830, y: 528.5, depth: 552 },
   { group: "street-dumpster", key: "world-dumpster-84x85", x: 1270, y: 583.5, depth: 626 },
-  { group: "street-planter", key: "world-plant-56x78", x: 1140, y: 868.0, depth: 907 },
   { group: "street-planter", key: "world-plant-56x78", x: 215, y: 893.0, depth: 932 },
   { group: "parking-car", key: "world-car-silver-50x105", x: 1545, y: 1000, depth: 1053 },
   { group: "parking-car", key: "world-car-red-50x100", x: 1815, y: 1000, depth: 1053 },

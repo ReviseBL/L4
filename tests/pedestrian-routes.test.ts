@@ -11,10 +11,11 @@ describe('pedestrian routes', () => {
   });
 
   it('walks backwards when fromX is east of toX', () => {
-    const walk = walkAlong(SOUTH_SIDEWALK_PATH, 1300, 900);
-    expect(walk[0]).toEqual({ x: 1300, y: 878 });
-    expect(walk[1]).toEqual({ x: 1185, y: 878 });
-    expect(walk[walk.length - 1]).toEqual({ x: 900, y: 878 });
+    const walk = walkAlong(NORTH_SIDEWALK_PATH, 1500, 900);
+    expect(walk[0]).toEqual({ x: 1500, y: 583 });
+    expect(walk[1]).toEqual({ x: 1345, y: 583 });
+    expect(walk[walk.length - 1]).toEqual({ x: 900, y: 583 });
+    expect(walkAlong(SOUTH_SIDEWALK_PATH, 1300, 900)).toEqual([{ x: 1300, y: 878 }, { x: 900, y: 878 }]);
   });
 
   it('a joined loop leaves the sidewalks only on the zebra', () => {

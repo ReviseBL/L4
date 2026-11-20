@@ -84,7 +84,6 @@ P = [
     ('street-hedge', 'hedge', 760, 573, 76, {}),
     ('hide-hedge', 'hedge', 830, 552, 66, {}),
     ('street-dumpster', 'dumpster', 1270, 626, 84, {}),
-    ('street-planter', 'plant', 1140, 907, 56, {}),
     ('street-planter', 'plant', 215, 932, 56, {}),
     ('parking-car', 'car-silver', 1545, 1000, 50, {'center': True, 'depth': 1053}),
     ('parking-car', 'car-red', 1815, 1000, 50, {'center': True, 'depth': 1053}),

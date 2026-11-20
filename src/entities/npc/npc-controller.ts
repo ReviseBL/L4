@@ -182,6 +182,14 @@ export class NpcController {
 
   public releaseAfterConfrontation(graceMs: number): void {
     this.brain.releaseAfterConfrontation(graceMs);
+    // Rejoin the route at its nearest point instead of crossing the map.
+    let best = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    this.patrol.route.forEach((point, index) => {
+      const distance = Math.hypot(point.x - this.npc.x, point.y - this.npc.y);
+      if (distance < bestDistance) { bestDistance = distance; best = index; }
+    });
+    this.patrolIndex = best;
   }
 
   public setDifficultyModifiers(modifiers: NpcDifficultyModifiers): void {

@@ -3,14 +3,15 @@ import type { HrDefinition } from '../../domain/npcs/hr-types';
 export const hrDefinition = {
   id: 'hr-representative',
   displayName: 'HR',
-  viewDistance: 415,
+  viewDistance: 360,
   viewHalfAngleDegrees: 90,
   focusHalfAngleDegrees: 44,
   peripheralRangeMultiplier: 0.55,
   patrolSpeed: 98,
-  approachSpeed: 142,
+  approachSpeed: 130,
   searchSpeed: 112,
-  recognitionTimeMs: 500,
+  // Needs about a second of clear view before she recognises Hubi.
+  recognitionTimeMs: 1_000,
   loseSightTimeMs: 850,
   searchDurationMs: 5_200,
   detectionCooldownMs: 7_000,

@@ -4,9 +4,12 @@ import type { Point2D } from '../../core/math/geometry-types';
  * Sidewalk paths for walking NPCs. The street runs y 615-855; pedestrians
  * keep to the north (y 535-615) or south (y 855-935) sidewalk and cross only
  * on the zebra. Each path runs west → east and steps around street furniture
- * (the hedge and the dumpster in the north, the planter in the south). The
+ * (the hedge and the dumpster in the north; the south one is clear). The
  * dumpster detour keeps clear of the hiding spot behind it.
  */
+/** A patrol waypoint; with lingerMs the walker stops there and looks around. */
+export type PatrolPoint = Point2D & { lingerMs?: number };
+
 export const ZEBRA_CROSSING = { left: 421, right: 589, top: 615, bottom: 855, walkX: 505 } as const;
 
 export const NORTH_SIDEWALK_PATH: readonly Point2D[] = [
@@ -20,10 +23,6 @@ export const NORTH_SIDEWALK_PATH: readonly Point2D[] = [
 
 export const SOUTH_SIDEWALK_PATH: readonly Point2D[] = [
   { x: ZEBRA_CROSSING.walkX, y: 878 },
-  { x: 1095, y: 878 },
-  { x: 1095, y: 915 },
-  { x: 1185, y: 915 },
-  { x: 1185, y: 878 },
   { x: 2000, y: 878 },
 ];
 
@@ -43,7 +42,7 @@ export function walkAlong(path: readonly Point2D[], fromX: number, toX: number):
 }
 
 /** Joins walks into one closed patrol loop, dropping repeated points at the seams. */
-export function joinWalks(...walks: readonly (readonly Point2D[])[]): Point2D[] {
+export function joinWalks(...walks: readonly (readonly PatrolPoint[])[]): PatrolPoint[] {
   return dedupe(walks.flat());
 }
 
@@ -64,11 +63,12 @@ function yAt(path: readonly Point2D[], x: number): number {
   return last.y;
 }
 
-function dedupe(points: readonly Point2D[]): Point2D[] {
-  const result: Point2D[] = [];
+function dedupe(points: readonly PatrolPoint[]): PatrolPoint[] {
+  const result: PatrolPoint[] = [];
   for (const point of points) {
     const previous = result[result.length - 1];
-    if (!previous || previous.x !== point.x || previous.y !== point.y) result.push({ x: point.x, y: point.y });
+    if (!previous || previous.x !== point.x || previous.y !== point.y) result.push({ ...point });
+    else if (point.lingerMs) previous.lingerMs = point.lingerMs;
   }
   const first = result[0];
   const last = result[result.length - 1];
