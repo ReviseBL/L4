@@ -148,6 +148,7 @@ export class GameScene extends Phaser.Scene {
   private watcherView!: WatcherView;
   private watcherPerception!: PerceptionSystem;
   private serviceView!: ServiceWaitView;
+  private hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]> = new Map();
   private readonly windowWatch = new WindowWatchSystem(BUILDING_WINDOWS, WINDOW_WATCH_CONFIG);
   private activeService: { stepId: string; wait: ServiceWait; onReady: () => void; playerWasNear: boolean } | null = null;
   private activeQueue: { id: string; queue: PharmacyQueue; playerWasInZone: boolean } | null = null;
@@ -235,6 +236,7 @@ export class GameScene extends Phaser.Scene {
     );
     this.areaTriggerSystem = new AreaTriggerSystem(world.areas);
     this.hidingSystem = new HidingSystem(world.hideSpots);
+    this.hideSpotMarkers = world.hideSpotMarkers;
     this.dialogueSystem = new DialogueSystem(dialogueConfig);
     this.hud = new GameHud(this);
     this.phoneHud = new PhoneHud(this);
@@ -549,9 +551,16 @@ export class GameScene extends Phaser.Scene {
 
       if (hidingResult.type === 'entered') {
         this.playerController.setMovementEnabled(false);
-        this.player.setHiddenState(true);
+        const { tuckAt, tuckDepth } = hidingResult.spot;
+        if (tuckAt) {
+          this.player.setPosition(tuckAt.x, tuckAt.y);
+          (this.player.body as Phaser.Physics.Arcade.Body | null)?.reset(tuckAt.x, tuckAt.y);
+        }
+        this.player.setHiddenState(true, tuckDepth ?? null);
+        for (const marker of this.hideSpotMarkers.get(hidingResult.spot.id) ?? []) marker.setAlpha(0.2);
         this.hud.showMessage(`Ukrywasz się: ${hidingResult.spot.label}.`);
       } else if (hidingResult.type === 'exited') {
+        for (const marker of this.hideSpotMarkers.get(hidingResult.spot.id) ?? []) marker.setAlpha(1);
         this.playerController.setMovementEnabled(true);
         this.player.setHiddenState(false);
         this.hud.showMessage('Wychodzisz z ukrycia. Ostrożnie.');

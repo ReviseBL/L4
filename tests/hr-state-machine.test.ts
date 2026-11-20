@@ -22,6 +22,22 @@ describe('HrStateMachine', () => {
     expect(brain.getState()).toBe(HR_STATE.Patrol);
   });
 
+  it('leaves Hubi alone for a while after a talk so he can walk away', () => {
+    const brain = new HrStateMachine(hrDefinition);
+    brain.update(16, VISIBILITY_LEVEL.Clear, player, 200);
+    brain.update(600, VISIBILITY_LEVEL.Clear, player, 200);
+    brain.update(16, VISIBILITY_LEVEL.Clear, player, 40);
+    expect(brain.getState()).toBe(HR_STATE.Conversation);
+    brain.completeConversation();
+    for (let t = 0; t < hrDefinition.postConversationGraceMs - 100; t += 100) {
+      const snapshot = brain.update(100, VISIBILITY_LEVEL.Clear, player, 40);
+      expect(snapshot.conversationRequested).toBe(false);
+    }
+    expect(brain.getState()).toBe(HR_STATE.Returning);
+    brain.update(200, VISIBILITY_LEVEL.Clear, player, 40);
+    expect(brain.getState()).toBe(HR_STATE.Suspicious);
+  });
+
   it('searches the last known position after an escape and then returns', () => {
     const brain = new HrStateMachine(hrDefinition);
     brain.update(16, VISIBILITY_LEVEL.Clear, player, 200);

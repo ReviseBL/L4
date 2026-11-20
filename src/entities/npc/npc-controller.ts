@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { StallDetector } from '../../systems/navigation/stall-detector';
+import { ObstacleAvoider } from '../../systems/navigation/stall-detector';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { Npc } from './npc';
 import { nextWaypoint } from '../../systems/navigation/door-router';
@@ -233,16 +233,10 @@ export class NpcController {
     this.patrolIndex = (this.patrolIndex + 1) % this.patrol.route.length;
   }
 
-  private readonly stall = new StallDetector();
+  private readonly avoider = new ObstacleAvoider();
   private frameDeltaMs = 0;
 
   private moveTowards(target: Point2D | null, speed: number): boolean {
-    // Pushing against a bench or a hedge corner for a while counts as arrived,
-    // so the patrol moves on instead of walking in place.
-    if (this.stall.update(this.frameDeltaMs, this.npc, target)) {
-      this.npc.setVelocity(0, 0);
-      return false;
-    }
     if (!target) {
       this.npc.setVelocity(0, 0);
       return false;
@@ -259,6 +253,17 @@ export class NpcController {
 
     // Through doors instead of into walls.
     const step = nextWaypoint({ x: this.npc.x, y: this.npc.y }, target, navigationBuildings);
+    // Stuck on furniture: step aside, and drop the target after a few tries.
+    const decision = this.avoider.update(this.frameDeltaMs, this.npc, target, step);
+    if (decision.type === 'give-up') {
+      this.npc.setVelocity(0, 0);
+      return false;
+    }
+    if (decision.type === 'sidestep') {
+      this.npc.setVelocity(decision.direction.x * speed, decision.direction.y * speed);
+      this.npc.setFlipX(decision.direction.x < 0);
+      return true;
+    }
     const stepX = step.x - this.npc.x;
     const stepY = step.y - this.npc.y;
     const stepDistance = Math.max(1, Math.hypot(stepX, stepY));

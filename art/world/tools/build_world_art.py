@@ -105,7 +105,7 @@ P = [
     ('decor', 'bench', 640, 470, 56, {}), ('decor', 'trash-bin', 700, 470, 22, {}),
     ('decor', 'lamp', 700, 540, 32, {}), ('decor', 'lamp', 1150, 540, 32, {}), ('decor', 'lamp', 2120, 540, 32, {}),
     ('decor', 'lamp', 450, 958, 32, {}), ('decor', 'lamp', 1200, 958, 32, {}), ('decor', 'lamp', 1700, 958, 32, {}),
-    ('decor', 'bike-rack', 420, 528, 64, {}), ('decor', 'bollard', 415, 612, 10, {}), ('decor', 'bollard', 595, 612, 10, {}),
+    ('decor', 'bike-rack', 420, 528, 64, {}),
     ('decor', 'young-tree', 880, 532, 30, {}), ('decor', 'young-tree', 1330, 532, 30, {}), ('decor', 'young-tree', 1960, 532, 30, {}),
     ('decor', 'poplar', 850, 92, 36, {}), ('decor', 'poplar', 1720, 90, 36, {}),
     ('decor', 'chestnut', 1290, 255, 104, {}), ('decor', 'leaf-pile', 1250, 280, 30, {}), ('decor', 'bench', 1290, 450, 56, {}),

@@ -19,6 +19,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly animatedTextureAvailable: boolean;
   private carriedVisual: CarryVisualDefinition | null = null;
   private hiddenState = false;
+  private depthOverride: number | null = null;
   private phoneActive = false;
   private interacting = false;
   private moving = false;
@@ -62,7 +63,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public updatePresentation(): void {
-    const depth = Math.round(this.y);
+    const depth = this.depthOverride ?? Math.round(this.y);
     this.setDepth(depth);
     const carryOffset = getCarryOffset(this.lastDirection);
     const carryInFront = this.lastDirection !== 'up';
@@ -113,16 +114,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.updatePresentation();
   }
 
-  public setHiddenState(isHidden: boolean): void {
+  /**
+   * Hidden Hubi turns translucent and blue. Tucked behind an object he is
+   * drawn under it instead (depth override) and stays a bit more visible,
+   * because the object already covers most of him.
+   */
+  public setHiddenState(isHidden: boolean, tuckDepth: number | null = null): void {
     this.hiddenState = isHidden;
-    this.setAlpha(isHidden ? 0.28 : 1);
+    this.depthOverride = isHidden ? tuckDepth : null;
+    const alpha = !isHidden ? 1 : tuckDepth !== null ? HIDDEN_TUCKED_ALPHA : HIDDEN_ALPHA;
+    this.setAlpha(alpha);
     this.setTint(isHidden ? 0x8ecae6 : 0xffffff);
-    this.carriedBox.setAlpha(isHidden ? 0.28 : 1);
-    this.carriedLabel.setAlpha(isHidden ? 0.28 : 1);
-    this.carriedSprite.setAlpha(isHidden ? 0.28 : 1);
+    this.carriedBox.setAlpha(alpha);
+    this.carriedLabel.setAlpha(alpha);
+    this.carriedSprite.setAlpha(alpha);
     this.setVelocity(0, 0);
     this.updatePresentation();
   }
+
 
   public setCarriedItemVisual(visual: CarryVisualDefinition | null): void {
     this.carriedVisual = visual;
@@ -132,15 +141,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       .setDisplaySize(dimensions.width, dimensions.height)
       .setFillStyle(visual?.color ?? 0xffffff);
     this.carriedLabel.setText(visual?.label ?? '');
-    this.carriedBox.setAlpha(this.hiddenState ? 0.28 : 1);
-    this.carriedLabel.setAlpha(this.hiddenState ? 0.28 : 1);
+    this.carriedBox.setAlpha(this.alpha);
+    this.carriedLabel.setAlpha(this.alpha);
     const sprite = visual?.sprite;
     this.carriedSpriteActive = Boolean(sprite && this.scene.textures.exists(sprite.key));
     if (sprite && this.carriedSpriteActive) {
       this.carriedSprite
         .setTexture(sprite.key)
         .setScale(sprite.scale ?? 1)
-        .setAlpha(this.hiddenState ? 0.28 : 1);
+        .setAlpha(this.alpha);
       if (sprite.tintWithColor && visual) this.carriedSprite.setTint(visual.color);
       else this.carriedSprite.clearTint();
     }
@@ -185,6 +194,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.play(animationKey, true);
   }
 }
+
+const HIDDEN_ALPHA = 0.28;
+const HIDDEN_TUCKED_ALPHA = 0.7;
 
 function getCarryOffset(direction: PlayerDirection): { x: number; y: number } {
   if (direction === 'up') return { x: 0, y: -8 };

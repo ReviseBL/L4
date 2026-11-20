@@ -6,7 +6,7 @@ const onRoad = (y: number) => y > ZEBRA_CROSSING.top && y < ZEBRA_CROSSING.botto
 describe('pedestrian routes', () => {
   it('keeps the detour corners between the end points', () => {
     expect(walkAlong(NORTH_SIDEWALK_PATH, 1100, 1500)).toEqual([
-      { x: 1100, y: 583 }, { x: 1195, y: 583 }, { x: 1205, y: 548 }, { x: 1335, y: 548 }, { x: 1345, y: 583 }, { x: 1500, y: 583 },
+      { x: 1100, y: 583 }, { x: 1195, y: 583 }, { x: 1205, y: 518 }, { x: 1335, y: 518 }, { x: 1345, y: 583 }, { x: 1500, y: 583 },
     ]);
   });
 

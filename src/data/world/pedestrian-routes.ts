@@ -4,15 +4,16 @@ import type { Point2D } from '../../core/math/geometry-types';
  * Sidewalk paths for walking NPCs. The street runs y 615-855; pedestrians
  * keep to the north (y 535-615) or south (y 855-935) sidewalk and cross only
  * on the zebra. Each path runs west → east and steps around street furniture
- * (the hedge and the dumpster in the north, the planter in the south).
+ * (the hedge and the dumpster in the north, the planter in the south). The
+ * dumpster detour keeps clear of the hiding spot behind it.
  */
 export const ZEBRA_CROSSING = { left: 421, right: 589, top: 615, bottom: 855, walkX: 505 } as const;
 
 export const NORTH_SIDEWALK_PATH: readonly Point2D[] = [
   { x: ZEBRA_CROSSING.walkX, y: 583 },
   { x: 1195, y: 583 },
-  { x: 1205, y: 548 },
-  { x: 1335, y: 548 },
+  { x: 1205, y: 518 },
+  { x: 1335, y: 518 },
   { x: 1345, y: 583 },
   { x: 2000, y: 583 },
 ];

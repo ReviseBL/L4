@@ -15,4 +15,5 @@ export const hrDefinition = {
   searchDurationMs: 5_200,
   detectionCooldownMs: 7_000,
   conversationDistance: 58,
+  postConversationGraceMs: 12_000,
 } as const satisfies HrDefinition;

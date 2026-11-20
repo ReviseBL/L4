@@ -8,6 +8,7 @@ export class HrStateMachine {
   private lostSightMs = 0;
   private searchingMs = 0;
   private detectionCooldownMs = 0;
+  private graceMs = 0;
   private lastKnownPlayer: Point2D | null = null;
   private difficulty: HrDifficultyModifiers = {
     viewDistanceMultiplier: 1,
@@ -19,12 +20,14 @@ export class HrStateMachine {
 
   public update(deltaMs: number, visibility: VisibilityLevel, playerPosition: Point2D, distance: number): HrBrainSnapshot {
     this.detectionCooldownMs = Math.max(0, this.detectionCooldownMs - deltaMs);
+    this.graceMs = Math.max(0, this.graceMs - deltaMs);
     if (visibility !== VISIBILITY_LEVEL.None) this.lastKnownPlayer = { ...playerPosition };
     let detectionTriggered = false;
     let conversationRequested = false;
 
     if (this.state === HR_STATE.Patrol || this.state === HR_STATE.Returning) {
-      if (visibility !== VISIBILITY_LEVEL.None) {
+      // Right after a talk she has said her piece and walks back to her route.
+      if (visibility !== VISIBILITY_LEVEL.None && this.graceMs === 0) {
         this.state = HR_STATE.Suspicious;
         this.awarenessMs = visibility === VISIBILITY_LEVEL.Clear ? deltaMs : deltaMs * 0.45;
       }
@@ -75,7 +78,13 @@ export class HrStateMachine {
   public getState(): HrState { return this.state; }
   public getLastKnownPosition(): Point2D | null { return this.lastKnownPlayer ? { ...this.lastKnownPlayer } : null; }
   public setDifficultyModifiers(value: HrDifficultyModifiers): void { this.difficulty = { ...value }; }
-  public completeConversation(): void { if (this.state === HR_STATE.Conversation) this.state = HR_STATE.Returning; }
+  public completeConversation(): void {
+    if (this.state !== HR_STATE.Conversation) return;
+    this.state = HR_STATE.Returning;
+    this.graceMs = this.definition.postConversationGraceMs;
+    this.awarenessMs = 0;
+  }
+  public isInGracePeriod(): boolean { return this.graceMs > 0; }
   public completeReturnToPatrol(): void { if (this.state === HR_STATE.Returning) this.state = HR_STATE.Patrol; }
   public forceState(state: HrState, playerPosition?: Point2D): void {
     this.state = state;

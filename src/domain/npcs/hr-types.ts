@@ -30,6 +30,8 @@ export interface HrDefinition {
   searchDurationMs: number;
   detectionCooldownMs: number;
   conversationDistance: number;
+  /** After a talk HR walks away and ignores Hubi for this long, so he can leave. */
+  postConversationGraceMs: number;
 }
 
 export interface HrBrainSnapshot {

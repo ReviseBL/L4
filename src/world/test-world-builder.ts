@@ -26,6 +26,8 @@ export interface TestWorld {
   occluders: readonly ObstacleBounds[];
   interactionTargets: readonly InteractionTarget[];
   hideSpots: readonly HideSpot[];
+  /** The H marker of each hiding spot, dimmed while Hubi hides there. */
+  hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]>;
   areas: readonly AreaDefinition[];
   printerView: Printer3DView;
   homeProgressionView: HomeProgressionView;
@@ -76,7 +78,8 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   addStreetObstacles(scene, obstacles);
   placeArtGroup(scene, 'decals');
   if (placeArtGroup(scene, 'decor')) addDecorCollisions(scene, obstacles);
-  const hideSpots = createHideSpots(scene);
+  const hideSpotMarkers = new Map<string, Phaser.GameObjects.Components.AlphaSingle[]>();
+  const hideSpots = createHideSpots(scene, hideSpotMarkers);
   addScatteredGreenery(scene, obstacles, hideSpots);
   addWorldLabel(scene);
 
@@ -99,9 +102,8 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
     '3d-shop-loop': joinWalks(north(zebra, 2000), north(2000, zebra)),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
   const hrPatrolRoutes = {
-    'pharmacy-loop': [
-      { x: 520, y: 930 }, { x: 610, y: 1040 }, { x: 980, y: 1040 }, { x: 1040, y: 900 },
-    ],
+    // Along the south sidewalk with a look at the pharmacy door (from outside).
+    'pharmacy-loop': joinWalks(south(zebra, 780), [{ x: 780, y: 975 }], south(780, 1060), south(1060, zebra)),
     'tech-loop': joinWalks(south(1190, 2000), south(2000, 1190)),
     'filament-loop': joinWalks(north(1100, 2000), north(2000, 1100)),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
@@ -123,6 +125,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
     occluders: extractOccluders(obstacles),
     playerSpawn: new Phaser.Math.Vector2(285, 295),
     hideSpots,
+    hideSpotMarkers,
     printerView,
     homeProgressionView,
     areas: [{ id: 'home', x: 285, y: 285, width: 360, height: 300 }],
@@ -131,7 +134,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
       route: workColleagueRoute,
     },
     workColleaguePatrolRoutes,
-    hrPatrol: { spawn: { x: 520, y: 930 }, route: hrPatrolRoutes['pharmacy-loop'] },
+    hrPatrol: { spawn: hrPatrolRoutes['pharmacy-loop'][0] ?? { x: ZEBRA_CROSSING.walkX, y: 878 }, route: hrPatrolRoutes['pharmacy-loop'] },
     hrPatrolRoutes,
     companyCarRoutes,
     managerSpawn: { x: 1450, y: 895 },
@@ -169,11 +172,16 @@ function addParcelLocker(
   scene.add.text(1320, 965, '24/7', labelStyle(10)).setOrigin(0.5).setDepth(978);
 }
 
-function createHideSpots(scene: Phaser.Scene): readonly HideSpot[] {
+function createHideSpots(
+  scene: Phaser.Scene,
+  markers: Map<string, Phaser.GameObjects.Components.AlphaSingle[]>,
+): readonly HideSpot[] {
   const spots: readonly HideSpot[] = [
     { id: 'hedge-hide', x: 830, y: 530, radius: 72, label: 'KRZAKI' },
-    { id: 'dumpster-hide', x: 1345, y: 555, radius: 72, label: 'KONTENER' },
-    { id: 'parking-hide', x: 1815, y: 930, radius: 76, label: 'SAMOCHÓD' },
+    // Behind the dumpster (north of it), so its lid covers Hubi.
+    { id: 'dumpster-hide', x: 1270, y: 550, radius: 80, label: 'KONTENER', tuckAt: { x: 1270, y: 550 }, tuckDepth: 600 },
+    // Crouched by the driver's door of the red car, not in front of its bonnet.
+    { id: 'parking-hide', x: 1772, y: 1004, radius: 76, label: 'SAMOCHÓD', tuckAt: { x: 1773, y: 1004 }, tuckDepth: 1040 },
     // Big bushes in the garden hedges closing the top edge.
     { id: 'garden-west-hide', x: 645, y: 380, radius: 70, label: 'DUŻY KRZAK' },
     { id: 'garden-east-hide', x: 1282, y: 380, radius: 70, label: 'DUŻY KRZAK' },
@@ -181,20 +189,21 @@ function createHideSpots(scene: Phaser.Scene): readonly HideSpot[] {
 
   placeArtGroup(scene, 'hide-hedge');
   // Znacznik kryjówki zawsze nad dekoracją (krzak), żeby był czytelny.
-  const markerDepth = (spot: HideSpot): number => Math.round(spot.y + 60);
+  const markerDepth = (spot: HideSpot): number => Math.round(spot.y + 100);
   for (const spot of spots) {
-    scene.add
+    const circle = scene.add
       .circle(spot.x, spot.y, 26, 0x00b4d8, 0.18)
       .setStrokeStyle(3, 0x8ecae6, 0.85)
       .setDepth(markerDepth(spot));
-    scene.add
+    const letter = scene.add
       .text(spot.x, spot.y, 'H', labelStyle(20))
       .setOrigin(0.5)
       .setDepth(markerDepth(spot) + 1);
-    scene.add
-      .text(spot.x, spot.y + 37, `HIDESPOT: ${spot.label}`, labelStyle(11))
+    const label = scene.add
+      .text(spot.x, spot.y + (spot.tuckAt ? -38 : 37), `HIDESPOT: ${spot.label}`, labelStyle(11))
       .setOrigin(0.5)
       .setDepth(markerDepth(spot) + 1);
+    markers.set(spot.id, [circle, letter, label]);
   }
 
   return spots;
