@@ -12,7 +12,6 @@ export const suspicionConfig = {
   suspicionEvents: {
     missedWorkCall: 2,
     noisyWorkCall: 4,
-    seenThroughWindow: 3,
     declinedWorkCall: 3,
     hrDialogueGettingBetter: 3,
     hrDialogueGreat: 8,

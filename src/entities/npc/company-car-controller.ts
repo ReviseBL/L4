@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { COMPANY_CAR_STATE, type CompanyCarDefinition, type CompanyCarState } from '../../domain/npcs/company-car-types';
 import { COMPANY_CAR_ART } from '../../data/world/world-art';
+import { COMPANY_CAR_SUV } from '../../data/art/round4-art';
 import { COMPANY_CAR_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { CompanyCarStateMachine } from '../../systems/company-car-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
@@ -31,14 +32,17 @@ export class CompanyCarController {
   private debugVisible = false;
   /** Grafika auta jest widokiem z boku: zamiast obracać, odbijamy ją w poziomie. */
   private readonly sideViewArt: boolean;
+  private readonly art: { key: string; width: number; height: number } | null;
 
   public constructor(scene: Phaser.Scene, private readonly definition: CompanyCarDefinition, spawn: Point2D, route: readonly Point2D[], obstacles: Phaser.Physics.Arcade.StaticGroup, occluders: readonly ObstacleBounds[], private readonly callbacks: CompanyCarCallbacks) {
     this.route = route;
-    this.sideViewArt = scene.textures.exists(COMPANY_CAR_ART.key);
+    // Prefer the white SUV, then the older side-view art, then the placeholder.
+    this.art = scene.textures.exists(COMPANY_CAR_SUV.key) ? COMPANY_CAR_SUV : scene.textures.exists(COMPANY_CAR_ART.key) ? COMPANY_CAR_ART : null;
+    this.sideViewArt = this.art !== null;
     this.sprite = scene.physics.add
-      .sprite(spawn.x, spawn.y, this.sideViewArt ? COMPANY_CAR_ART.key : COMPANY_CAR_TEXTURE_KEY)
+      .sprite(spawn.x, spawn.y, this.art?.key ?? COMPANY_CAR_TEXTURE_KEY)
       .setDepth(spawn.y)
-      .setBodySize(64, 36);
+      .setBodySize(this.art === COMPANY_CAR_SUV ? 78 : 64, this.art === COMPANY_CAR_SUV ? 30 : 36);
     this.perception = new PerceptionSystem(occluders);
     this.brain = new CompanyCarStateMachine(definition);
     this.visionGraphics = scene.add.graphics().setDepth(90_000);
@@ -83,7 +87,7 @@ export class CompanyCarController {
     if (distance < 20) { this.routeIndex = (this.routeIndex + 1) % this.route.length; return; }
     this.facingRadians = Math.atan2(dy, dx);
     const directionX = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : -1) : 0;
-    const frontX = this.sprite.x + directionX * (COMPANY_CAR_ART.width / 2);
+    const frontX = this.sprite.x + directionX * ((this.art?.width ?? COMPANY_CAR_ART.width) / 2);
     if (shouldYieldAtCrossing(frontX, directionX, ZEBRA_CROSSING, this.pedestrians)) {
       this.sprite.setVelocity(0, 0);
       return;

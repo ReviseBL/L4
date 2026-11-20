@@ -9,6 +9,7 @@ export class HrStateMachine {
   private searchingMs = 0;
   private detectionCooldownMs = 0;
   private graceMs = 0;
+  private extraSearchMs = 0;
   private lastKnownPlayer: Point2D | null = null;
   private difficulty: HrDifficultyModifiers = {
     viewDistanceMultiplier: 1,
@@ -66,7 +67,8 @@ export class HrStateMachine {
         this.awarenessMs = this.definition.recognitionTimeMs * 0.65;
       } else {
         this.searchingMs += deltaMs;
-        if (this.searchingMs >= this.definition.searchDurationMs * this.difficulty.searchDurationMultiplier) {
+        if (this.searchingMs >= this.definition.searchDurationMs * this.difficulty.searchDurationMultiplier + this.extraSearchMs) {
+          this.extraSearchMs = 0;
           this.state = HR_STATE.Returning;
         }
       }
@@ -86,7 +88,13 @@ export class HrStateMachine {
   }
   public isInGracePeriod(): boolean { return this.graceMs > 0; }
   public completeReturnToPatrol(): void { if (this.state === HR_STATE.Returning) this.state = HR_STATE.Patrol; }
+  /** Walks over to look around `position` for the usual search time plus `lingerMs`. */
+  public investigate(position: Point2D, lingerMs = 0): void {
+    this.forceState(HR_STATE.Searching, position);
+    this.extraSearchMs = Math.max(0, lingerMs);
+  }
   public forceState(state: HrState, playerPosition?: Point2D): void {
+    this.extraSearchMs = 0;
     this.state = state;
     if (playerPosition) this.lastKnownPlayer = { ...playerPosition };
     this.awarenessMs = 0;

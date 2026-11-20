@@ -6,7 +6,6 @@ export type SuspicionDomainEvent = 'SUSPICION_MAX_REACHED';
 export type SuspicionEventType =
   | 'missedWorkCall'
   | 'noisyWorkCall'
-  | 'seenThroughWindow'
   | 'declinedWorkCall'
   | 'hrDialogueGettingBetter'
   | 'hrDialogueGreat';

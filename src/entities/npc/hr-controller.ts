@@ -80,7 +80,16 @@ export class HrController {
   public completeConversation(): void { this.brain.completeConversation(); }
   public forceState(state: HrState, player?: Point2D): void { this.brain.forceState(state, player); }
   public forceDetection(player: Point2D): void { if (this.brain.forceDetection(player)) this.callbacks.onDetected(); }
-  public investigate(position: Point2D): void { this.brain.forceState(HR_STATE.Searching, position); }
+  public investigate(position: Point2D, lingerMs = 0): void { this.brain.investigate(position, lingerMs); }
+  /** Where HR is looking, for the shop-window glimpses. */
+  public getVisionCone(): { position: Point2D; facingRadians: number; range: number; halfAngleRadians: number } {
+    return {
+      position: { x: this.npc.x, y: this.npc.y },
+      facingRadians: this.facingRadians,
+      range: this.definition.viewDistance * this.difficulty.viewDistanceMultiplier,
+      halfAngleRadians: Phaser.Math.DegToRad(this.definition.viewHalfAngleDegrees),
+    };
+  }
   public teleportTo(point: Point2D): void { this.npc.setPosition(point.x, point.y); (this.npc.body as Phaser.Physics.Arcade.Body | null)?.reset(point.x, point.y); this.avoider.reset(); }
   public setPatrolRoute(route: readonly Point2D[]): void { if (!route.length) return; this.patrol = { spawn: this.patrol.spawn, route }; this.patrolIndex = 0; }
   public destroy(): void { this.collider.destroy(); this.npc.destroyNpc(); }

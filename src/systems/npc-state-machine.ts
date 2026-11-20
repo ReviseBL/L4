@@ -31,6 +31,7 @@ export class NpcStateMachine {
   private lostSightMs = 0;
   private detectionCooldownRemainingMs = 0;
   private graceRemainingMs = 0;
+  private extraSearchMs = 0;
   private lastKnownPosition: Point2D | null = null;
   private difficultyModifiers: NpcDifficultyModifiers = {
     viewDistanceMultiplier: 1,
@@ -94,7 +95,7 @@ export class NpcStateMachine {
           this.awarenessMs = this.config.recognitionTimeMs * 0.25;
         } else if (
           this.stateElapsedMs >=
-          this.config.searchDurationMs * this.difficultyModifiers.searchDurationMultiplier
+          this.config.searchDurationMs * this.difficultyModifiers.searchDurationMultiplier + this.extraSearchMs
         ) {
           this.transitionTo(NPC_STATE.Returning);
         }
@@ -159,8 +160,10 @@ export class NpcStateMachine {
     };
   }
 
-  public investigate(position: Point2D): void {
+  /** Goes to look around `position`; `lingerMs` makes the search last longer than usual. */
+  public investigate(position: Point2D, lingerMs = 0): void {
     this.lastKnownPosition = { ...position };
+    this.extraSearchMs = Math.max(0, lingerMs);
     this.transitionTo(NPC_STATE.Searching);
   }
 
@@ -184,6 +187,7 @@ export class NpcStateMachine {
   }
 
   private transitionTo(nextState: NpcState): void {
+    if (nextState !== NPC_STATE.Searching) this.extraSearchMs = 0;
     if (this.state === nextState) {
       return;
     }

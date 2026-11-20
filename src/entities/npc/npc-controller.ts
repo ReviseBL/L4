@@ -117,10 +117,6 @@ export class NpcController {
     return this.npc;
   }
 
-  public getState(): NpcState {
-    return this.brain.getState();
-  }
-
   public getLastKnownPosition(): Point2D | null {
     return this.brain.getLastKnownPosition();
   }
@@ -157,8 +153,22 @@ export class NpcController {
     this.npc.setPosition(point.x, point.y);
   }
 
-  public investigate(position: Point2D): void {
-    this.brain.investigate(position);
+  public investigate(position: Point2D, lingerMs = 0): void {
+    this.brain.investigate(position, lingerMs);
+  }
+
+  /** Where the colleague is looking, for the shop-window glimpses. */
+  public getVisionCone(): { position: Point2D; facingRadians: number; range: number; halfAngleRadians: number } {
+    return {
+      position: { x: this.npc.x, y: this.npc.y },
+      facingRadians: this.facingRadians,
+      range: this.definition.viewDistance * this.difficultyModifiers.viewDistanceMultiplier,
+      halfAngleRadians: this.halfAngleRadians,
+    };
+  }
+
+  public getState(): NpcState {
+    return this.brain.getState();
   }
 
   /** True when the colleague, chasing the player, got close enough to grab them. */

@@ -7,6 +7,15 @@ export const KITCHEN_ART = {
   cabinet: { key: 'home-kitchen-cabinet', url: 'assets/home/kitchen-cabinet.png', width: 60, height: 57 },
 } as const;
 
+/** White compact SUV of the company (side view facing right; flipped for the other way). */
+export const COMPANY_CAR_SUV = { key: 'world-company-car-suv', url: 'assets/world/company-car-suv.png', width: 92, height: 47 } as const;
+
+export const RIVER_ART = {
+  water: { key: 'river-water-tile', url: 'assets/world/river-water-tile.png', width: 128, height: 128 },
+  streak: { key: 'river-sewage-streak', url: 'assets/world/river-sewage-streak.png', width: 260, height: 62 },
+  outfall: { key: 'river-outfall', url: 'assets/world/river-outfall.png', width: 48, height: 32 },
+} as const;
+
 const homeProp = (name: string) => ({ key: `home-${name}`, url: `assets/home/home-${name}.png` });
 const carried = (name: string) => ({ key: `carry-${name}`, url: `assets/items/carry-${name}.png` });
 
@@ -36,6 +45,8 @@ export const CARRY_TEXTURES = {
 
 export const ROUND4_TEXTURES: readonly { key: string; url: string }[] = [
   PHONE_FRAME_TEXTURE,
+  COMPANY_CAR_SUV,
+  ...Object.values(RIVER_ART),
   ...Object.values(KITCHEN_ART),
   ...Object.values(HOME_PROP_TEXTURES),
   ...Object.values(CARRY_TEXTURES),

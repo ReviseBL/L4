@@ -236,11 +236,15 @@ function addRoads(scene: Phaser.Scene): void {
   scene.add.rectangle(WORLD_WIDTH / 2, 855, WORLD_WIDTH, 4, 0x8d8a83);
 
   for (let x = 70; x < WORLD_WIDTH; x += 150) {
+    // No centre line across the zebra.
+    if (x + 41 > ZEBRA_CROSSING.left && x - 41 < ZEBRA_CROSSING.right) continue;
     scene.add.rectangle(x, 735, 82, 8, 0xe9c46a);
   }
 
-  for (let x = 430; x <= 580; x += 30) {
-    scene.add.rectangle(x, 735, 18, 175, 0xe7e5df);
+  // Zebra: white bars running along the street, stacked across it.
+  const zebraWidth = ZEBRA_CROSSING.right - ZEBRA_CROSSING.left - 8;
+  for (let y = ZEBRA_CROSSING.top + 22; y <= ZEBRA_CROSSING.bottom - 18; y += 30) {
+    scene.add.rectangle(ZEBRA_CROSSING.walkX, y, zebraWidth, 16, 0xe7e5df);
   }
 }
 

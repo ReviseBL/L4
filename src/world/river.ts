@@ -3,6 +3,7 @@ import { createSeededRandom } from '../core/math/seeded-random';
 import { RIVER, RIVER_TRASH, SEWAGE_OUTFALLS } from '../data/world/river';
 import { RiverTrashDrift } from '../systems/world/river-trash';
 import { UI_FONT_FAMILY } from '../ui/text-style';
+import { RIVER_ART } from '../data/art/round4-art';
 
 const WATER_KEY = 'river-water';
 const BANK_KEY = 'river-bank';
@@ -13,6 +14,7 @@ export class RiverView {
   private readonly plumes: Phaser.GameObjects.Graphics;
   private readonly drift: RiverTrashDrift;
   private readonly trashSprites = new Map<object, Phaser.GameObjects.Image>();
+  private readonly streaks: Phaser.GameObjects.Image[] = [];
   private elapsedMs = 0;
 
   public constructor(
@@ -24,13 +26,22 @@ export class RiverView {
     const bankHeight = RIVER.waterTop - RIVER.bankTop;
     scene.add.tileSprite(worldWidth / 2, RIVER.bankTop + bankHeight / 2, worldWidth, bankHeight, BANK_KEY).setDepth(1);
     const waterHeight = RIVER.bottom - RIVER.waterTop;
-    this.water = scene.textures.exists(WATER_KEY)
-      ? scene.add.tileSprite(worldWidth / 2, RIVER.waterTop + waterHeight / 2, worldWidth, waterHeight, WATER_KEY).setDepth(1)
+    // Painted water tile when loaded, the procedural one otherwise.
+    const waterKey = scene.textures.exists(RIVER_ART.water.key) ? RIVER_ART.water.key : WATER_KEY;
+    this.water = scene.textures.exists(waterKey)
+      ? scene.add.tileSprite(worldWidth / 2, RIVER.waterTop + waterHeight / 2, worldWidth, waterHeight, waterKey).setDepth(1)
       : scene.add.rectangle(worldWidth / 2, RIVER.waterTop + waterHeight / 2, worldWidth, waterHeight, 0x3d6c86).setDepth(1);
     addReeds(scene, worldWidth);
     for (const outfall of SEWAGE_OUTFALLS) addOutfall(scene, outfall.x);
     addNoSwimmingSign(scene, SEWAGE_OUTFALLS[1]?.x ?? 1280);
     this.plumes = scene.add.graphics().setDepth(2);
+    if (scene.textures.exists(RIVER_ART.streak.key)) {
+      for (const outfall of SEWAGE_OUTFALLS) {
+        this.streaks.push(
+          scene.add.image(outfall.x - 4, RIVER.waterTop + RIVER_ART.streak.height / 2 - 4, RIVER_ART.streak.key).setOrigin(0, 0.5).setDepth(2).setAlpha(0.95),
+        );
+      }
+    }
     this.drift = new RiverTrashDrift(RIVER_TRASH, worldWidth, createSeededRandom(Date.now() & 0xffff));
 
     // Nobody goes for a swim in that.
@@ -43,7 +54,8 @@ export class RiverView {
     if (this.water instanceof Phaser.GameObjects.TileSprite) {
       this.water.tilePositionX -= (RIVER.flowSpeed * deltaMs) / 1_000;
     }
-    this.drawPlumes();
+    if (this.streaks.length > 0) this.swayStreaks();
+    else this.drawPlumes();
     const items = this.drift.update(deltaMs);
     const alive = new Set<object>(items);
     for (const [item, sprite] of this.trashSprites) {
@@ -63,11 +75,21 @@ export class RiverView {
 
   public destroy(): void {
     for (const sprite of this.trashSprites.values()) sprite.destroy();
+    for (const streak of this.streaks) streak.destroy();
     this.trashSprites.clear();
     this.plumes.destroy();
   }
 
-  /** A narrow dirty streak from each pipe, widening and fading downstream. */
+  /** The painted sewage streaks breathe a little, as if carried by the current. */
+  private swayStreaks(): void {
+    const t = this.elapsedMs / 1_000;
+    this.streaks.forEach((streak, index) => {
+      streak.setScale(1 + Math.sin(t * 0.7 + index) * 0.04, 1 + Math.sin(t * 1.1 + index * 2) * 0.08);
+      streak.setAlpha(0.88 + Math.sin(t * 0.9 + index) * 0.07);
+    });
+  }
+
+  /** Fallback: a narrow dirty streak from each pipe, widening and fading downstream. */
   private drawPlumes(): void {
     const g = this.plumes.clear();
     const t = this.elapsedMs / 1_000;
@@ -156,6 +178,10 @@ function addReeds(scene: Phaser.Scene, worldWidth: number): void {
 
 /** Concrete pipe sticking out of the bank. */
 function addOutfall(scene: Phaser.Scene, x: number): void {
+  if (scene.textures.exists(RIVER_ART.outfall.key)) {
+    scene.add.image(x, RIVER.waterTop + 8, RIVER_ART.outfall.key).setOrigin(0.5, 1).setDepth(RIVER.waterTop + 1);
+    return;
+  }
   const g = scene.add.graphics().setDepth(RIVER.waterTop + 1);
   g.fillStyle(0x8d8a83, 1).fillRoundedRect(x - 13, RIVER.bankTop + 4, 26, 18, 4);
   g.lineStyle(2, 0x4a4844, 1).strokeRoundedRect(x - 13, RIVER.bankTop + 4, 26, 18, 4);

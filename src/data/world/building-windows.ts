@@ -1,9 +1,9 @@
-import type { BuildingWindow, WindowWatchConfig } from '../../domain/world/window-types';
+import type { BuildingWindow, WindowGlimpseConfig } from '../../domain/world/window-types';
 
 /**
  * Windows in the street walls (between the door and the shop sign). Home and
- * pharmacy are safe; staff in Chwilka and the 3D shop notice someone who
- * keeps standing in front of their window.
+ * pharmacy windows are safe (curtains, frosted glass). Through the clear
+ * Chwilka and 3D-shop windows a chaser outside can glimpse Hubi inside.
  */
 export const BUILDING_WINDOWS: readonly BuildingWindow[] = [
   { id: 'home-1', buildingId: 'home', x: 135, wallY: 480, facing: 'down', safe: true },
@@ -18,16 +18,15 @@ export const BUILDING_WINDOWS: readonly BuildingWindow[] = [
   { id: 'pharmacy-2', buildingId: 'pharmacy', x: 920, wallY: 1020, facing: 'up', safe: true },
 ];
 
-export const WINDOW_WATCH_CONFIG: WindowWatchConfig = {
-  noticeAfterMs: 1_600,
-  cooldownMs: 10_000,
-  halfWidth: 28,
-  depth: 56,
-  wallHalfThickness: 12,
+export const WINDOW_GLIMPSE_CONFIG: WindowGlimpseConfig = {
+  halfWidth: 19,
+  cooldownMs: 15_000,
+  lingerMs: 6_000,
+  lookFromDistance: 46,
 };
 
-/** What Hubi hears when someone spots him through the glass. */
-export const WINDOW_NOTICE_MESSAGES: Readonly<Record<string, string>> = {
-  chwilka: 'Kasjerka z Chwilki zerka przez szybę. Lepiej nie sterczeć pod oknem.',
-  '3d-shop': 'Sprzedawca z 3D shopu przygląda Ci się przez witrynę.',
+/** Shop names for the "someone glanced in" message. */
+export const WINDOW_SHOP_NAMES: Readonly<Record<string, string>> = {
+  chwilka: 'Chwilki',
+  '3d-shop': '3D shopu',
 };

@@ -6,6 +6,7 @@ export interface HowToPlaySection {
 
 export const HOW_TO_PLAY = {
   title: 'JAK PRZETRWAĆ L4',
+  pauseNote: 'PAUZA — gra stoi, dopóki nie zamkniesz tej planszy',
   goal: 'Hubi jest na zwolnieniu. Załatw to, co każe misja, i wróć do mieszkania, zanim ktoś z firmy cię nakryje.',
   left: [
     {
@@ -33,7 +34,7 @@ export const HOW_TO_PLAY = {
         'Kolega, HR, kierownik i auto służbowe — uważaj na stożki wzroku',
         'Złapany? Wybierz wymówkę. Dobra ratuje, zła kosztuje',
         'Sąsiedzi krzyczą „Cześć Hubi!” i ściągają uwagę',
-        'Nie sterczeć pod oknami sklepów — sprzedawcy patrzą',
+        'Przez witryny Chwilki i 3D shopu widać cię ze środka: ścigający zajrzy i pokręci się przy sklepie (mieszkanie i apteka są bezpieczne)',
       ],
     },
     {

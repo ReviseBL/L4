@@ -9,6 +9,7 @@ import { homeVisualDefinitions } from '../data/home/home-progression';
 import { itemDefinitions } from '../data/items/items';
 import { verticalSliceMissions } from '../data/missions/vertical-slice-missions';
 import { workColleagueDefinition } from '../data/npcs/work-colleague';
+import { navigationBuildings } from '../data/world/navigation-buildings';
 import { hrDefinition } from '../data/npcs/hr';
 import { printJobDefinitions } from '../data/printing/print-jobs';
 import { phoneConfig } from '../data/phone/phone-config';
@@ -92,8 +93,9 @@ import { getPharmacyQueue, pharmacyQueueConfig } from '../data/challenges/pharma
 import { PharmacyQueue } from '../systems/challenges/pharmacy-queue';
 import { PharmacyQueueView } from '../entities/challenges/pharmacy-queue-view';
 import { getServiceWait } from '../data/challenges/service-waits';
-import { BUILDING_WINDOWS, WINDOW_NOTICE_MESSAGES, WINDOW_WATCH_CONFIG } from '../data/world/building-windows';
-import { WindowWatchSystem } from '../systems/world/window-watch-system';
+import { BUILDING_WINDOWS, WINDOW_GLIMPSE_CONFIG, WINDOW_SHOP_NAMES } from '../data/world/building-windows';
+import { WindowGlimpseSystem } from '../systems/world/window-glimpse-system';
+import type { GlimpseObserver } from '../domain/world/window-types';
 import { ServiceWait } from '../systems/challenges/service-wait';
 import { ServiceWaitView } from '../entities/challenges/service-wait-view';
 import { StaminaBar } from '../entities/player/stamina-bar';
@@ -177,7 +179,17 @@ export class GameScene extends Phaser.Scene {
   private staminaBar!: StaminaBar;
   private river: RiverView | null = null;
   private hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]> = new Map();
-  private readonly windowWatch = new WindowWatchSystem(BUILDING_WINDOWS, WINDOW_WATCH_CONFIG);
+  private readonly windowGlimpses = new WindowGlimpseSystem(
+    BUILDING_WINDOWS,
+    navigationBuildings.map((building) => ({
+      buildingId: building.id,
+      left: building.x - building.width / 2 + 12,
+      right: building.x + building.width / 2 - 12,
+      top: building.y - building.height / 2 + 12,
+      bottom: building.y + building.height / 2 - 12,
+    })),
+    WINDOW_GLIMPSE_CONFIG,
+  );
   private activeService: { stepId: string; wait: ServiceWait; onReady: () => void; playerWasNear: boolean } | null = null;
   private activeQueue: { id: string; queue: PharmacyQueue; playerWasInZone: boolean } | null = null;
   private activeParcel: { challenge: ParcelCodeChallenge; onSolved: () => void } | null = null;
@@ -569,7 +581,7 @@ export class GameScene extends Phaser.Scene {
     this.updateSpill(delta);
     this.updateParcelChallenge(delta);
     this.updateServiceWait(delta);
-    this.updateWindowWatch(delta);
+    this.updateWindowGlimpses(delta);
     if (this.updatePharmacyQueue(delta)) {
       this.updateHud(null);
       return;
@@ -763,22 +775,30 @@ export class GameScene extends Phaser.Scene {
     return handedOver;
   }
 
-  /** Loitering in front of a shop window gets noticed by the staff inside. */
-  private updateWindowWatch(delta: number): void {
-    const body = this.player.body as Phaser.Physics.Arcade.Body | null;
-    const moving = body ? body.velocity.length() > 5 : false;
-    const event = this.windowWatch.update(delta, this.player, moving, this.hidingSystem.isHidden());
-    if (!event) return;
-    const change = this.suspicionSystem.registerEvent({
-      type: 'seenThroughWindow',
-      missionId: this.missionSystem.getCurrentMission()?.id ?? 'free-roam',
-      month: this.campaignSystem.getCurrentMonth().id,
-    });
-    this.hud.showAlert(`WIDAĆ CIĘ PRZEZ OKNO  +${change.appliedDelta}%`);
-    this.hud.showMessage(WINDOW_NOTICE_MESSAGES[event.window.buildingId] ?? 'Ktoś patrzy przez okno.');
-    this.handleSuspicionChange(change);
-    this.applyNpcDifficulty();
-    this.persistCurrentState();
+  /**
+   * Chasers walking past a shop can glimpse Hubi inside through its clear
+   * windows. No chase and no suspicion: they come over, look around the shop
+   * for a while and move on.
+   */
+  private updateWindowGlimpses(delta: number): void {
+    const observers: (GlimpseObserver & { name: string; investigate: (at: Point2D, lingerMs: number) => void })[] = [];
+    const calm = (state: string): boolean => state === 'PATROL' || state === 'RETURNING';
+    if (this.npcController.isEnabled() && calm(this.npcController.getState())) {
+      observers.push({ id: 'coworker', name: workColleagueDefinition.displayName, ...this.npcController.getVisionCone(),
+        investigate: (at, linger) => this.npcController.investigate(at, linger) });
+    }
+    if (this.hrController.isEnabled() && calm(this.hrController.getState())) {
+      observers.push({ id: 'hr', name: hrDefinition.displayName, ...this.hrController.getVisionCone(),
+        investigate: (at, linger) => this.hrController.investigate(at, linger) });
+    }
+    const glimpses = this.windowGlimpses.update(delta, this.player, this.hidingSystem.isHidden(), observers);
+    for (const glimpse of glimpses) {
+      const observer = observers.find((candidate) => candidate.id === glimpse.observerId);
+      if (!observer) continue;
+      observer.investigate(glimpse.lookFrom, WINDOW_GLIMPSE_CONFIG.lingerMs);
+      const shop = WINDOW_SHOP_NAMES[glimpse.window.buildingId] ?? 'sklepu';
+      this.hud.showMessage(`${observer.name} zerknął przez witrynę ${shop}. Pokręci się przy sklepie — przeczekaj.`);
+    }
   }
 
   /** Places an order at a counter; the world keeps running while it is made. */

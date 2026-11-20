@@ -30,7 +30,12 @@ export class HowToPlayScene extends Phaser.Scene {
     this.add
       .rectangle(PANEL.x + PANEL.width / 2, PANEL.y + PANEL.height / 2, PANEL.width, PANEL.height, 0x111820, 0.97)
       .setStrokeStyle(4, 0xffd166);
-    this.add.text(480, PANEL.y + 20, HOW_TO_PLAY.title, style(26, '#ffd166')).setOrigin(0.5, 0);
+    this.add.text(480, PANEL.y + 14, HOW_TO_PLAY.title, style(26, '#ffd166')).setOrigin(0.5, 0);
+    this.add
+      .text(PANEL.x + PANEL.width - 16, PANEL.y + 12, '❚❚ PAUZA', style(14, '#111820'))
+      .setOrigin(1, 0)
+      .setBackgroundColor('#ffd166')
+      .setPadding(6, 3);
     this.add
       .text(480, PANEL.y + 60, HOW_TO_PLAY.goal, style(14, '#f4f1de'))
       .setOrigin(0.5, 0)
@@ -38,6 +43,9 @@ export class HowToPlayScene extends Phaser.Scene {
       .setWordWrapWidth(PANEL.width - 80);
     this.drawColumn(HOW_TO_PLAY.left, PANEL.x + 30, PANEL.y + 112);
     this.drawColumn(HOW_TO_PLAY.right, PANEL.x + PANEL.width / 2 + 10, PANEL.y + 112);
+    this.add
+      .text(480, PANEL.y + PANEL.height - 52, HOW_TO_PLAY.pauseNote, style(13, '#ffd166'))
+      .setOrigin(0.5, 0);
     this.add
       .text(480, PANEL.y + PANEL.height - 30, HOW_TO_PLAY.footer, style(14, '#8ecae6'))
       .setOrigin(0.5, 0);
