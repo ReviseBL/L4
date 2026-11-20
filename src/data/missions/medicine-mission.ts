@@ -18,9 +18,10 @@ export const medicineMission = {
   steps: [
     {
       id: 'buy-medicine',
-      objective: 'Idź do apteki i kup leki.',
+      objective: 'Idź do apteki, odstój kolejkę i kup leki.',
       trigger: { type: 'interaction', targetId: 'pharmacy-counter' },
       interactionPrompt: '[E] KUP LEKI',
+      challenge: { type: 'pharmacy-queue', queueId: 'm1-pharmacy' },
       effects: [
         { type: 'add-item', itemId: 'medicine' },
         {

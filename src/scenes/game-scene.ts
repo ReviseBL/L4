@@ -85,6 +85,9 @@ import { parcelCodeConfig } from '../data/challenges/parcel-code-config';
 import type { MissionStepChallenge } from '../domain/missions/mission-types';
 import { ParcelCodeChallenge } from '../systems/challenges/parcel-code-challenge';
 import { ParcelLockerPanel } from '../ui/parcel-locker-panel';
+import { getPharmacyQueue, pharmacyQueueConfig } from '../data/challenges/pharmacy-queues';
+import { PharmacyQueue } from '../systems/challenges/pharmacy-queue';
+import { PharmacyQueueView } from '../entities/challenges/pharmacy-queue-view';
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
@@ -126,6 +129,8 @@ export class GameScene extends Phaser.Scene {
   private monthTransitionOverlay!: MonthTransitionOverlay;
   private phoneHud!: PhoneHud;
   private parcelPanel!: ParcelLockerPanel;
+  private pharmacyView!: PharmacyQueueView;
+  private activeQueue: { id: string; queue: PharmacyQueue; playerWasInZone: boolean } | null = null;
   private activeParcel: { challenge: ParcelCodeChallenge; onSolved: () => void } | null = null;
   /** Raw key presses for typed input (parcel code), drained in the gameplay frame. */
   private readonly typedKeys: string[] = [];
@@ -212,6 +217,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = new GameHud(this);
     this.phoneHud = new PhoneHud(this);
     this.parcelPanel = new ParcelLockerPanel(this);
+    this.pharmacyView = new PharmacyQueueView(this);
     this.input.keyboard?.on('keydown', this.onTypedKey);
     this.dialogueBox = new DialogueBox(this);
     this.summaryOverlay = new MissionSummaryOverlay(this);
@@ -363,6 +369,8 @@ export class GameScene extends Phaser.Scene {
       world.homeProgressionView.destroy();
       this.input.keyboard?.off('keydown', this.onTypedKey);
       this.parcelPanel.destroy();
+      this.pharmacyView.destroy();
+      this.activeQueue = null;
       this.activeParcel = null;
       this.handleShutdown();
     });
@@ -482,6 +490,10 @@ export class GameScene extends Phaser.Scene {
     this.playerController.update();
     this.updateSpill(delta);
     this.updateParcelChallenge(delta);
+    if (this.updatePharmacyQueue(delta)) {
+      this.updateHud(null);
+      return;
+    }
 
     const playerPosition = { x: this.player.x, y: this.player.y };
 
@@ -554,7 +566,7 @@ export class GameScene extends Phaser.Scene {
           : '[E] ZA DUŻA PACZKA — BRAK MIEJSCA'
         : targetPrompt;
 
-    this.updateHud(interactionPrompt);
+    this.updateHud(this.getQueuePrompt() ?? interactionPrompt);
   }
 
   private processMissionEvent(event: MissionEvent): boolean {
@@ -607,8 +619,71 @@ export class GameScene extends Phaser.Scene {
       this.playerController.setMovementEnabled(false);
       return;
     }
-    // Pharmacy queue is handled by its own system (added separately).
+    // Pharmacy queue: the counter only serves Hubi once the seniors are done.
+    if (this.activeQueue && !this.activeQueue.queue.isDone()) {
+      this.hud.showMessage('Najpierw kolejka. Stań na końcu, za seniorami.');
+      return;
+    }
     onSolved();
+  }
+
+  /**
+   * Spawns the queue while the current step needs it and serves the seniors
+   * while Hubi waits at the end. Returns true when it just handed over to the
+   * counter (mission event fired this frame).
+   */
+  private updatePharmacyQueue(delta: number): boolean {
+    const step = this.missionSystem.getCurrentStep();
+    const wantedId = step?.challenge?.type === 'pharmacy-queue' ? step.challenge.queueId : null;
+    if ((this.activeQueue?.id ?? null) !== wantedId) {
+      this.pharmacyView.despawn();
+      this.activeQueue = null;
+      const definition = wantedId ? getPharmacyQueue(wantedId) : null;
+      if (wantedId && definition) {
+        this.activeQueue = { id: wantedId, queue: new PharmacyQueue(definition, pharmacyQueueConfig.lineMs), playerWasInZone: false };
+        this.pharmacyView.spawn(definition);
+      }
+    }
+    const active = this.activeQueue;
+    if (!active || active.queue.isDone()) return false;
+
+    const spot = pharmacyQueueConfig.playerSpot;
+    const inZone = !this.hidingSystem.isHidden()
+      && Math.hypot(this.player.x - spot.x, this.player.y - spot.y) <= pharmacyQueueConfig.playerZoneRadius;
+    if (inZone && !active.playerWasInZone) this.hud.showMessage('Stoisz w kolejce. Nie ruszaj się, kolejka nie lubi zmian.');
+    if (!inZone && active.playerWasInZone) this.hud.showMessage('Wyszedłeś z kolejki. Seniorzy nie czekają… ale Ty musisz.');
+    active.playerWasInZone = inZone;
+
+    let handedOver = false;
+    for (const event of active.queue.update(delta, inZone)) {
+      if (event.type === 'served') this.pharmacyView.onServed(event.customerIndex);
+      if (event.type === 'your-turn' && step?.trigger.type === 'interaction') {
+        const targetId = step.trigger.targetId;
+        handedOver = true;
+        this.dialogueSystem.showSequence({
+          id: `pharmacy-turn-${active.id}`,
+          pauseWorld: true,
+          lockPlayerMovement: true,
+          lines: [{ speaker: 'FARMACEUTKA', text: 'Następny proszę!', tone: 'speech' }],
+        }, { onComplete: () => this.processMissionEvent({ type: 'interaction', targetId }) });
+      }
+    }
+    this.pharmacyView.render(active.queue, inZone);
+    return handedOver;
+  }
+
+  /** Queue status for the prompt line while Hubi is near the pharmacy queue. */
+  private getQueuePrompt(): string | null {
+    const active = this.activeQueue;
+    if (!active || active.queue.isDone()) return null;
+    const spot = pharmacyQueueConfig.playerSpot;
+    const distance = Math.hypot(this.player.x - spot.x, this.player.y - spot.y);
+    if (distance > 240) return null;
+    const ahead = active.queue.getPeopleAhead();
+    const people = ahead === 1 ? 'OSOBA' : 'OSOBY';
+    return active.playerWasInZone
+      ? `KOLEJKA: PRZED TOBĄ ${ahead} ${people}`
+      : `KOLEJKA: PRZED TOBĄ ${ahead} ${people} — STAŃ NA KOŃCU`;
   }
 
   private updateParcelChallenge(delta: number): void {

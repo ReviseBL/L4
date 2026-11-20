@@ -12,7 +12,7 @@ export const month3MedicineMission = {
     { speaker: 'NOWY CEL', text: 'Idź do apteki i wróć do mieszkania.', tone: 'system' },
   ] }],
   steps: [
-    { id: 'buy-m3-medicine', objective: 'Kup leki w aptece.', trigger: { type: 'interaction', targetId: 'pharmacy-counter' }, interactionPrompt: '[E] KUP LEKI', effects: [
+    { id: 'buy-m3-medicine', objective: 'Odstój kolejkę i kup leki w aptece.', trigger: { type: 'interaction', targetId: 'pharmacy-counter' }, interactionPrompt: '[E] KUP LEKI', challenge: { type: 'pharmacy-queue', queueId: 'm3-pharmacy' }, effects: [
       { type: 'add-item', itemId: 'medicine' }, { type: 'show-sequence', entries: [{ speaker: 'ZDOBYTO', text: 'LEKI', tone: 'success' }] },
     ] },
     { id: 'return-m3-medicine', objective: 'Wróć z lekami do mieszkania.', trigger: { type: 'area-entered', areaId: 'home' }, effects: [{ type: 'remove-item', itemId: 'medicine' }] },
