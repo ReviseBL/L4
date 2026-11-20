@@ -13,13 +13,13 @@ export class ServiceWaitView {
     this.bubble = scene.add
       .text(0, 0, '', {
         fontFamily: UI_FONT_FAMILY,
-        fontSize: '11px',
+        fontSize: '13px',
         fontStyle: 'bold',
         color: '#1b1b1b',
         backgroundColor: '#fff3d6',
         padding: { x: 6, y: 3 },
         align: 'center',
-        wordWrap: { width: 190 },
+        wordWrap: { width: 240 },
       })
       .setOrigin(0.5, 1)
       .setDepth(95_000)

@@ -58,7 +58,7 @@ SOURCES = {
 # (grupa, źródło, cx, bottom, width, opcje: depth / center=True oznacza y jako środek / tint)
 P = [
     ('apartment-printer', 'printer', 155, 222, 70, {}),
-    ('apartment-sofa', 'sofa', 350, 236, 130, {}),
+    ('apartment-sofa', 'sofa', 300, 288, 130, {}),
     ('apartment-desk', 'desk', 165, 392, 92, {}),
     ('apartment-filament-stack', 'spool-boxes', 405, 437, 75, {}),
     ('apartment-wall-shelf', 'wall-shelf', 430, 126, 66, {}),

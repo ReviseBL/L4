@@ -21,6 +21,10 @@ export interface WatcherDefinition {
   focusHalfAngleDegrees: number;
   peripheralRangeMultiplier: number;
   shoutLines: readonly string[];
+  /** Own recognition time (ms) instead of the shared one: sharper eyes. */
+  recognitionMs?: number;
+  /** One fixed sprite whatever the head does (e.g. seen from behind, sitting on a bench). */
+  seatedTextureKey?: string;
 }
 
 export interface WatcherConfig {

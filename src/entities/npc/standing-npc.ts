@@ -22,7 +22,7 @@ export function addStandingNpc(scene: Phaser.Scene, options: StandingNpcOptions)
   scene.add
     .text(options.x, options.y - 50, options.label, {
       fontFamily: UI_FONT_FAMILY,
-      fontSize: '9px',
+      fontSize: '11px',
       fontStyle: 'bold',
       color: '#f4f1de',
       stroke: '#06090d',

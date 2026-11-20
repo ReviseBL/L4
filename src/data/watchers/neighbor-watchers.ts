@@ -14,10 +14,11 @@ export const neighborWatchers = [
     displayName: 'SĄSIAD SEBA',
     textureKey: 'npc-neighbor-seba',
     placeholderColor: 0x4f6b3a,
-    // Gap between block 23 and the pharmacy, looking along the bottom strip.
+    // Gap between block 23 and the pharmacy: turns his head left and right
+    // along the bottom strip (east → south → west), never back at the tree.
     position: { x: 545, y: 1362 },
-    baseFacingDegrees: 0,
-    sweepDegrees: 75,
+    baseFacingDegrees: 90,
+    sweepDegrees: 88,
     sweepPeriodMs: 7_000,
     viewDistance: 300,
     viewHalfAngleDegrees: 70,
@@ -30,15 +31,18 @@ export const neighborWatchers = [
     displayName: 'PANI GRAŻYNA',
     textureKey: 'npc-neighbor-grazyna',
     placeholderColor: 0x9d4b73,
-    // Bench in front of block 47, watching the strip by the pharmacy.
-    position: { x: 1170, y: 1048 },
-    baseFacingDegrees: 180,
-    sweepDegrees: 60,
-    sweepPeriodMs: 8_500,
-    viewDistance: 320,
+    // The estate's CCTV: sits on the bench in front of block 47 with her back
+    // to us and scans the street 180° (west → north → east). Sharper than Seba.
+    position: { x: 1170, y: 1046 },
+    baseFacingDegrees: 270,
+    sweepDegrees: 90,
+    sweepPeriodMs: 9_000,
+    viewDistance: 380,
     viewHalfAngleDegrees: 70,
-    focusHalfAngleDegrees: 32,
-    peripheralRangeMultiplier: 0.6,
+    focusHalfAngleDegrees: 36,
+    peripheralRangeMultiplier: 0.7,
+    recognitionMs: 400,
+    seatedTextureKey: 'npc-neighbor-grazyna-bench',
     shoutLines: ['Cześć Hubi! Już zdrowy?', 'Hubert! A co ty tak o tej porze?', 'O, Hubi! Pozdrów mamę!'],
   },
 ] as const satisfies readonly WatcherDefinition[];

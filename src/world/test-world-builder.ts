@@ -17,6 +17,7 @@ import { GREENERY_COUNT, GREENERY_KEEP_OUT, GREENERY_KINDS, GREENERY_MIN_SPACING
 import { createSeededRandom } from '../core/math/seeded-random';
 import { scatterGreenery } from '../systems/world/greenery-scatter';
 import { KITCHEN_ART } from '../data/art/round4-art';
+import { RiverView } from './river';
 import { decorCollisionBox } from '../data/world/decor-footprints';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
 import { UI_FONT_FAMILY } from '../ui/text-style';
@@ -26,6 +27,7 @@ export interface TestWorld {
   occluders: readonly ObstacleBounds[];
   interactionTargets: readonly InteractionTarget[];
   hideSpots: readonly HideSpot[];
+  river: RiverView;
   /** The H marker of each hiding spot, dimmed while Hubi hides there. */
   hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]>;
   areas: readonly AreaDefinition[];
@@ -55,6 +57,8 @@ interface BuildingOptions {
   signGroup?: string;
   /** Where the floor label goes when the default spot (just inside the back wall) is taken. */
   labelY?: number;
+  labelX?: number;
+  labelSize?: number;
 }
 
 export function createTestWorld(scene: Phaser.Scene): TestWorld {
@@ -78,10 +82,10 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   addStreetObstacles(scene, obstacles);
   placeArtGroup(scene, 'decals');
   if (placeArtGroup(scene, 'decor')) addDecorCollisions(scene, obstacles);
+  const river = new RiverView(scene, obstacles, WORLD_WIDTH);
   const hideSpotMarkers = new Map<string, Phaser.GameObjects.Components.AlphaSingle[]>();
   const hideSpots = createHideSpots(scene, hideSpotMarkers);
   addScatteredGreenery(scene, obstacles, hideSpots);
-  addWorldLabel(scene);
 
   // Walkers keep to the sidewalks and cross the street only on the zebra.
   const north = (fromX: number, toX: number) => walkAlong(NORTH_SIDEWALK_PATH, fromX, toX);
@@ -126,6 +130,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
     playerSpawn: new Phaser.Math.Vector2(285, 295),
     hideSpots,
     hideSpotMarkers,
+    river,
     printerView,
     homeProgressionView,
     areas: [{ id: 'home', x: 285, y: 285, width: 360, height: 300 }],
@@ -268,20 +273,22 @@ function addApartment(
     doorCenterX: 285,
     floorTile: 'apartment',
     // The kitchenette fills the back wall, so the label sits on the floor.
-    labelY: 290,
+    labelY: 330,
+    labelX: 310,
+    labelSize: 14,
   });
 
   placeArtGroup(scene, 'apartment-wall-shelf');
   addKitchen(scene, obstacles);
   placeArtGroup(scene, 'apartment-doormat');
   addFurniture(scene, obstacles, 155, 200, 70, 45, 0x445e65, 'DRUKARKA\n3D', placeArtGroup(scene, 'apartment-printer'));
-  addFurniture(scene, obstacles, 350, 205, 130, 62, 0x716969, 'KANAPA', placeArtGroup(scene, 'apartment-sofa'));
+  addFurniture(scene, obstacles, 300, 257, 130, 62, 0x716969, 'KANAPA', placeArtGroup(scene, 'apartment-sofa'));
   addFurniture(scene, obstacles, 165, 365, 90, 55, 0x9c6644, 'BIURKO', placeArtGroup(scene, 'apartment-desk'));
   if (placeArtGroup(scene, 'apartment-filament-stack')) {
-    scene.add.text(405, 446, '× 37', labelStyle(11)).setOrigin(0.5).setDepth(447);
+    scene.add.text(405, 446, '× 2137', labelStyle(11)).setOrigin(0.5).setDepth(447);
   } else {
     scene.add.rectangle(405, 390, 75, 95, 0x90a955).setStrokeStyle(5, 0x31572c).setDepth(391);
-    scene.add.text(405, 390, 'FILAMENT\n× 37', labelStyle(13)).setOrigin(0.5).setDepth(392);
+    scene.add.text(405, 390, 'FILAMENT\n× 2137', labelStyle(13)).setOrigin(0.5).setDepth(392);
   }
   return new Printer3DView(scene, 155, 200);
 }
@@ -448,7 +455,7 @@ function addBuilding(
     .setDepth(Math.round(doorSide === 'bottom' ? bottom : top));
   if (options.signGroup && placeArtGroup(scene, options.signGroup)) return;
   scene.add
-    .text(options.x, options.labelY ?? (doorSide === 'bottom' ? top + 38 : bottom - 38), options.label, labelStyle(17))
+    .text(options.labelX ?? options.x, options.labelY ?? (doorSide === 'bottom' ? top + 38 : bottom - 38), options.label, labelStyle(options.labelSize ?? 17))
     .setOrigin(0.5)
     .setDepth(options.labelY !== undefined ? 3 : Math.round(doorSide === 'bottom' ? top + 40 : bottom - 36));
 }
@@ -660,12 +667,6 @@ function addCar(
   car.setDepth(Math.round(y));
   car.setVisible(!artDrawn);
   if (!artDrawn) scene.add.rectangle(x, y, 55, 38, 0x9bb1c8).setDepth(Math.round(y + 1));
-}
-
-function addWorldLabel(scene: Phaser.Scene): void {
-  scene.add
-    .text(38, WORLD_HEIGHT - 40, 'OSIEDLE „SPOKOJNY ETAT” — PROTOTYP MAPY', labelStyle(16))
-    .setOrigin(0, 1);
 }
 
 function labelStyle(fontSize: number): Phaser.Types.GameObjects.Text.TextStyle {

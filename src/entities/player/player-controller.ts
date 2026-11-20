@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import type { PlayerDirection } from '../../domain/player/player-visual-types';
 import { Player } from './player';
+import { Stamina, type StaminaEvent } from '../../systems/player/stamina';
+import { staminaConfig } from '../../data/player/stamina-config';
 
 // 150 = tempo pogoni kolegi z pracy: do oderwania się potrzebny jest sprint lub osłona.
 const WALK_SPEED = 150;
@@ -23,6 +25,22 @@ export class PlayerController {
   private sprintSpeedMultiplier = 1;
   private walkSpeedMultiplier = 1;
   private sprintAllowed = true;
+  private readonly stamina = new Stamina(staminaConfig);
+  private lastStaminaEvent: StaminaEvent = null;
+  /**
+   * Shift as the browser last reported it. Phaser misses the key-up when it
+   * happens while the scene is paused (minigame, overlay), which left Hubi
+   * sprinting on his own afterwards; the raw modifier state fixes that.
+   */
+  private shiftHeld = false;
+  private readonly onRawKey = (event: KeyboardEvent): void => {
+    this.shiftHeld = event.shiftKey;
+    if (!event.shiftKey) this.keys.sprint.reset();
+  };
+  private readonly onBlur = (): void => {
+    this.shiftHeld = false;
+    this.keys.sprint.reset();
+  };
 
   public constructor(
     scene: Phaser.Scene,
@@ -42,10 +60,21 @@ export class PlayerController {
       right: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
       sprint: keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT),
     };
+    window.addEventListener('keydown', this.onRawKey, true);
+    window.addEventListener('keyup', this.onRawKey, true);
+    window.addEventListener('blur', this.onBlur);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroy());
   }
 
-  public update(): void {
+  public destroy(): void {
+    window.removeEventListener('keydown', this.onRawKey, true);
+    window.removeEventListener('keyup', this.onRawKey, true);
+    window.removeEventListener('blur', this.onBlur);
+  }
+
+  public update(deltaMs = 16): void {
     if (!this.movementEnabled) {
+      this.lastStaminaEvent = this.stamina.update(deltaMs, false, false);
       this.sprinting = false;
       this.player.setVelocity(0, 0);
       this.player.setMovementVisual(null, false, false);
@@ -61,10 +90,10 @@ export class PlayerController {
       this.direction.normalize();
     }
 
-    this.sprinting =
-      this.sprintAllowed &&
-      this.direction.lengthSq() > 0 &&
-      (this.keys.sprint.isDown || this.cursors.shift?.isDown === true);
+    const moving = this.direction.lengthSq() > 0;
+    const shiftDown = this.shiftHeld && (this.keys.sprint.isDown || this.cursors.shift?.isDown === true);
+    this.sprinting = this.sprintAllowed && moving && shiftDown && this.stamina.canSprint();
+    this.lastStaminaEvent = this.stamina.update(deltaMs, this.sprinting, moving);
     const speed = this.sprinting
       ? SPRINT_SPEED * this.sprintSpeedMultiplier
       : WALK_SPEED * this.walkSpeedMultiplier;
@@ -89,6 +118,18 @@ export class PlayerController {
 
   public isSprinting(): boolean {
     return this.sprinting;
+  }
+
+  /** 0..1 sprint stamina, and whether Hubi is out of breath. */
+  public getStamina(): { level: number; exhausted: boolean } {
+    return { level: this.stamina.getLevel(), exhausted: this.stamina.isExhausted() };
+  }
+
+  /** Stamina change from the last update ('exhausted' once when he runs dry). */
+  public takeStaminaEvent(): StaminaEvent {
+    const event = this.lastStaminaEvent;
+    this.lastStaminaEvent = null;
+    return event;
   }
 
   public setSprintSpeedMultiplier(multiplier: number): void {

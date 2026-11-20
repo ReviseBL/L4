@@ -26,10 +26,10 @@ export class WatcherView {
         ? definition.textureKey
         : ensurePlaceholder(this.scene, definition);
       const sprite = this.scene.add.image(x, y, key).setOrigin(0.5, 0.9).setDepth(y);
-      const label = this.scene.add.text(x, y - 50, definition.displayName, textStyle(9, '#f4f1de')).setOrigin(0.5).setDepth(y + 1);
+      const label = this.scene.add.text(x, y - 50, definition.displayName, textStyle(11, '#f4f1de')).setOrigin(0.5).setDepth(y + 1);
       const cone = this.scene.add.graphics().setDepth(y - 2);
       const bubble = this.scene.add
-        .text(x, y - 60, '', textStyle(11, '#1b1b1b', '#fff3b0'))
+        .text(x, y - 60, '', textStyle(13, '#1b1b1b', '#fff3b0'))
         .setBackgroundColor('#fff3b0')
         .setPadding(5, 3)
         .setOrigin(0.5, 1)
@@ -43,10 +43,14 @@ export class WatcherView {
     const actor = this.actors.get(id);
     if (!actor) return;
     const { x, y } = actor.definition.position;
-    // Side sprite when looking left/right, front sprite otherwise.
+    // Seated neighbours keep one sprite; others turn: side sprite when looking
+    // left/right, front sprite otherwise.
+    const seatedKey = actor.definition.seatedTextureKey;
     const sideKey = `${actor.definition.textureKey}-side`;
     const horizontal = Math.cos(facingRadians);
-    if (Math.abs(horizontal) > 0.5 && this.scene.textures.exists(sideKey)) {
+    if (seatedKey && this.scene.textures.exists(seatedKey)) {
+      actor.sprite.setTexture(seatedKey).setFlipX(false);
+    } else if (Math.abs(horizontal) > 0.5 && this.scene.textures.exists(sideKey)) {
       actor.sprite.setTexture(sideKey).setFlipX(horizontal < 0);
     } else if (this.scene.textures.exists(actor.definition.textureKey)) {
       actor.sprite.setTexture(actor.definition.textureKey).setFlipX(false);

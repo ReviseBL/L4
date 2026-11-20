@@ -2,7 +2,7 @@ import type { GreeneryKind, ScatterZone } from '../../systems/world/greenery-sca
 
 /** Fixed seed: the scatter looks random but the map is the same every visit. */
 export const GREENERY_SEED = 0x4c34;
-export const GREENERY_COUNT = 22;
+export const GREENERY_COUNT = 34;
 export const GREENERY_MIN_SPACING = 56;
 
 export const GREENERY_KINDS: readonly GreeneryKind[] = [
@@ -28,6 +28,8 @@ export const GREENERY_ZONES: readonly ScatterZone[] = [
   { left: 505, top: 1070, right: 585, bottom: 1385 },
   { left: 975, top: 1100, right: 1030, bottom: 1385 },
   { left: 2130, top: 1070, right: 2190, bottom: 1385 },
+  // The new lawn between the blocks and the river.
+  { left: 15, top: 1405, right: 2185, bottom: 1570 },
 ];
 
 /** Never in these: the kebab yard and its path, the parking lot, the pharmacy door. */

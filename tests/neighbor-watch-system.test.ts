@@ -49,4 +49,19 @@ describe('NeighborWatchSystem', () => {
     system.update(seba.sweepPeriodMs / 4, new Map());
     expect(system.getFacingRadians(seba)).not.toBeCloseTo(start, 3);
   });
+
+  it('lets the bench grandma recognise Hubi faster than Seba and scan 180° without looking at the blocks', () => {
+    const grazyna = neighborWatchers.find((watcher) => watcher.id === 'grazyna')!;
+    const seba = neighborWatchers.find((watcher) => watcher.id === 'seba')!;
+    expect(grazyna.recognitionMs).toBeLessThan(watcherConfig.recognitionMs);
+    const system = new NeighborWatchSystem(neighborWatchers, watcherConfig, () => 0);
+    system.rollPresence();
+    expect(system.update(grazyna.recognitionMs! + 10, seen('grazyna', 'CLEAR'))).toHaveLength(1);
+    // Seba never looks north (back at the tree and the block): sin(angle) stays >= 0.
+    for (let t = 0; t < seba.sweepPeriodMs; t += 250) {
+      system.update(250, new Map());
+      expect(Math.sin(system.getFacingRadians(seba))).toBeGreaterThanOrEqual(-0.05);
+      expect(Math.sin(system.getFacingRadians(grazyna))).toBeLessThanOrEqual(0.05);
+    }
+  });
 });

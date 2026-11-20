@@ -11,7 +11,8 @@ import { resolveDeveloperToolsEnabled } from '../config/developer-tools';
 export const GAME_WIDTH = 960;
 export const GAME_HEIGHT = 540;
 export const WORLD_WIDTH = 2200;
-export const WORLD_HEIGHT = 1400;
+// 1400 for the estate, then a strip of lawn and the river along the bottom.
+export const WORLD_HEIGHT = 1720;
 export const DEVELOPER_TOOLS_ENABLED = resolveDeveloperToolsEnabled(
   import.meta.env.DEV,
   import.meta.env.VITE_ENABLE_DEBUG,

@@ -96,6 +96,9 @@ import { BUILDING_WINDOWS, WINDOW_NOTICE_MESSAGES, WINDOW_WATCH_CONFIG } from '.
 import { WindowWatchSystem } from '../systems/world/window-watch-system';
 import { ServiceWait } from '../systems/challenges/service-wait';
 import { ServiceWaitView } from '../entities/challenges/service-wait-view';
+import { StaminaBar } from '../entities/player/stamina-bar';
+import type { RiverView } from '../world/river';
+import { STAMINA_LINES } from '../data/player/stamina-config';
 import { neighborWatchers, watcherConfig } from '../data/watchers/neighbor-watchers';
 import { NeighborWatchSystem } from '../systems/watchers/neighbor-watch-system';
 import { WatcherView } from '../entities/watchers/watcher-view';
@@ -148,6 +151,8 @@ export class GameScene extends Phaser.Scene {
   private watcherView!: WatcherView;
   private watcherPerception!: PerceptionSystem;
   private serviceView!: ServiceWaitView;
+  private staminaBar!: StaminaBar;
+  private river: RiverView | null = null;
   private hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]> = new Map();
   private readonly windowWatch = new WindowWatchSystem(BUILDING_WINDOWS, WINDOW_WATCH_CONFIG);
   private activeService: { stepId: string; wait: ServiceWait; onReady: () => void; playerWasNear: boolean } | null = null;
@@ -215,6 +220,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.player = new Player(this, playerStart.x, playerStart.y);
     this.playerController = new PlayerController(this, this.player);
+    this.staminaBar = new StaminaBar(this);
     this.playerCollider = this.physics.add.collider(this.player, world.obstacles);
 
     this.suspicionSystem = new SuspicionSystem(
@@ -237,6 +243,7 @@ export class GameScene extends Phaser.Scene {
     this.areaTriggerSystem = new AreaTriggerSystem(world.areas);
     this.hidingSystem = new HidingSystem(world.hideSpots);
     this.hideSpotMarkers = world.hideSpotMarkers;
+    this.river = world.river;
     this.dialogueSystem = new DialogueSystem(dialogueConfig);
     this.hud = new GameHud(this);
     this.phoneHud = new PhoneHud(this);
@@ -396,6 +403,9 @@ export class GameScene extends Phaser.Scene {
       this.parcelPanel.destroy();
       this.pharmacyView.destroy();
       this.serviceView.destroy();
+      this.staminaBar.destroy();
+      this.river?.destroy();
+      this.river = null;
       this.activeService = null;
       this.watcherView.clear();
       this.activeQueue = null;
@@ -451,6 +461,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   public update(time: number, delta: number): void {
+    this.river?.update(delta);
     if (
       this.hubiShowcaseKey &&
       Phaser.Input.Keyboard.JustDown(this.hubiShowcaseKey)
@@ -516,7 +527,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    this.playerController.update();
+    this.playerController.update(delta);
+    const stamina = this.playerController.getStamina();
+    this.staminaBar.update(this.player.x, this.player.y, stamina.level, stamina.exhausted);
+    if (this.playerController.takeStaminaEvent() === 'exhausted') this.hud.showMessage(STAMINA_LINES.exhausted);
     this.updateSpill(delta);
     this.updateParcelChallenge(delta);
     this.updateServiceWait(delta);

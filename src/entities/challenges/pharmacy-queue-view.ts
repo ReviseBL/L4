@@ -32,12 +32,12 @@ export class PharmacyQueueView {
     const desk = pharmacyQueueConfig.pharmacistSpot;
     const pharmacistKey = scene.textures.exists(PHARMACIST.textureKey) ? PHARMACIST.textureKey : `${PHARMACIST.textureKey}-placeholder`;
     this.pharmacist = scene.add.image(desk.x, desk.y, pharmacistKey).setOrigin(0.5, 0.9).setDepth(desk.y);
-    scene.add.text(desk.x, desk.y + 12, PHARMACIST.displayName, labelStyle(9, '#f4f1de')).setOrigin(0.5, 0).setDepth(desk.y + 1);
+    scene.add.text(desk.x, desk.y + 12, PHARMACIST.displayName, labelStyle(11, '#f4f1de')).setOrigin(0.5, 0).setDepth(desk.y + 1);
     this.pharmacistBubble = scene.add
-      .text(desk.x, desk.y + 26, '', labelStyle(10, '#1b1b1b', '#e9f5db'))
+      .text(desk.x, desk.y + 26, '', labelStyle(13, '#1b1b1b', '#e9f5db'))
       .setBackgroundColor('#e9f5db')
       .setPadding(5, 3)
-      .setWordWrapWidth(220)
+      .setWordWrapWidth(275)
       .setOrigin(0.5, 0)
       .setDepth(99_500)
       .setVisible(false);
@@ -49,15 +49,15 @@ export class PharmacyQueueView {
       .setDepth(spot.y - 30)
       .setVisible(false);
     this.zoneLabel = scene.add
-      .text(spot.x, spot.y + 34, 'KONIEC KOLEJKI', labelStyle(9, '#ffd166'))
+      .text(spot.x, spot.y + 34, 'KONIEC KOLEJKI', labelStyle(11, '#ffd166'))
       .setOrigin(0.5)
       .setDepth(spot.y + 40)
       .setVisible(false);
     this.bubble = scene.add
-      .text(0, 0, '', labelStyle(10, '#1b1b1b', '#f4f1de'))
+      .text(0, 0, '', labelStyle(13, '#1b1b1b', '#f4f1de'))
       .setBackgroundColor('#f4f1de')
       .setPadding(5, 3)
-      .setWordWrapWidth(210)
+      .setWordWrapWidth(262)
       .setOrigin(0.5, 1)
       .setDepth(99_500)
       .setVisible(false);
@@ -72,7 +72,7 @@ export class PharmacyQueueView {
       // Art faces right; the queue faces the counter on the left.
       const sprite = this.scene.add.image(spot.x, spot.y, key).setOrigin(0.5, 0.9).setFlipX(true).setDepth(spot.y);
       const label = this.scene.add
-        .text(spot.x, spot.y - LABEL_OFFSET_Y, senior.displayName, labelStyle(9, '#f4f1de'))
+        .text(spot.x, spot.y - LABEL_OFFSET_Y, senior.displayName, labelStyle(11, '#f4f1de'))
         .setOrigin(0.5)
         .setDepth(spot.y + 1);
       return { sprite, label };

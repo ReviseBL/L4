@@ -65,7 +65,7 @@ export class NeighborWatchSystem {
         continue;
       }
       state.awarenessMs += deltaMs * (seen === 'CLEAR' ? 1 : 0.4);
-      if (state.awarenessMs >= this.config.recognitionMs) {
+      if (state.awarenessMs >= (watcher.recognitionMs ?? this.config.recognitionMs)) {
         const line = watcher.shoutLines[state.lineIndex % watcher.shoutLines.length] ?? 'Cześć Hubi!';
         state.lineIndex += 1;
         state.awarenessMs = 0;

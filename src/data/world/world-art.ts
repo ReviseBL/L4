@@ -106,7 +106,7 @@ export const WORLD_ART_TEXTURES: readonly { key: string; url: string }[] = [
 
 export const WORLD_ART_PLACEMENTS: readonly WorldArtPlacement[] = [
   { group: "apartment-printer", key: "world-printer-70x116", x: 155, y: 164.0, depth: 222 },
-  { group: "apartment-sofa", key: "world-sofa-130x76", x: 350, y: 198.0, depth: 236 },
+  { group: "apartment-sofa", key: "world-sofa-130x76", x: 300, y: 250.0, depth: 288 },
   { group: "apartment-desk", key: "world-desk-92x72", x: 165, y: 356.0, depth: 392 },
   { group: "apartment-filament-stack", key: "world-spool-boxes-75x68", x: 405, y: 403.0, depth: 437 },
   { group: "apartment-wall-shelf", key: "world-wall-shelf-66x41", x: 430, y: 105.5, depth: 126 },
