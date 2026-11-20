@@ -26,6 +26,8 @@ export interface MinigameRunner {
 export interface ThreadingStageConfig {
   /** Label shown above the hole, e.g. "EKSTRUDER". */
   label: string;
+  /** Which printer part is drawn around the hole. */
+  part: 'extruder' | 'hotend';
   /** Half-width of the hit window around the hole centre (px). */
   holeRadius: number;
   /** How far the hole slides left/right (px). 0 = static. */

@@ -1,5 +1,6 @@
 import type {
   ThreadingRules,
+  ThreadingStageConfig,
   ThreadingVariantConfig,
   ThreadingVariantId,
 } from '../../domain/minigames/minigame-types';
@@ -13,7 +14,7 @@ export const threadingRules = {
 /** Above this stress level the screen explains why the hands shake more. */
 export const THREADING_STRESS_NOTICE = 0.4;
 
-const extruder = { label: 'EKSTRUDER', holeRadius: 7, holeDriftAmplitude: 0, holeDriftSpeed: 0 };
+const extruder: ThreadingStageConfig = { label: 'EKSTRUDER', part: 'extruder', holeRadius: 7, holeDriftAmplitude: 0, holeDriftSpeed: 0 };
 
 export const threadingVariants = {
   petg: {
@@ -55,7 +56,7 @@ export const threadingVariants = {
     filamentLabel: 'L4 1,7 KG',
     filamentColor: 0xe63946,
     hint: 'Projekt L4 wymaga dwóch otworów: najpierw ekstruder, potem głowica.',
-    stages: [extruder, { label: 'GŁOWICA', holeRadius: 6, holeDriftAmplitude: 0, holeDriftSpeed: 0 }],
+    stages: [extruder, { label: 'GŁOWICA', part: 'hotend', holeRadius: 6, holeDriftAmplitude: 0, holeDriftSpeed: 0 }],
     tremorAmplitude: 26,
     tremorSpeed: 3.3,
     steerSpeed: 120,

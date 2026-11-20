@@ -206,7 +206,8 @@ export class MinigameScene extends Phaser.Scene {
     } else {
       this.feedbackText.setText(`„${threadingSuccessLines[variant.id]}”`).setColor('#90be6d');
     }
-    this.pushProgress = outcome === 'snap' ? 1 : 0;
+    // Keep the filament in the hole while the result is shown.
+    this.pushProgress = 1;
   }
 
   private drawThreading(game: ThreadingMinigame, variant: ThreadingVariantConfig): void {
@@ -219,8 +220,9 @@ export class MinigameScene extends Phaser.Scene {
       `${stageCount > 1 ? `${stage.label} ${Math.min(game.getStageIndex() + 1, stageCount)}/${stageCount}  ·  ` : ''}PODEJŚCIE ${game.getAttempt()}`,
     );
 
-    // Printer part: extruder for the first hole, hotend for the second (L4).
-    const useHotend = game.getStageIndex() >= 1;
+    // Printer part comes from the stage data (only L4 has a second, hotend hole);
+    // after the last hole getStage() keeps returning it, so the art stays put.
+    const useHotend = stage.part === 'hotend';
     const artKey = useHotend ? MINIGAME_TEXTURES.hotend : MINIGAME_TEXTURES.extruder;
     if (this.hasArt(artKey)) {
       const anchor = useHotend ? MINIGAME_ART_ANCHORS.hotendHole : MINIGAME_ART_ANCHORS.extruderHole;

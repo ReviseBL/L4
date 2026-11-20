@@ -80,6 +80,8 @@ import { callNoiseConfig, callNoiseLabels, callNoiseManagerLines } from '../data
 import type { CallNoiseResult } from '../domain/phone/call-noise-types';
 import { evaluateCallNoise } from '../systems/call-noise-system';
 import { SpillTracker } from '../systems/spill-tracker';
+import { CallDialoguePicker } from '../systems/call-dialogue-picker';
+import { managerCallPools } from '../data/phone/manager-call-dialogues';
 import { getCoffeeDeliveryComment } from '../data/items/spill-comments';
 import { parcelCodeConfig } from '../data/challenges/parcel-code-config';
 import type { MissionStepChallenge } from '../domain/missions/mission-types';
@@ -107,6 +109,7 @@ export class GameScene extends Phaser.Scene {
   private managerController!: ManagerController;
   private readonly positionReportSystem = new PositionReportSystem(positionReportConfig);
   private readonly spillTracker = new SpillTracker();
+  private readonly callDialoguePicker = new CallDialoguePicker(managerCallPools);
   private readonly confrontationSystem = new ConfrontationSystem(
     confrontationScenarios,
     confrontationConfig,
@@ -1051,7 +1054,7 @@ export class GameScene extends Phaser.Scene {
         lockPlayerMovement: true,
         lines: [
           ...noiseLines,
-          ...call.dialogue.lines.map((line) => ({ ...line, tone: 'speech' as const })),
+          ...this.callDialoguePicker.pick(call.dialogue).lines.map((line) => ({ ...line, tone: 'speech' as const })),
         ],
       },
       { onComplete: () => this.phoneSystem.completeAnsweredCall() },

@@ -4,7 +4,10 @@ import type { MissionCompletionSummary } from '../domain/missions/mission-types'
 export class MissionSummaryOverlay {
   private readonly container: Phaser.GameObjects.Container;
   private readonly titleText: Phaser.GameObjects.Text;
+  /** Left column: time, detections, phone. */
   private readonly statsText: Phaser.GameObjects.Text;
+  /** Right column: suspicion and days. */
+  private readonly suspicionText: Phaser.GameObjects.Text;
   private readonly stealthText: Phaser.GameObjects.Text;
   private readonly button: Phaser.GameObjects.Rectangle;
   private readonly buttonText: Phaser.GameObjects.Text;
@@ -17,14 +20,15 @@ export class MissionSummaryOverlay {
       .text(480, 65, 'MISJA WYKONANA', summaryStyle(31, '#ffd166'))
       .setOrigin(0.5);
     this.titleText = scene.add.text(480, 112, '', summaryStyle(21, '#ffffff')).setOrigin(0.5);
-    this.statsText = scene.add
-      .text(480, 250, '', summaryStyle(16, '#8ecae6'))
-      .setOrigin(0.5)
-      .setAlign('center');
+    this.statsText = scene.add.text(170, 148, '', summaryStyle(15, '#8ecae6')).setLineSpacing(4);
+    this.suspicionText = scene.add.text(470, 148, '', summaryStyle(15, '#8ecae6')).setLineSpacing(4);
+    // Placed under the taller column in show(), so nothing overlaps.
     this.stealthText = scene.add
-      .text(480, 388, '', summaryStyle(17, '#90be6d'))
-      .setOrigin(0.5)
-      .setAlign('center');
+      .text(480, 330, '', summaryStyle(16, '#90be6d'))
+      .setOrigin(0.5, 0)
+      .setAlign('center')
+      .setLineSpacing(4)
+      .setWordWrapWidth(640);
     this.button = scene.add
       .rectangle(480, 470, 330, 54, 0xd35400)
       .setStrokeStyle(3, 0xffffff)
@@ -40,6 +44,7 @@ export class MissionSummaryOverlay {
         heading,
         this.titleText,
         this.statsText,
+        this.suspicionText,
         this.stealthText,
         this.button,
         this.buttonText,
@@ -74,17 +79,19 @@ export class MissionSummaryOverlay {
               `ODRZUCONE: ${summary.phoneStats.callsDeclined}`,
             ]
           : []),
-        '',
-        `PODEJRZLIWOŚĆ PRZED MISJĄ: ${Math.round(summary.suspicionBeforeMission)}%`,
+      ].join('\n'),
+    );
+    this.suspicionText.setText(
+      [
+        `PODEJRZLIWOŚĆ PRZED: ${Math.round(summary.suspicionBeforeMission)}%`,
         `ZDOBYTE W MISJI: ${formatSigned(summary.suspicionGained)}`,
         ...(summary.criticalSuspicionIncident
-          ? []
+          ? [`PO INCYDENCIE: ${Math.round(summary.suspicionAfterMission)}%`]
           : [`PREMIA STEALTH: ${formatSigned(summary.stealthBonus)}`]),
         `PODEJRZLIWOŚĆ: ${Math.round(summary.suspicionBeforeMission)}% → ${Math.round(summary.suspicionAfterMission)}%`,
-        ...(summary.criticalSuspicionIncident
-          ? [`PODEJRZLIWOŚĆ PO INCYDENCIE: ${Math.round(summary.suspicionAfterMission)}%`]
-          : []),
-        `MINĘŁO: ${summary.daysPassed} DNI  |  DZIEŃ L4: ${summary.currentL4Day}`,
+        '',
+        `MINĘŁO: ${summary.daysPassed} DNI`,
+        `DZIEŃ L4: ${summary.currentL4Day}`,
       ].join('\n'),
     );
     this.stealthText
@@ -94,6 +101,11 @@ export class MissionSummaryOverlay {
           ? 'INCYDENT KRYTYCZNY\nPODEJRZLIWOŚĆ OSIĄGNĘŁA 100%\nFIRMA ŻĄDA WYJAŚNIEŃ'
           : [...summary.stealthMessage, ...notes].join('\n'),
       );
+    const columnsBottom = Math.max(
+      this.statsText.y + this.statsText.height,
+      this.suspicionText.y + this.suspicionText.height,
+    );
+    this.stealthText.setY(columnsBottom + 22);
     this.buttonText.setText(
       continueLabel ?? (hasNextMission ? '[E] NASTĘPNA MISJA' : '[E] WRÓĆ DO MENU'),
     );
