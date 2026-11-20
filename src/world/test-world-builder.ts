@@ -56,6 +56,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   addFilamentStore(scene, obstacles);
   addPharmacy(scene, obstacles);
   addBackgroundBuildings(scene, obstacles);
+  addGardenHedges(scene, obstacles);
   addParking(scene, obstacles);
   addParcelLocker(scene, obstacles);
   addKebabStand(scene, obstacles);
@@ -184,6 +185,9 @@ function createHideSpots(scene: Phaser.Scene): readonly HideSpot[] {
     { id: 'hedge-hide', x: 830, y: 530, radius: 72, label: 'KRZAKI' },
     { id: 'dumpster-hide', x: 1345, y: 555, radius: 72, label: 'KONTENER' },
     { id: 'parking-hide', x: 1815, y: 930, radius: 76, label: 'SAMOCHÓD' },
+    // Big bushes in the garden hedges closing the top edge.
+    { id: 'garden-west-hide', x: 645, y: 380, radius: 70, label: 'DUŻY KRZAK' },
+    { id: 'garden-east-hide', x: 1282, y: 380, radius: 70, label: 'DUŻY KRZAK' },
   ];
 
   placeArtGroup(scene, 'hide-hedge');
@@ -474,6 +478,44 @@ function addSolidObstacle(
   obstacle.setDepth(Math.round(y));
   obstacle.setVisible(!artDrawn);
   if (!artDrawn) scene.add.text(x, y, label, labelStyle(13)).setOrigin(0.5).setDepth(Math.round(y + 1));
+}
+
+/**
+ * Allotment gardens close the top edge of the map: one hedge row per gap
+ * between the north buildings (and to the map edges), wall to wall, so the
+ * strip behind the buildings is no longer a hidden highway. Hubi has to come
+ * down towards the sidewalk; the big bush in the two middle rows is a hiding
+ * spot (see createHideSpots).
+ */
+export const GARDEN_HEDGE_ROWS = [
+  { fromX: 0, toX: 70, y: 340 },
+  { fromX: 500, toX: 790, y: 340 },
+  { fromX: 1150, toX: 1415, y: 340 },
+  { fromX: 1845, toX: 2200, y: 340 },
+] as const;
+
+function addGardenHedges(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.StaticGroup): void {
+  const hedgeKey = 'world-hedge-76x54';
+  const hasArt = scene.textures.exists(hedgeKey);
+  for (const row of GARDEN_HEDGE_ROWS) {
+    const width = row.toX - row.fromX;
+    addInvisibleObstacle(obstacles, scene, row.fromX + width / 2, row.y, width, 40);
+    if (!hasArt) {
+      scene.add.rectangle(row.fromX + width / 2, row.y, width, 40, 0x31572c).setStrokeStyle(3, 0x1b3a1b).setDepth(row.y + 20);
+      continue;
+    }
+    const segments = Math.max(1, Math.ceil(width / 66));
+    for (let index = 0; index < segments; index += 1) {
+      const x = row.fromX + (width * (index + 0.5)) / segments;
+      scene.add.image(x, row.y, hedgeKey).setFlipX(index % 2 === 1).setDepth(row.y + 27);
+    }
+  }
+  // The two big bushes Hubi can hide in (in front of the middle rows).
+  const bushKey = 'world-lilac-50x41';
+  for (const x of [645, 1282]) {
+    if (scene.textures.exists(bushKey)) scene.add.image(x, 366, bushKey).setScale(1.7).setDepth(366 + 35);
+    else scene.add.ellipse(x, 366, 90, 60, 0x40916c).setDepth(401);
+  }
 }
 
 function addInvisibleObstacle(

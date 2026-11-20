@@ -101,7 +101,7 @@ P = [
     ('chwilka-chips', 'chips-shelf', 1085, 265, 62, {}),
     # Dekoracje (bez kolizji, z dala od tras NPC)
     ('decor', 'tree', 640, 330, 92, {}), ('decor', 'birch', 560, 175, 80, {}), ('decor', 'flowerbed', 560, 330, 36, {}),
-    ('decor', 'trzepak', 732, 402, 66, {}),
+    ('decor', 'trzepak', 572, 450, 66, {}),
     ('decor', 'bench', 640, 470, 56, {}), ('decor', 'trash-bin', 700, 470, 22, {}), ('decor', 'trash-bin', 560, 548, 22, {}),
     ('decor', 'lamp', 700, 540, 32, {}), ('decor', 'lamp', 1150, 540, 32, {}), ('decor', 'lamp', 2120, 540, 32, {}),
     ('decor', 'lamp', 450, 958, 32, {}), ('decor', 'lamp', 1200, 958, 32, {}), ('decor', 'lamp', 1700, 958, 32, {}),
@@ -113,7 +113,7 @@ P = [
     ('decor', 'planter-tree', 1450, 534, 36, {}),
     ('decor', 'sandbox', 1950, 290, 44, {}), ('decor', 'swing', 2050, 300, 64, {}), ('decor', 'tree', 2140, 160, 90, {}),
     ('decor', 'bench', 2030, 482, 56, {}), ('decor', 'boxwood', 1880, 528, 30, {}), ('decor', 'spruce', 2165, 500, 62, {}),
-    ('decor', 'hedge', 40, 120, 66, {}), ('decor', 'birch', 35, 430, 70, {}),
+    ('decor', 'hedge', 40, 120, 66, {}), ('decor', 'birch', 35, 495, 70, {}),
     ('decor', 'bus-stop', 110, 948, 100, {}), ('decor', 'tree', 40, 1065, 90, {}), ('decor', 'play-fence', 275, 1062, 96, {}),
     ('decor', 'bench', 400, 1050, 56, {}), ('decor', 'ad-column', 575, 1012, 28, {}),
     ('decor', 'lilac', 545, 1150, 46, {}), ('decor', 'hydrant', 545, 1245, 16, {}), ('decor', 'tree', 545, 1330, 92, {}),
