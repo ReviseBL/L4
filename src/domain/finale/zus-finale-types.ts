@@ -3,6 +3,8 @@ import type { CampaignStatisticsData, FinalRank, FinaleEndingId } from '../game-
 export const ZUS_FINALE_PHASE = {
   Documents: 'DOCUMENTS',
   Questions: 'QUESTIONS',
+  Inkblots: 'INKBLOTS',
+  Reflex: 'REFLEX',
   WalkTest: 'WALK_TEST',
   Analysis: 'ANALYSIS',
   Verdict: 'VERDICT',

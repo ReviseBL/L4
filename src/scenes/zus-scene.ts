@@ -19,6 +19,11 @@ import { resolveTitleFlowScene } from '../systems/title-flow-system';
 import { ZusFinaleSystem } from '../systems/zus-finale-system';
 import { DialogueBox } from '../ui/dialogue-box';
 import { UI_FONT_FAMILY } from '../ui/text-style';
+import { INKBLOT_CARDS, inkblotTestConfig, reflexTestConfig } from '../data/finale/zus-tests';
+import { InkblotTest } from '../systems/finale/inkblot-test';
+import { ReflexTest } from '../systems/finale/reflex-test';
+import { InkblotView } from './zus/inkblot-view';
+import { ReflexView } from './zus/reflex-view';
 
 interface ZusSceneData {
   phase?: ZusFinalePhase;
@@ -54,6 +59,12 @@ export class ZusScene extends Phaser.Scene {
   private forcedEnding?: FinaleEndingId;
   private firstActivityChoice = '';
   private debugRuntimeActive = false;
+  private inkblotTest: InkblotTest | null = null;
+  private inkblotView: InkblotView | null = null;
+  private inkblotChoice = 0;
+  private reflexTest: ReflexTest | null = null;
+  private reflexView: ReflexView | null = null;
+  private reflexAnimating = false;
 
   public constructor() { super('ZusScene'); }
 
@@ -86,6 +97,8 @@ export class ZusScene extends Phaser.Scene {
     const dialogueWasActive = this.dialogueSystem.isActive();
     if (dialogueWasActive) this.handleDialogueInput();
     else if (this.phase === ZUS_FINALE_PHASE.Documents) this.handleDocumentInput();
+    else if (this.phase === ZUS_FINALE_PHASE.Inkblots) this.updateInkblots(delta);
+    else if (this.phase === ZUS_FINALE_PHASE.Reflex) this.updateReflex(delta);
     else if (this.phase === ZUS_FINALE_PHASE.WalkTest) this.updateWalkTest(delta);
     this.dialogueSystem.update(delta);
     this.dialogueBox.update(this.dialogueSystem.getSnapshot());
@@ -109,6 +122,8 @@ export class ZusScene extends Phaser.Scene {
     switch (phase) {
       case ZUS_FINALE_PHASE.Documents: this.startDocuments(); break;
       case ZUS_FINALE_PHASE.Questions: this.startQuestions(); break;
+      case ZUS_FINALE_PHASE.Inkblots: this.startInkblots(); break;
+      case ZUS_FINALE_PHASE.Reflex: this.startReflex(); break;
       case ZUS_FINALE_PHASE.WalkTest: this.startWalkTest(); break;
       case ZUS_FINALE_PHASE.Analysis: this.startAnalysis(); break;
       case ZUS_FINALE_PHASE.Verdict: this.startVerdict(); break;
@@ -207,7 +222,7 @@ export class ZusScene extends Phaser.Scene {
 
   private afterPrintingQuestion(): void {
     const l4Completed = this.gameState.getPrintProjectState('l4-400') === PRINT_PROJECT_STATE.Completed;
-    if (!l4Completed) { this.startWalkTest(); return; }
+    if (!l4Completed) { this.introInkblots(); return; }
     this.dialogueSystem.showSequence({
       id: 'zus-l4-400', pauseWorld: true, lockPlayerMovement: true,
       lines: [
@@ -221,7 +236,83 @@ export class ZusScene extends Phaser.Scene {
       ],
     }, {
       onChoice: (choiceId) => this.finaleSystem.applyAnswer(zusQuestionEffects[choiceId] ?? 0),
-      onComplete: () => this.startWalkTest(),
+      onComplete: () => this.introInkblots(),
+    });
+  }
+
+  private introInkblots(): void {
+    this.showDialogue('zus-inkblots-intro', [
+      { speaker: 'ZUS', text: 'Teraz pani psycholog. Krótki test.', tone: 'speech' },
+      { speaker: 'PSYCHOLOG', text: 'Pokażę panu kilka kart. Proszę mówić pierwsze, co przyjdzie do głowy.', tone: 'speech' },
+    ], () => this.startInkblots());
+  }
+
+  private startInkblots(): void {
+    this.phase = ZUS_FINALE_PHASE.Inkblots;
+    this.finaleSystem.setPhase(this.phase);
+    this.inkblotTest = new InkblotTest(INKBLOT_CARDS, inkblotTestConfig);
+    this.inkblotView = new InkblotView(this);
+    this.inkblotChoice = 0;
+  }
+
+  private updateInkblots(delta: number): void {
+    const test = this.inkblotTest;
+    if (!test || !this.inkblotView) return;
+    if (Phaser.Input.Keyboard.JustDown(this.upKey) || Phaser.Input.Keyboard.JustDown(this.wKey)) this.inkblotChoice = (this.inkblotChoice + 2) % 3;
+    if (Phaser.Input.Keyboard.JustDown(this.downKey) || Phaser.Input.Keyboard.JustDown(this.sKey)) this.inkblotChoice = (this.inkblotChoice + 1) % 3;
+    const chosen = Phaser.Input.Keyboard.JustDown(this.advanceKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey);
+    const outcome = chosen ? test.choose(this.inkblotChoice) : test.update(delta);
+    if (!outcome) {
+      this.inkblotView.render(test, this.inkblotChoice);
+      return;
+    }
+    this.finaleSystem.applyAnswer(outcome.credibilityDelta);
+    this.inkblotChoice = 0;
+    const done = test.isDone();
+    this.showDialogue(`zus-inkblot-${test.getCardNumber()}`, [{ speaker: 'PSYCHOLOG', text: outcome.reaction, tone: 'speech' }], () => {
+      if (!done) return;
+      this.inkblotView?.destroy();
+      this.inkblotView = null;
+      this.inkblotTest = null;
+      this.showDialogue('zus-reflex-intro', [
+        { speaker: 'PSYCHOLOG', text: 'Dziękuję. To wszystko.', tone: 'speech' },
+        { speaker: 'LEKARZ', text: 'Teraz odruchy. Proszę usiąść na kozetce.', tone: 'speech' },
+      ], () => this.startReflex());
+    });
+    if (!done) this.inkblotView.render(test, this.inkblotChoice);
+  }
+
+  private startReflex(): void {
+    this.phase = ZUS_FINALE_PHASE.Reflex;
+    this.finaleSystem.setPhase(this.phase);
+    this.reflexTest = new ReflexTest(reflexTestConfig, Math.random);
+    this.reflexView = new ReflexView(this, reflexTestConfig);
+    this.reflexAnimating = false;
+  }
+
+  private updateReflex(delta: number): void {
+    const test = this.reflexTest;
+    const view = this.reflexView;
+    if (!test || !view || this.reflexAnimating) return;
+    test.update(delta);
+    view.render(test);
+    if (!Phaser.Input.Keyboard.JustDown(this.advanceKey) && !Phaser.Input.Keyboard.JustDown(this.spaceKey)) return;
+    const outcome = test.press();
+    if (!outcome) return;
+    this.finaleSystem.applyAnswer(outcome.credibilityDelta);
+    this.reflexAnimating = true;
+    view.playKick(outcome, () => {
+      const done = test.isDone();
+      this.showDialogue(`zus-reflex-${test.getRound()}`, [{ speaker: 'LEKARZ', text: outcome.line, tone: outcome.result === 'weak' ? 'speech' : 'warning' }], () => {
+        this.reflexAnimating = false;
+        if (!done) return;
+        this.reflexView?.destroy();
+        this.reflexView = null;
+        this.reflexTest = null;
+        this.showDialogue('zus-walk-intro', [
+          { speaker: 'LEKARZ', text: 'Na koniec proszę przejść do zaznaczonego miejsca.', tone: 'speech' },
+        ], () => this.startWalkTest());
+      });
     });
   }
 
@@ -350,6 +441,8 @@ export class ZusScene extends Phaser.Scene {
   }
 
   private shutdown(): void {
+    this.inkblotView?.destroy();
+    this.reflexView?.destroy();
     this.dialogueSystem.clear();
     this.dialogueBox.destroy();
     [this.advanceKey, this.spaceKey, this.upKey, this.downKey, this.leftKey, this.rightKey, this.wKey, this.sKey, this.aKey, this.dKey, this.shiftKey].forEach((key) => key.destroy());
