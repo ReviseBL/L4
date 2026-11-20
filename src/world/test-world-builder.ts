@@ -10,6 +10,7 @@ import { WORLD_HEIGHT, WORLD_WIDTH } from '../game/game-config';
 import type { AreaDefinition } from '../systems/area-trigger-system';
 import type { HideSpot } from '../systems/hiding-system';
 import type { InteractionTarget } from '../systems/interaction-system';
+import { joinWalks, NORTH_SIDEWALK_PATH, SOUTH_SIDEWALK_PATH, walkAlong, ZEBRA_CROSSING } from '../data/world/pedestrian-routes';
 import { decorCollisionBox } from '../data/world/decor-footprints';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
 import { UI_FONT_FAMILY } from '../ui/text-style';
@@ -68,71 +69,41 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   const hideSpots = createHideSpots(scene);
   addWorldLabel(scene);
 
-  // The colleague no longer stays on the asphalt: he also walks the north
-  // sidewalk in front of the shops and the south sidewalk past the pharmacy,
-  // so sneaking along the edges of the map is not a free pass.
-  const workColleagueRoute: readonly Point2D[] = [
-    { x: 560, y: 655 },
-    { x: 650, y: 585 },
-    { x: 1180, y: 585 },
-    { x: 1200, y: 655 },
-    { x: 1980, y: 655 },
-    { x: 1980, y: 815 },
-    { x: 1020, y: 815 },
-    { x: 980, y: 930 },
-    { x: 600, y: 930 },
-    { x: 560, y: 815 },
-  ];
+  // Walkers keep to the sidewalks and cross the street only on the zebra.
+  const north = (fromX: number, toX: number) => walkAlong(NORTH_SIDEWALK_PATH, fromX, toX);
+  const south = (fromX: number, toX: number) => walkAlong(SOUTH_SIDEWALK_PATH, fromX, toX);
+  const zebra = ZEBRA_CROSSING.walkX;
+  const workColleagueRoute: readonly Point2D[] = joinWalks(
+    north(zebra, 2000), north(2000, zebra), south(zebra, 2000), south(2000, zebra),
+  );
   const workColleaguePatrolRoutes = {
     standard: workColleagueRoute,
-    'parcel-loop': [
-      { x: 560, y: 655 },
-      { x: 1160, y: 655 },
-      { x: 1320, y: 920 },
-      { x: 1640, y: 920 },
-      { x: 1980, y: 815 },
-      { x: 1180, y: 815 },
-    ],
-    // Food missions: the kebab moved next to the office block.
-    'kebab-loop': [
-      { x: 560, y: 655 },
-      { x: 1160, y: 655 },
-      { x: 1320, y: 875 },
-      { x: 1640, y: 920 },
-      { x: 1610, y: 1150 },
-      { x: 1640, y: 920 },
-      { x: 1980, y: 815 },
-      { x: 1180, y: 815 },
-    ],
-    '3d-shop-loop': [
-      { x: 980, y: 655 },
-      { x: 1500, y: 655 },
-      { x: 1980, y: 655 },
-      { x: 1980, y: 895 },
-      { x: 1430, y: 895 },
-      { x: 1180, y: 735 },
-    ],
+    // Mostly the south side, past the parcel locker.
+    'parcel-loop': joinWalks(north(zebra, 1100), north(1100, zebra), south(zebra, 2000), south(2000, zebra)),
+    // Food missions: down the gap between the blocks to the kebab and back.
+    'kebab-loop': joinWalks(
+      north(zebra, 1100), north(1100, zebra), south(zebra, 1610),
+      [{ x: 1610, y: 1150 }], south(1610, 2000), south(2000, zebra),
+    ),
+    '3d-shop-loop': joinWalks(north(zebra, 2000), north(2000, zebra)),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
   const hrPatrolRoutes = {
     'pharmacy-loop': [
       { x: 520, y: 930 }, { x: 610, y: 1040 }, { x: 980, y: 1040 }, { x: 1040, y: 900 },
     ],
-    'tech-loop': [
-      { x: 1190, y: 900 }, { x: 1460, y: 890 }, { x: 1910, y: 840 }, { x: 1730, y: 650 }, { x: 1280, y: 650 },
-    ],
-    'filament-loop': [
-      { x: 1120, y: 650 }, { x: 1450, y: 655 }, { x: 1880, y: 655 }, { x: 2010, y: 840 }, { x: 1590, y: 885 }, { x: 1250, y: 820 },
-    ],
+    'tech-loop': joinWalks(south(1190, 2000), south(2000, 1190)),
+    'filament-loop': joinWalks(north(1100, 2000), north(2000, 1100)),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
   const companyCarRoutes = {
+    // Turns happen west of the zebra, so the car drives over it and yields.
     'tutorial-road-loop': [
-      { x: 1880, y: 700 }, { x: 1120, y: 700 }, { x: 500, y: 700 }, { x: 500, y: 790 }, { x: 1320, y: 790 }, { x: 2040, y: 790 },
+      { x: 1880, y: 700 }, { x: 1120, y: 700 }, { x: 300, y: 700 }, { x: 300, y: 790 }, { x: 1320, y: 790 }, { x: 2040, y: 790 },
     ],
     'parcel-road-loop': [
-      { x: 2020, y: 790 }, { x: 1500, y: 790 }, { x: 1080, y: 790 }, { x: 500, y: 790 }, { x: 500, y: 700 }, { x: 1420, y: 700 },
+      { x: 2020, y: 790 }, { x: 1500, y: 790 }, { x: 1080, y: 790 }, { x: 300, y: 790 }, { x: 300, y: 700 }, { x: 1420, y: 700 },
     ],
     '3d-shop-road-loop': [
-      { x: 520, y: 700 }, { x: 1180, y: 700 }, { x: 2020, y: 700 }, { x: 2020, y: 790 }, { x: 1420, y: 790 }, { x: 520, y: 790 },
+      { x: 300, y: 700 }, { x: 1180, y: 700 }, { x: 2020, y: 700 }, { x: 2020, y: 790 }, { x: 1420, y: 790 }, { x: 300, y: 790 },
     ],
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
 
@@ -145,7 +116,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
     homeProgressionView,
     areas: [{ id: 'home', x: 285, y: 285, width: 360, height: 300 }],
     workColleaguePatrol: {
-      spawn: { x: 560, y: 655 },
+      spawn: workColleagueRoute[0] ?? { x: ZEBRA_CROSSING.walkX, y: 583 },
       route: workColleagueRoute,
     },
     workColleaguePatrolRoutes,

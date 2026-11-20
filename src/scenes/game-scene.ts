@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { Point2D } from '../core/math/geometry-types';
 import { DeveloperDebugPanel } from '../debug/developer-debug-panel';
 import { StealthDebugOverlay } from '../debug/stealth-debug-overlay';
 import { campaignMonths } from '../data/campaign/campaign-months';
@@ -1140,6 +1141,7 @@ export class GameScene extends Phaser.Scene {
     };
     this.npcController.update(delta, target);
     this.hrController.update(delta, target);
+    this.companyCarController.setPedestrians(this.zebraPedestrians());
     this.companyCarController.update(delta, target);
     this.managerController.update(delta, target);
     if (this.suspicionSystem.getThreshold().shareApproximatePlayerPositionWithManager) {
@@ -1283,6 +1285,15 @@ export class GameScene extends Phaser.Scene {
    * At-home minigames run in their own overlay scene; the whole estate is
    * paused meanwhile, so nothing can catch Hubi mid-threading.
    */
+  /** Everyone the company car should stop for on the zebra. */
+  private zebraPedestrians(): Point2D[] {
+    const people: Point2D[] = [{ x: this.player.x, y: this.player.y }];
+    if (this.npcController.isEnabled()) people.push(this.npcController.getNpc());
+    if (this.hrController.isEnabled()) people.push(this.hrController.getNpc());
+    if (this.managerController.isEnabled()) people.push(this.managerController.getPosition());
+    return people;
+  }
+
   private createMinigameRunner(): MinigameRunner {
     return {
       play: (request: MinigameRequest, onDone: (result: MinigameResult) => void) => {

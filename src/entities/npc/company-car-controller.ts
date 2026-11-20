@@ -5,6 +5,8 @@ import { COMPANY_CAR_ART } from '../../data/world/world-art';
 import { COMPANY_CAR_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { CompanyCarStateMachine } from '../../systems/company-car-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
+import { shouldYieldAtCrossing } from '../../systems/traffic/crossing-yield';
+import { ZEBRA_CROSSING } from '../../data/world/pedestrian-routes';
 import type { PlayerStealthTarget } from './npc-controller';
 import { UI_FONT_FAMILY } from '../../ui/text-style';
 
@@ -22,6 +24,8 @@ export class CompanyCarController {
   private routeIndex = 0;
   private facingRadians = 0;
   private visionPoints: Point2D[] = [];
+  /** People the car yields to on the zebra (player and walking NPCs), refreshed every frame. */
+  private pedestrians: readonly Point2D[] = [];
   private enabled = false;
   private paused = false;
   private debugVisible = false;
@@ -59,6 +63,7 @@ export class CompanyCarController {
   public setRoute(route: readonly Point2D[]): void { if (!route.length) throw new Error('Company car route requires waypoints.'); this.route = route; this.routeIndex = 0; this.renderRoute(); }
   public setEnabled(enabled: boolean): void { this.enabled = enabled; this.sprite.setVisible(enabled).setActive(enabled); if (this.sprite.body) this.sprite.body.enable = enabled; this.statusText.setVisible(enabled); if (!enabled) this.sprite.setVelocity(0, 0); this.renderRoute(); this.visionGraphics.setVisible(enabled); }
   public isEnabled(): boolean { return this.enabled; }
+  public setPedestrians(points: readonly Point2D[]): void { this.pedestrians = points; }
   public holdStill(): void { this.sprite.setVelocity(0, 0); }
   public setPaused(paused: boolean): void { this.paused = paused; if (paused) this.sprite.setVelocity(0, 0); }
   public isPaused(): boolean { return this.paused; }
@@ -77,6 +82,12 @@ export class CompanyCarController {
     const dx = target.x - this.sprite.x; const dy = target.y - this.sprite.y; const distance = Math.hypot(dx, dy);
     if (distance < 20) { this.routeIndex = (this.routeIndex + 1) % this.route.length; return; }
     this.facingRadians = Math.atan2(dy, dx);
+    const directionX = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : -1) : 0;
+    const frontX = this.sprite.x + directionX * (COMPANY_CAR_ART.width / 2);
+    if (shouldYieldAtCrossing(frontX, directionX, ZEBRA_CROSSING, this.pedestrians)) {
+      this.sprite.setVelocity(0, 0);
+      return;
+    }
     if (this.sideViewArt) {
       // Na krótkich odcinkach pionowych auto zachowuje ostatni kierunek poziomy.
       if (Math.abs(dx) > Math.abs(dy)) this.sprite.setFlipX(dx < 0);
