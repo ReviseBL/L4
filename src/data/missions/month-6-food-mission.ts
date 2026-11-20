@@ -31,7 +31,8 @@ export const month6FoodMission = {
       id: 'collect-final-food',
       objective: 'Odbierz jedzenie.',
       trigger: { type: 'interaction', targetId: 'kebab-counter' },
-      interactionPrompt: '[E] ODBIERZ JEDZENIE',
+      challenge: { type: 'service-wait', serviceId: 'kebab' },
+      interactionPrompt: '[E] ZAMÓW JEDZENIE',
       effects: [
         { type: 'add-item', itemId: 'kebab' },
         { type: 'increment-campaign-stat', stat: 'kebabsCollected' },

@@ -91,6 +91,9 @@ import { ParcelLockerPanel } from '../ui/parcel-locker-panel';
 import { getPharmacyQueue, pharmacyQueueConfig } from '../data/challenges/pharmacy-queues';
 import { PharmacyQueue } from '../systems/challenges/pharmacy-queue';
 import { PharmacyQueueView } from '../entities/challenges/pharmacy-queue-view';
+import { getServiceWait } from '../data/challenges/service-waits';
+import { ServiceWait } from '../systems/challenges/service-wait';
+import { ServiceWaitView } from '../entities/challenges/service-wait-view';
 import { neighborWatchers, watcherConfig } from '../data/watchers/neighbor-watchers';
 import { NeighborWatchSystem } from '../systems/watchers/neighbor-watch-system';
 import { WatcherView } from '../entities/watchers/watcher-view';
@@ -142,6 +145,8 @@ export class GameScene extends Phaser.Scene {
   private readonly watchSystem = new NeighborWatchSystem(neighborWatchers, watcherConfig);
   private watcherView!: WatcherView;
   private watcherPerception!: PerceptionSystem;
+  private serviceView!: ServiceWaitView;
+  private activeService: { stepId: string; wait: ServiceWait; onReady: () => void; playerWasNear: boolean } | null = null;
   private activeQueue: { id: string; queue: PharmacyQueue; playerWasInZone: boolean } | null = null;
   private activeParcel: { challenge: ParcelCodeChallenge; onSolved: () => void } | null = null;
   /** Raw key presses for typed input (parcel code), drained in the gameplay frame. */
@@ -232,6 +237,7 @@ export class GameScene extends Phaser.Scene {
     this.phoneHud = new PhoneHud(this);
     this.parcelPanel = new ParcelLockerPanel(this);
     this.pharmacyView = new PharmacyQueueView(this);
+    this.serviceView = new ServiceWaitView(this);
     this.input.keyboard?.on('keydown', this.onTypedKey);
     this.dialogueBox = new DialogueBox(this);
     this.summaryOverlay = new MissionSummaryOverlay(this);
@@ -384,6 +390,8 @@ export class GameScene extends Phaser.Scene {
       this.input.keyboard?.off('keydown', this.onTypedKey);
       this.parcelPanel.destroy();
       this.pharmacyView.destroy();
+      this.serviceView.destroy();
+      this.activeService = null;
       this.watcherView.clear();
       this.activeQueue = null;
       this.activeParcel = null;
@@ -506,6 +514,7 @@ export class GameScene extends Phaser.Scene {
     this.playerController.update();
     this.updateSpill(delta);
     this.updateParcelChallenge(delta);
+    this.updateServiceWait(delta);
     if (this.updatePharmacyQueue(delta)) {
       this.updateHud(null);
       return;
@@ -582,7 +591,7 @@ export class GameScene extends Phaser.Scene {
           : '[E] ZA DUŻA PACZKA — BRAK MIEJSCA'
         : targetPrompt;
 
-    this.updateHud(this.getQueuePrompt() ?? interactionPrompt);
+    this.updateHud(this.getQueuePrompt() ?? this.getServicePrompt() ?? interactionPrompt);
   }
 
   private processMissionEvent(event: MissionEvent): boolean {
@@ -633,6 +642,10 @@ export class GameScene extends Phaser.Scene {
       this.typedKeys.length = 0;
       this.parcelPanel.show();
       this.playerController.setMovementEnabled(false);
+      return;
+    }
+    if (challenge.type === 'service-wait') {
+      this.startServiceWait(challenge.serviceId, onSolved);
       return;
     }
     // Pharmacy queue: the counter only serves Hubi once the seniors are done.
@@ -686,6 +699,50 @@ export class GameScene extends Phaser.Scene {
     }
     this.pharmacyView.render(active.queue, inZone);
     return handedOver;
+  }
+
+  /** Places an order at a counter; the world keeps running while it is made. */
+  private startServiceWait(serviceId: string, onReady: () => void): void {
+    const stepId = this.missionSystem.getCurrentStep()?.id;
+    const definition = getServiceWait(serviceId);
+    if (!stepId || !definition) { onReady(); return; }
+    if (this.activeService?.stepId === stepId) {
+      this.hud.showMessage(definition.stillCookingMessage);
+      return;
+    }
+    this.activeService = { stepId, wait: new ServiceWait(definition), onReady, playerWasNear: true };
+    this.hud.showMessage(definition.startMessage);
+  }
+
+  private updateServiceWait(delta: number): void {
+    const active = this.activeService;
+    if (!active) return;
+    if (this.missionSystem.getCurrentStep()?.id !== active.stepId) {
+      this.activeService = null;
+      this.serviceView.hide();
+      return;
+    }
+    const definition = active.wait.getDefinition();
+    const near = !this.hidingSystem.isHidden()
+      && Math.hypot(this.player.x - definition.spot.x, this.player.y - definition.spot.y) <= definition.radius;
+    if (!near && active.playerWasNear) this.hud.showMessage(definition.leftMessage);
+    if (near && !active.playerWasNear) this.hud.showMessage(definition.backMessage);
+    active.playerWasNear = near;
+    const ready = active.wait.update(delta, near);
+    this.serviceView.render(active.wait, near);
+    if (!ready) return;
+    this.activeService = null;
+    this.time.delayedCall(1_200, () => this.serviceView.hide());
+    active.onReady();
+  }
+
+  private getServicePrompt(): string | null {
+    const active = this.activeService;
+    if (!active) return null;
+    const percent = Math.round(active.wait.getProgress() * 100);
+    return active.playerWasNear
+      ? `${active.wait.getDefinition().promptLabel}… ${percent}%`
+      : `${active.wait.getDefinition().promptLabel} — WRÓĆ POD BUDKĘ (${percent}%)`;
   }
 
   /** Queue status for the prompt line while Hubi is near the pharmacy queue. */

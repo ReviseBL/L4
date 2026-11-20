@@ -39,7 +39,8 @@ export type MissionEvent = MissionTrigger;
  */
 export type MissionStepChallenge =
   | { type: 'parcel-code'; codeLength: number }
-  | { type: 'pharmacy-queue'; queueId: string };
+  | { type: 'pharmacy-queue'; queueId: string }
+  | { type: 'service-wait'; serviceId: string };
 
 export interface MissionStepDefinition {
   id: string;

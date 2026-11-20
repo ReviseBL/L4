@@ -34,7 +34,7 @@ export const month5KebabMission = {
     ] },
   ],
   steps: [
-    { id: 'collect-kebab', objective: 'Odbierz kebaba.', trigger: { type: 'interaction', targetId: 'kebab-counter' }, interactionPrompt: '[E] ODBIERZ KEBABA', effects: [{ type: 'add-item', itemId: 'kebab' }] },
+    { id: 'collect-kebab', objective: 'Odbierz kebaba.', trigger: { type: 'interaction', targetId: 'kebab-counter' }, challenge: { type: 'service-wait', serviceId: 'kebab' }, interactionPrompt: '[E] ZAMÓW KEBABA', effects: [{ type: 'add-item', itemId: 'kebab' }] },
     { id: 'return-with-kebab', objective: 'Wróć z jedzeniem do mieszkania.', trigger: { type: 'area-entered', areaId: 'home' }, effects: [{ type: 'remove-item', itemId: 'kebab' }, { type: 'show-sequence', entries: [{ text: 'KEBAB OCALAŁ. SPOKÓJ — NIEKONIECZNIE.', tone: 'success' }] }] },
   ],
 } as const satisfies MissionDefinition;
