@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { StallDetector } from '../../systems/navigation/stall-detector';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { Npc } from './npc';
 import { nextWaypoint } from '../../systems/navigation/door-router';
@@ -72,6 +73,7 @@ export class NpcController {
   }
 
   public update(deltaMs: number, player: PlayerStealthTarget): void {
+    this.frameDeltaMs = deltaMs;
     if (!this.enabled || this.paused) {
       this.npc.setVelocity(0, 0);
       this.npc.refreshAnimation();
@@ -231,7 +233,16 @@ export class NpcController {
     this.patrolIndex = (this.patrolIndex + 1) % this.patrol.route.length;
   }
 
+  private readonly stall = new StallDetector();
+  private frameDeltaMs = 0;
+
   private moveTowards(target: Point2D | null, speed: number): boolean {
+    // Pushing against a bench or a hedge corner for a while counts as arrived,
+    // so the patrol moves on instead of walking in place.
+    if (this.stall.update(this.frameDeltaMs, this.npc, target)) {
+      this.npc.setVelocity(0, 0);
+      return false;
+    }
     if (!target) {
       this.npc.setVelocity(0, 0);
       return false;

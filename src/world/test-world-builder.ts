@@ -10,6 +10,7 @@ import { WORLD_HEIGHT, WORLD_WIDTH } from '../game/game-config';
 import type { AreaDefinition } from '../systems/area-trigger-system';
 import type { HideSpot } from '../systems/hiding-system';
 import type { InteractionTarget } from '../systems/interaction-system';
+import { decorCollisionBox } from '../data/world/decor-footprints';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
 import { UI_FONT_FAMILY } from '../ui/text-style';
 
@@ -63,7 +64,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   addKebabStand(scene, obstacles);
   addStreetObstacles(scene, obstacles);
   placeArtGroup(scene, 'decals');
-  placeArtGroup(scene, 'decor');
+  if (placeArtGroup(scene, 'decor')) addDecorCollisions(scene, obstacles);
   const hideSpots = createHideSpots(scene);
   addWorldLabel(scene);
 
@@ -522,6 +523,8 @@ function placeExtraArt(scene: Phaser.Scene, key: string, x: number, y: number): 
  * down towards the sidewalk; the big bush in the two middle rows is a hiding
  * spot (see createHideSpots).
  */
+const HEDGE_COLLISION_HEIGHT = 56;
+
 export const GARDEN_HEDGE_ROWS = [
   { fromX: 0, toX: 70, y: 340 },
   { fromX: 500, toX: 790, y: 340 },
@@ -534,7 +537,9 @@ function addGardenHedges(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.S
   const hasArt = scene.textures.exists(hedgeKey);
   for (const row of GARDEN_HEDGE_ROWS) {
     const width = row.toX - row.fromX;
-    addInvisibleObstacle(obstacles, scene, row.fromX + width / 2, row.y, width, 40);
+    // Reaches a little below the art so Hubi stops in front of the hedge
+    // instead of sinking behind it (feet box is y-5..y+20, hedge depth y+27).
+    addInvisibleObstacle(obstacles, scene, row.fromX + width / 2, row.y + 6, width, HEDGE_COLLISION_HEIGHT);
     if (!hasArt) {
       scene.add.rectangle(row.fromX + width / 2, row.y, width, 40, 0x31572c).setStrokeStyle(3, 0x1b3a1b).setDepth(row.y + 20);
       continue;
@@ -550,6 +555,15 @@ function addGardenHedges(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.S
   for (const x of [645, 1282]) {
     if (scene.textures.exists(bushKey)) scene.add.image(x, 366, bushKey).setScale(1.7).setDepth(366 + 35);
     else scene.add.ellipse(x, 366, 90, 60, 0x40916c).setDepth(401);
+  }
+}
+
+/** Small collision boxes at the base of benches, bins, trunks, lamps… */
+function addDecorCollisions(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.StaticGroup): void {
+  for (const placement of WORLD_ART_PLACEMENTS) {
+    if (placement.group !== 'decor') continue;
+    const box = decorCollisionBox(placement.key, placement.x, placement.y);
+    if (box) addInvisibleObstacle(obstacles, scene, box.x, box.y, box.width, box.height);
   }
 }
 

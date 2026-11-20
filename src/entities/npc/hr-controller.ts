@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { StallDetector } from '../../systems/navigation/stall-detector';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { HR_STATE, type HrDefinition, type HrDifficultyModifiers, type HrState } from '../../domain/npcs/hr-types';
 import type { NpcPatrolSetup } from '../../domain/npcs/npc-types';
@@ -44,6 +45,7 @@ export class HrController {
   }
 
   public update(deltaMs: number, player: PlayerStealthTarget): void {
+    this.frameDeltaMs = deltaMs;
     if (!this.enabled || this.paused) { this.npc.setVelocity(0, 0); this.npc.refreshAnimation(); return; }
     const halfAngle = Phaser.Math.DegToRad(this.definition.viewHalfAngleDegrees);
     const rangeMultiplier = player.sprinting ? 1.18 : 1;
@@ -99,7 +101,11 @@ export class HrController {
   }
   private followPatrol(): void { const point = this.patrol.route[this.patrolIndex]; if (!point || !this.moveTowards(point, this.definition.patrolSpeed)) this.advancePatrol(); }
   private advancePatrol(): void { this.patrolIndex = (this.patrolIndex + 1) % this.patrol.route.length; }
+  private readonly stall = new StallDetector();
+  private frameDeltaMs = 0;
   private moveTowards(target: Point2D | null, speed: number): boolean {
+    // Stuck against an obstacle for a while: treat the target as reached.
+    if (this.stall.update(this.frameDeltaMs, this.npc, target)) { this.npc.setVelocity(0, 0); return false; }
     if (!target) { this.npc.setVelocity(0, 0); return false; }
     const dx = target.x - this.npc.x; const dy = target.y - this.npc.y; const distance = Math.hypot(dx, dy);
     if (distance <= 14) { this.npc.setVelocity(0, 0); return false; }
