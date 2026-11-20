@@ -90,6 +90,11 @@ import { ParcelLockerPanel } from '../ui/parcel-locker-panel';
 import { getPharmacyQueue, pharmacyQueueConfig } from '../data/challenges/pharmacy-queues';
 import { PharmacyQueue } from '../systems/challenges/pharmacy-queue';
 import { PharmacyQueueView } from '../entities/challenges/pharmacy-queue-view';
+import { neighborWatchers, watcherConfig } from '../data/watchers/neighbor-watchers';
+import { NeighborWatchSystem } from '../systems/watchers/neighbor-watch-system';
+import { WatcherView } from '../entities/watchers/watcher-view';
+import type { WatcherVisibility } from '../domain/watchers/watcher-types';
+import { PerceptionSystem, VISIBILITY_LEVEL } from '../systems/perception-system';
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
@@ -133,6 +138,9 @@ export class GameScene extends Phaser.Scene {
   private phoneHud!: PhoneHud;
   private parcelPanel!: ParcelLockerPanel;
   private pharmacyView!: PharmacyQueueView;
+  private readonly watchSystem = new NeighborWatchSystem(neighborWatchers, watcherConfig);
+  private watcherView!: WatcherView;
+  private watcherPerception!: PerceptionSystem;
   private activeQueue: { id: string; queue: PharmacyQueue; playerWasInZone: boolean } | null = null;
   private activeParcel: { challenge: ParcelCodeChallenge; onSolved: () => void } | null = null;
   /** Raw key presses for typed input (parcel code), drained in the gameplay frame. */
@@ -180,6 +188,8 @@ export class GameScene extends Phaser.Scene {
     this.reconcileMissionState();
     const savedState = this.gameState.getSnapshot();
     const world = createTestWorld(this);
+    this.watcherPerception = new PerceptionSystem(world.occluders);
+    this.watcherView = new WatcherView(this);
     this.homeSpawn = world.playerSpawn.clone();
     this.homeProgressionView = world.homeProgressionView;
     this.workColleaguePatrolRoutes = world.workColleaguePatrolRoutes;
@@ -373,6 +383,7 @@ export class GameScene extends Phaser.Scene {
       this.input.keyboard?.off('keydown', this.onTypedKey);
       this.parcelPanel.destroy();
       this.pharmacyView.destroy();
+      this.watcherView.clear();
       this.activeQueue = null;
       this.activeParcel = null;
       this.handleShutdown();
@@ -398,6 +409,7 @@ export class GameScene extends Phaser.Scene {
       this.suspicionSystem.startMission(currentMissionId);
       this.startPhoneForMission(missionStart.mission);
       this.applyMissionPatrol(missionStart.mission.coworkerPatrolRouteId);
+      this.rollWatchers();
       this.applyHrMissionSetup(missionStart.mission);
       this.applyCompanyCarMissionSetup(missionStart.mission);
       this.applyManagerMissionSetup(missionStart.mission);
@@ -814,6 +826,7 @@ export class GameScene extends Phaser.Scene {
       this.suspicionSystem.startMission(nextMission.mission.id);
       this.startPhoneForMission(nextMission.mission);
       this.applyMissionPatrol(nextMission.mission.coworkerPatrolRouteId);
+      this.rollWatchers();
       this.applyHrMissionSetup(nextMission.mission);
       this.applyCompanyCarMissionSetup(nextMission.mission);
       this.applyManagerMissionSetup(nextMission.mission);
@@ -1133,6 +1146,7 @@ export class GameScene extends Phaser.Scene {
       this.managerController.maybeReceiveCriticalSignal(time, target);
     }
     this.checkForConfrontation(target);
+    this.updateWatchers(delta, target);
     this.hud.setManagerNearby(this.managerController.isNear(target));
     if (this.positionReportSystem.update(time)) this.hud.showMessage('POSZUKIWANIA ZAKOŃCZONE');
     this.debugOverlay.update(time, this.player, this.npcController, this.hrController);
@@ -1289,6 +1303,59 @@ export class GameScene extends Phaser.Scene {
         });
       },
     };
+  }
+
+  /** Neighbours by the blocks are outside only in some missions (random). */
+  private rollWatchers(): void {
+    this.watcherView.sync(this.watchSystem.rollPresence());
+  }
+
+  /**
+   * A neighbour who spots Hubi shouts a greeting; exactly one company NPC
+   * (the nearest active one) hears it and comes to check.
+   */
+  private updateWatchers(delta: number, target: { x: number; y: number; hidden: boolean }): void {
+    const visibility = new Map<string, WatcherVisibility>();
+    const views: { id: string; facing: number; points: { x: number; y: number }[] }[] = [];
+    for (const watcher of this.watchSystem.getActive()) {
+      const facing = this.watchSystem.getFacingRadians(watcher);
+      const profile = {
+        focusHalfAngleRadians: Phaser.Math.DegToRad(watcher.focusHalfAngleDegrees),
+        peripheralRangeMultiplier: watcher.peripheralRangeMultiplier,
+      };
+      const half = Phaser.Math.DegToRad(watcher.viewHalfAngleDegrees);
+      const result = this.watcherPerception.evaluate({
+        observer: watcher.position, target, facingRadians: facing, range: watcher.viewDistance,
+        halfAngleRadians: half, targetHidden: target.hidden, profile,
+      });
+      visibility.set(watcher.id, result.visibility === VISIBILITY_LEVEL.Clear ? 'CLEAR' : result.visibility === VISIBILITY_LEVEL.Peripheral ? 'PERIPHERAL' : 'NONE');
+      views.push({ id: watcher.id, facing, points: this.watcherPerception.castVisionRays(watcher.position, facing, half, watcher.viewDistance, 30, profile) });
+    }
+    for (const shout of this.watchSystem.update(delta, visibility)) {
+      this.watcherView.shout(shout.watcherId, shout.line, this.time.now, watcherConfig.shoutDisplayMs);
+      const watcher = this.watchSystem.getActive().find((candidate) => candidate.id === shout.watcherId);
+      const alerted = this.alertNearestNpc(watcher?.position ?? target, { x: target.x, y: target.y });
+      this.hud.showMessage(alerted ? `Sąsiad woła Cię po imieniu. ${alerted} to usłyszał!` : 'Sąsiad woła Cię po imieniu. Na szczęście nikt nie słyszał.');
+    }
+    for (const view of views) this.watcherView.render(view.id, view.facing, view.points, this.time.now);
+  }
+
+  /** Sends only the nearest active company NPC to check Hubi's position. */
+  private alertNearestNpc(origin: { x: number; y: number }, playerPosition: { x: number; y: number }): string | null {
+    const candidates: { name: string; distance: number; investigate: () => void }[] = [];
+    const distanceTo = (p: { x: number; y: number }) => Math.hypot(p.x - origin.x, p.y - origin.y);
+    if (this.npcController.isEnabled()) {
+      candidates.push({ name: workColleagueDefinition.displayName, distance: distanceTo(this.npcController.getNpc()), investigate: () => this.npcController.investigate(playerPosition) });
+    }
+    if (this.hrController.isEnabled()) {
+      candidates.push({ name: hrDefinition.displayName, distance: distanceTo(this.hrController.getNpc()), investigate: () => this.hrController.investigate(playerPosition) });
+    }
+    if (this.managerController.isEnabled()) {
+      candidates.push({ name: managerDefinition.displayName, distance: distanceTo(this.managerController.getPosition()), investigate: () => this.managerController.investigate(playerPosition) });
+    }
+    const nearest = candidates.sort((a, b) => a.distance - b.distance)[0];
+    nearest?.investigate();
+    return nearest?.name ?? null;
   }
 
   /** A chasing colleague or manager who reaches Hubi stops him for a talk. */
