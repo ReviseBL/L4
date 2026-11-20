@@ -15,6 +15,8 @@ export interface MiodzikConfig {
   barkEveryMs: readonly [number, number];
   barkShowMs: number;
   barkLines: readonly string[];
+  /** His very first appearance is guaranteed, at this spot (by the bin next to Hubi's flat). */
+  firstSpotId: string;
 }
 
 export const miodzikConfig: MiodzikConfig = {
@@ -26,7 +28,11 @@ export const miodzikConfig: MiodzikConfig = {
   barkEveryMs: [7_000, 13_000],
   barkShowMs: 1_800,
   barkLines: ['Hau hau!', 'Hau!', 'Hau hau hau!', 'Wrrr… hau!'],
+  firstSpotId: 'bin-garden-west',
 };
+
+/** Remembered in the browser: once Miodzik has been met, later spots are random. */
+export const MIODZIK_MET_KEY = 'l4.miodzikMet';
 
 export interface MiodzikSpot {
   id: string;

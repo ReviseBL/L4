@@ -21,13 +21,24 @@ export class Miodzik {
     private readonly config: MiodzikConfig,
     private readonly spots: readonly MiodzikSpot[],
     private readonly random: () => number,
+    /** Whether the player has already met him (first meeting is guaranteed). */
+    private met = false,
   ) {}
 
-  /** Rolls for a new mission; returns his spot, or null when he stays home. */
+  /**
+   * Rolls for a new mission; returns his spot, or null when he stays home.
+   * The first time he always shows up, at the configured first spot.
+   */
   public startMission(): MiodzikSpot | null {
-    this.spot = this.random() < this.config.chancePerMission && this.spots.length > 0
-      ? this.spots[Math.min(this.spots.length - 1, Math.floor(this.random() * this.spots.length))] ?? null
-      : null;
+    const first = this.met ? undefined : this.spots.find((spot) => spot.id === this.config.firstSpotId);
+    if (first) {
+      this.spot = first;
+      this.met = true;
+    } else {
+      this.spot = this.random() < this.config.chancePerMission && this.spots.length > 0
+        ? this.spots[Math.min(this.spots.length - 1, Math.floor(this.random() * this.spots.length))] ?? null
+        : null;
+    }
     this.enter('stand');
     this.untilBarkMs = this.between(this.config.barkEveryMs);
     return this.spot;
@@ -57,6 +68,7 @@ export class Miodzik {
 
   public getSpot(): MiodzikSpot | null { return this.spot; }
   public getPose(): MiodzikPose { return this.pose; }
+  public hasBeenMet(): boolean { return this.met; }
 
   private enter(pose: MiodzikPose): void {
     this.pose = pose;

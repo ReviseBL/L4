@@ -4,9 +4,16 @@ import { MIODZIK_SPOTS, miodzikConfig } from '../src/data/easter-eggs/dog-config
 import { Miodzik } from '../src/systems/easter-eggs/miodzik';
 
 describe('Miodzik', () => {
-  it('is out only in some missions, in one of the spots', () => {
-    expect(new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.99).startMission()).toBeNull();
-    const spot = new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.1).startMission();
+  it('always shows up the first time, by the bin next to the flat', () => {
+    const dog = new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.99);
+    expect(dog.startMission()?.id).toBe(miodzikConfig.firstSpotId);
+    expect(dog.hasBeenMet()).toBe(true);
+    expect(dog.startMission()).toBeNull();
+  });
+
+  it('afterwards is out only in some missions, in one of the spots', () => {
+    expect(new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.99, true).startMission()).toBeNull();
+    const spot = new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.1, true).startMission();
     expect(MIODZIK_SPOTS).toContain(spot);
   });
 
@@ -28,7 +35,7 @@ describe('Miodzik', () => {
   });
 
   it('stays still and quiet on a day he is not out', () => {
-    const dog = new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.99);
+    const dog = new Miodzik(miodzikConfig, MIODZIK_SPOTS, () => 0.99, true);
     dog.startMission();
     expect(dog.update(60_000)).toEqual({ pose: 'stand', bark: null, puddle: false });
   });

@@ -101,7 +101,7 @@ import { ServiceWaitView } from '../entities/challenges/service-wait-view';
 import { StaminaBar } from '../entities/player/stamina-bar';
 import { pickSpawnIndex } from '../systems/navigation/spawn-picker';
 import { Miodzik } from '../systems/easter-eggs/miodzik';
-import { MIODZIK_SPOTS, miodzikConfig } from '../data/easter-eggs/dog-config';
+import { MIODZIK_MET_KEY, MIODZIK_SPOTS, miodzikConfig } from '../data/easter-eggs/dog-config';
 import { MiodzikView } from '../entities/easter-eggs/miodzik-view';
 import { HOW_TO_PLAY_SCENE_KEY, type HowToPlaySceneData } from './how-to-play-scene';
 import { HOW_TO_PLAY_SEEN_KEY } from '../data/tutorial/how-to-play';
@@ -118,6 +118,23 @@ import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 /** New-day spawns of patrolling NPCs keep at least this far from Hubi and his door. */
 const DAY_SPAWN_MIN_DISTANCE = 450;
 const HOME_DOOR: Point2D = { x: 285, y: 480 };
+
+/** Small browser-remembered flags (easter eggs, boards seen); safe in private mode. */
+function readFlag(key: string): boolean {
+  try {
+    return window.localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string): void {
+  try {
+    window.localStorage.setItem(key, '1');
+  } catch {
+    // Private mode: nothing to remember.
+  }
+}
 
 function howToPlaySeen(): boolean {
   try {
@@ -180,7 +197,7 @@ export class GameScene extends Phaser.Scene {
   private watcherPerception!: PerceptionSystem;
   private serviceView!: ServiceWaitView;
   private staminaBar!: StaminaBar;
-  private readonly miodzik = new Miodzik(miodzikConfig, MIODZIK_SPOTS, Math.random);
+  private readonly miodzik = new Miodzik(miodzikConfig, MIODZIK_SPOTS, Math.random, readFlag(MIODZIK_MET_KEY));
   private miodzikView!: MiodzikView;
   private river: RiverView | null = null;
   private hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]> = new Map();
@@ -484,6 +501,7 @@ export class GameScene extends Phaser.Scene {
       this.applyMissionPatrol(missionStart.mission.coworkerPatrolRouteId);
       this.rollWatchers();
       this.miodzikView.show(this.miodzik.startMission());
+      if (this.miodzik.hasBeenMet()) writeFlag(MIODZIK_MET_KEY);
       this.applyHrMissionSetup(missionStart.mission);
       this.applyCompanyCarMissionSetup(missionStart.mission);
       this.applyManagerMissionSetup(missionStart.mission);
@@ -995,6 +1013,7 @@ export class GameScene extends Phaser.Scene {
       this.applyMissionPatrol(nextMission.mission.coworkerPatrolRouteId);
       this.rollWatchers();
       this.miodzikView.show(this.miodzik.startMission());
+      if (this.miodzik.hasBeenMet()) writeFlag(MIODZIK_MET_KEY);
       this.applyHrMissionSetup(nextMission.mission);
       this.applyCompanyCarMissionSetup(nextMission.mission);
       this.applyManagerMissionSetup(nextMission.mission);
