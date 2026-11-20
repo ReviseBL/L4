@@ -92,6 +92,8 @@ import { getPharmacyQueue, pharmacyQueueConfig } from '../data/challenges/pharma
 import { PharmacyQueue } from '../systems/challenges/pharmacy-queue';
 import { PharmacyQueueView } from '../entities/challenges/pharmacy-queue-view';
 import { getServiceWait } from '../data/challenges/service-waits';
+import { BUILDING_WINDOWS, WINDOW_NOTICE_MESSAGES, WINDOW_WATCH_CONFIG } from '../data/world/building-windows';
+import { WindowWatchSystem } from '../systems/world/window-watch-system';
 import { ServiceWait } from '../systems/challenges/service-wait';
 import { ServiceWaitView } from '../entities/challenges/service-wait-view';
 import { neighborWatchers, watcherConfig } from '../data/watchers/neighbor-watchers';
@@ -146,6 +148,7 @@ export class GameScene extends Phaser.Scene {
   private watcherView!: WatcherView;
   private watcherPerception!: PerceptionSystem;
   private serviceView!: ServiceWaitView;
+  private readonly windowWatch = new WindowWatchSystem(BUILDING_WINDOWS, WINDOW_WATCH_CONFIG);
   private activeService: { stepId: string; wait: ServiceWait; onReady: () => void; playerWasNear: boolean } | null = null;
   private activeQueue: { id: string; queue: PharmacyQueue; playerWasInZone: boolean } | null = null;
   private activeParcel: { challenge: ParcelCodeChallenge; onSolved: () => void } | null = null;
@@ -515,6 +518,7 @@ export class GameScene extends Phaser.Scene {
     this.updateSpill(delta);
     this.updateParcelChallenge(delta);
     this.updateServiceWait(delta);
+    this.updateWindowWatch(delta);
     if (this.updatePharmacyQueue(delta)) {
       this.updateHud(null);
       return;
@@ -699,6 +703,24 @@ export class GameScene extends Phaser.Scene {
     }
     this.pharmacyView.render(active.queue, inZone);
     return handedOver;
+  }
+
+  /** Loitering in front of a shop window gets noticed by the staff inside. */
+  private updateWindowWatch(delta: number): void {
+    const body = this.player.body as Phaser.Physics.Arcade.Body | null;
+    const moving = body ? body.velocity.length() > 5 : false;
+    const event = this.windowWatch.update(delta, this.player, moving, this.hidingSystem.isHidden());
+    if (!event) return;
+    const change = this.suspicionSystem.registerEvent({
+      type: 'seenThroughWindow',
+      missionId: this.missionSystem.getCurrentMission()?.id ?? 'free-roam',
+      month: this.campaignSystem.getCurrentMonth().id,
+    });
+    this.hud.showAlert(`WIDAĆ CIĘ PRZEZ OKNO  +${change.appliedDelta}%`);
+    this.hud.showMessage(WINDOW_NOTICE_MESSAGES[event.window.buildingId] ?? 'Ktoś patrzy przez okno.');
+    this.handleSuspicionChange(change);
+    this.applyNpcDifficulty();
+    this.persistCurrentState();
   }
 
   /** Places an order at a counter; the world keeps running while it is made. */

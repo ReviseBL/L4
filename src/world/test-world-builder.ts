@@ -11,6 +11,8 @@ import type { AreaDefinition } from '../systems/area-trigger-system';
 import type { HideSpot } from '../systems/hiding-system';
 import type { InteractionTarget } from '../systems/interaction-system';
 import { joinWalks, NORTH_SIDEWALK_PATH, SOUTH_SIDEWALK_PATH, walkAlong, ZEBRA_CROSSING } from '../data/world/pedestrian-routes';
+import { BUILDING_WINDOWS } from '../data/world/building-windows';
+import { drawBrickWall, drawWindow, ensureBrickTexture } from './building-art';
 import { decorCollisionBox } from '../data/world/decor-footprints';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
 import { UI_FONT_FAMILY } from '../ui/text-style';
@@ -49,6 +51,7 @@ interface BuildingOptions {
 
 export function createTestWorld(scene: Phaser.Scene): TestWorld {
   const obstacles = scene.physics.add.staticGroup();
+  ensureBrickTexture(scene);
 
   fillArea(scene, 'grass', WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0x54794d);
 
@@ -59,6 +62,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   addFilamentStore(scene, obstacles);
   addPharmacy(scene, obstacles);
   addBackgroundBuildings(scene, obstacles);
+  for (const window of BUILDING_WINDOWS) drawWindow(scene, window);
   addGardenHedges(scene, obstacles);
   addParking(scene, obstacles);
   addParcelLocker(scene, obstacles);
@@ -374,12 +378,8 @@ function addBuilding(
   const rightDoorWidth = right - (options.doorCenterX + doorWidth / 2);
   const doorSide = options.doorSide ?? 'bottom';
 
-  if (options.floorTile && fillArea(scene, options.floorTile, options.x, options.y, options.width, options.height, options.floorColor)) {
-    scene.add.rectangle(options.x, options.y, options.width, options.height).setStrokeStyle(5, 0x252422);
-  } else {
-    scene.add
-      .rectangle(options.x, options.y, options.width, options.height, options.floorColor)
-      .setStrokeStyle(5, 0x252422);
+  if (!options.floorTile || !fillArea(scene, options.floorTile, options.x, options.y, options.width, options.height, options.floorColor)) {
+    scene.add.rectangle(options.x, options.y, options.width, options.height, options.floorColor);
   }
 
   addWall(scene, obstacles, left, options.y, wall, options.height);
@@ -427,9 +427,9 @@ function addWall(
   width: number,
   height: number,
 ): void {
-  const wall = scene.add.rectangle(x, y, width, height, 0x3d405b).setStrokeStyle(3, 0x1d1f2c);
+  const wall = scene.add.rectangle(x, y, width, height, 0x000000).setVisible(false);
   obstacles.add(wall);
-  wall.setDepth(Math.round(y));
+  drawBrickWall(scene, x, y, width, height, Math.round(y));
 }
 
 function addFurniture(
