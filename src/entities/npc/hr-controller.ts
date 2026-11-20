@@ -7,6 +7,8 @@ import { HrStateMachine } from '../../systems/hr-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
 import { VISION_RAY_COUNT, type PlayerStealthTarget } from './npc-controller';
 import { Npc } from './npc';
+import { nextWaypoint } from '../../systems/navigation/door-router';
+import { navigationBuildings } from '../../data/world/navigation-buildings';
 
 export interface HrControllerCallbacks {
   onDetected: () => void;
@@ -101,7 +103,10 @@ export class HrController {
     if (!target) { this.npc.setVelocity(0, 0); return false; }
     const dx = target.x - this.npc.x; const dy = target.y - this.npc.y; const distance = Math.hypot(dx, dy);
     if (distance <= 14) { this.npc.setVelocity(0, 0); return false; }
-    this.facingRadians = Math.atan2(dy, dx); this.npc.setVelocity(dx / distance * speed, dy / distance * speed); this.npc.setFlipX(dx < 0); return true;
+    // Through doors instead of into walls.
+    const step = nextWaypoint({ x: this.npc.x, y: this.npc.y }, target, navigationBuildings);
+    const sx = step.x - this.npc.x; const sy = step.y - this.npc.y; const stepDistance = Math.max(1, Math.hypot(sx, sy));
+    this.facingRadians = Math.atan2(sy, sx); this.npc.setVelocity(sx / stepDistance * speed, sy / stepDistance * speed); this.npc.setFlipX(sx < 0); return true;
   }
   private facePoint(target: Point2D | null): void { if (target) this.facingRadians = Math.atan2(target.y - this.npc.y, target.x - this.npc.x); }
 }

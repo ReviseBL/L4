@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import type { ObstacleBounds, Point2D } from '../../core/math/geometry-types';
 import { Npc } from './npc';
+import { nextWaypoint } from '../../systems/navigation/door-router';
+import { navigationBuildings } from '../../data/world/navigation-buildings';
 import { WORK_COLLEAGUE_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import {
   NPC_STATE,
@@ -244,9 +246,14 @@ export class NpcController {
       return false;
     }
 
-    this.facingRadians = Math.atan2(deltaY, deltaX);
-    this.npc.setVelocity((deltaX / distance) * speed, (deltaY / distance) * speed);
-    this.npc.setFlipX(deltaX < 0);
+    // Through doors instead of into walls.
+    const step = nextWaypoint({ x: this.npc.x, y: this.npc.y }, target, navigationBuildings);
+    const stepX = step.x - this.npc.x;
+    const stepY = step.y - this.npc.y;
+    const stepDistance = Math.max(1, Math.hypot(stepX, stepY));
+    this.facingRadians = Math.atan2(stepY, stepX);
+    this.npc.setVelocity((stepX / stepDistance) * speed, (stepY / stepDistance) * speed);
+    this.npc.setFlipX(stepX < 0);
     return true;
   }
 

@@ -12,6 +12,8 @@ import { ManagerStateMachine } from '../../systems/manager-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
 import { VISION_RAY_COUNT, type PlayerStealthTarget } from './npc-controller';
 import { Npc } from './npc';
+import { nextWaypoint } from '../../systems/navigation/door-router';
+import { navigationBuildings } from '../../data/world/navigation-buildings';
 
 export interface ManagerControllerCallbacks {
   onDetected: () => void;
@@ -243,8 +245,13 @@ export class ManagerController {
     const dy = target.y - this.npc.y;
     const distance = Math.hypot(dx, dy);
     if (distance <= 18) { this.npc.setVelocity(0, 0); return false; }
-    this.facingRadians = Math.atan2(dy, dx);
-    this.npc.setVelocity(dx / distance * speed, dy / distance * speed).setFlipX(dx < 0);
+    // Through doors instead of into walls.
+    const step = nextWaypoint({ x: this.npc.x, y: this.npc.y }, target, navigationBuildings);
+    const sx = step.x - this.npc.x;
+    const sy = step.y - this.npc.y;
+    const stepDistance = Math.max(1, Math.hypot(sx, sy));
+    this.facingRadians = Math.atan2(sy, sx);
+    this.npc.setVelocity(sx / stepDistance * speed, sy / stepDistance * speed).setFlipX(sx < 0);
     return true;
   }
 
