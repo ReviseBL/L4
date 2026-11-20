@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import type { PhoneCaller, PhoneSnapshot } from '../domain/phone/phone-types';
 import { UI_FONT_FAMILY } from './text-style';
+import { PHONE_FRAME_TEXTURE } from '../data/art/round4-art';
 
 /** Phone body in screen space (960×540): a smartphone on the right edge. */
-const PHONE = { x: 772, y: 132, width: 172, height: 320, radius: 22 } as const;
-const SCREEN = { x: PHONE.x + 9, y: PHONE.y + 26, width: PHONE.width - 18, height: PHONE.height - 46 } as const;
+// Matches the phone-frame art (172×330): the screen sits 16 px in from the sides, below the notch.
+const PHONE = { x: 772, y: 122, width: PHONE_FRAME_TEXTURE.width, height: PHONE_FRAME_TEXTURE.height, radius: 22 } as const;
+const SCREEN = { x: PHONE.x + 16, y: PHONE.y + 26, width: 138, height: 288 } as const;
+const BUTTON_SPACING = 44;
 const CENTER_X = SCREEN.x + SCREEN.width / 2;
 const AVATAR_Y = 46;
 const HIDDEN_OFFSET_X = 210;
@@ -55,10 +58,11 @@ export class PhoneHud {
       .setDepth(DEPTH + 1)
       .setVisible(false);
 
-    const frame = scene.add.graphics();
-    drawPhoneFrame(frame);
-    this.clock = scene.add.text(SCREEN.x + 10, PHONE.y + 9, '09:41', textStyle(10, '#e9ecef')).setOrigin(0, 0);
-    const statusIcons = scene.add.text(SCREEN.x + SCREEN.width - 10, PHONE.y + 9, '▂▄▆  5G  ▮▮▮▯', textStyle(9, '#e9ecef')).setOrigin(1, 0);
+    const frame: Phaser.GameObjects.GameObject = scene.textures.exists(PHONE_FRAME_TEXTURE.key)
+      ? scene.add.image(PHONE.x, PHONE.y, PHONE_FRAME_TEXTURE.key).setOrigin(0)
+      : drawPhoneFrame(scene.add.graphics());
+    this.clock = scene.add.text(SCREEN.x + 8, PHONE.y + 11, '09:41', textStyle(9, '#e9ecef')).setOrigin(0, 0);
+    const statusIcons = scene.add.text(SCREEN.x + SCREEN.width - 8, PHONE.y + 11, '5G ▮▮▮', textStyle(8, '#e9ecef')).setOrigin(1, 0);
 
     this.avatar = scene.add.circle(CENTER_X, SCREEN.y + AVATAR_Y, 28, 0xe76f51).setStrokeStyle(3, 0xffffff, 0.85);
     this.avatarText = scene.add.text(CENTER_X, SCREEN.y + AVATAR_Y, 'K', textStyle(26, '#ffffff')).setOrigin(0.5);
@@ -71,9 +75,9 @@ export class PhoneHud {
       .setOrigin(0.5, 0)
       .setAlign('center')
       .setWordWrapWidth(SCREEN.width - 16);
-    this.answer = makeButton(scene, CENTER_X - 52, '1', '📞', 0x2a9d8f, 'ODBIERZ');
+    this.answer = makeButton(scene, CENTER_X - BUTTON_SPACING, '1', '📞', 0x2a9d8f, 'ODBIERZ');
     this.decline = makeButton(scene, CENTER_X, '2', '✕', 0xd62828, 'ODRZUĆ');
-    this.airplane = makeButton(scene, CENTER_X + 52, '3', '✈', 0xf4a261, 'SAMOLOT');
+    this.airplane = makeButton(scene, CENTER_X + BUTTON_SPACING, '3', '✈', 0xf4a261, 'SAMOLOT');
     this.noisePill = scene.add
       .text(CENTER_X, SCREEN.y + SCREEN.height - 4, '', textStyle(9, '#0b0f14'))
       .setOrigin(0.5, 1)
@@ -170,7 +174,7 @@ export class PhoneHud {
     const alpha = airplaneAvailable ? 1 : 0.3;
     this.airplane.circle.setAlpha(alpha);
     this.airplane.icon.setAlpha(alpha);
-    this.airplane.label.setAlpha(alpha).setText(airplaneAvailable ? '3 · SAMOLOT' : '3 · ZUŻYTY');
+    this.airplane.label.setAlpha(alpha).setText(airplaneAvailable ? 'SAMOLOT\n[3]' : 'ZUŻYTY\n[3]');
   }
 
   private setShown(shown: boolean): void {
@@ -203,7 +207,7 @@ export class PhoneHud {
   }
 }
 
-function drawPhoneFrame(g: Phaser.GameObjects.Graphics): void {
+function drawPhoneFrame(g: Phaser.GameObjects.Graphics): Phaser.GameObjects.Graphics {
   // Shadow, body, screen, camera notch and home bar.
   g.fillStyle(0x000000, 0.35).fillRoundedRect(PHONE.x + 5, PHONE.y + 6, PHONE.width, PHONE.height, PHONE.radius);
   g.fillStyle(0x1c1f24, 1).fillRoundedRect(PHONE.x, PHONE.y, PHONE.width, PHONE.height, PHONE.radius);
@@ -212,14 +216,15 @@ function drawPhoneFrame(g: Phaser.GameObjects.Graphics): void {
   g.fillGradientStyle(0x1b263b, 0x1b263b, 0x0d1b2a, 0x0d1b2a, 1).fillRect(SCREEN.x, SCREEN.y, SCREEN.width, SCREEN.height - 8);
   g.fillStyle(0x000000, 1).fillRoundedRect(CENTER_X - 26, PHONE.y + 9, 52, 13, 6);
   g.fillStyle(0xadb5bd, 0.7).fillRoundedRect(CENTER_X - 30, PHONE.y + PHONE.height - 13, 60, 4, 2);
+  return g;
 }
 
 function makeButton(scene: Phaser.Scene, x: number, key: string, glyph: string, color: number, label: string): CallButton {
-  const y = SCREEN.y + 194;
+  const y = SCREEN.y + 196;
   return {
-    circle: scene.add.circle(x, y, 19, color).setStrokeStyle(2, 0xffffff, 0.6),
+    circle: scene.add.circle(x, y, 17, color).setStrokeStyle(2, 0xffffff, 0.6),
     icon: scene.add.text(x, y, glyph, textStyle(16, '#ffffff')).setOrigin(0.5),
-    label: scene.add.text(x, y + 23, `${key} · ${label}`, textStyle(8, '#e9ecef')).setOrigin(0.5, 0),
+    label: scene.add.text(x, y + 21, `${label}\n[${key}]`, textStyle(8, '#e9ecef')).setOrigin(0.5, 0).setAlign('center'),
   };
 }
 

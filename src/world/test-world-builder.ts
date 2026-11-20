@@ -16,6 +16,7 @@ import { drawBrickWall, drawWindow, ensureBrickTexture } from './building-art';
 import { GREENERY_COUNT, GREENERY_KEEP_OUT, GREENERY_KINDS, GREENERY_MIN_SPACING, GREENERY_SEED, GREENERY_ZONES } from '../data/world/greenery';
 import { createSeededRandom } from '../core/math/seeded-random';
 import { scatterGreenery } from '../systems/world/greenery-scatter';
+import { KITCHEN_ART } from '../data/art/round4-art';
 import { decorCollisionBox } from '../data/world/decor-footprints';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
 import { UI_FONT_FAMILY } from '../ui/text-style';
@@ -50,6 +51,8 @@ interface BuildingOptions {
   floorTile?: WorldTileId;
   /** Grupa szyldu z world-art; gdy szyld się wyświetli, tekstowa etykieta budynku jest pomijana. */
   signGroup?: string;
+  /** Where the floor label goes when the default spot (just inside the back wall) is taken. */
+  labelY?: number;
 }
 
 export function createTestWorld(scene: Phaser.Scene): TestWorld {
@@ -227,6 +230,21 @@ function addRoads(scene: Phaser.Scene): void {
   }
 }
 
+/** Kitchenette along the top wall of the flat: fridge, sink + hob, cabinet with kettle. */
+function addKitchen(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.StaticGroup): void {
+  const floorY = 160;
+  const pieces = [
+    { art: KITCHEN_ART.fridge, x: 218 },
+    { art: KITCHEN_ART.counter, x: 278 },
+    { art: KITCHEN_ART.cabinet, x: 352 },
+  ];
+  if (!pieces.every((piece) => scene.textures.exists(piece.art.key))) return;
+  for (const piece of pieces) {
+    scene.add.image(piece.x, floorY - piece.art.height / 2, piece.art.key).setDepth(floorY);
+  }
+  addInvisibleObstacle(obstacles, scene, 292, floorY - 12, 182, 24);
+}
+
 function addApartment(
   scene: Phaser.Scene,
   obstacles: Phaser.Physics.Arcade.StaticGroup,
@@ -240,9 +258,12 @@ function addApartment(
     floorColor: 0xc9b79c,
     doorCenterX: 285,
     floorTile: 'apartment',
+    // The kitchenette fills the back wall, so the label sits on the floor.
+    labelY: 290,
   });
 
   placeArtGroup(scene, 'apartment-wall-shelf');
+  addKitchen(scene, obstacles);
   placeArtGroup(scene, 'apartment-doormat');
   addFurniture(scene, obstacles, 155, 200, 70, 45, 0x445e65, 'DRUKARKA\n3D', placeArtGroup(scene, 'apartment-printer'));
   addFurniture(scene, obstacles, 350, 205, 130, 62, 0x716969, 'KANAPA', placeArtGroup(scene, 'apartment-sofa'));
@@ -418,9 +439,9 @@ function addBuilding(
     .setDepth(Math.round(doorSide === 'bottom' ? bottom : top));
   if (options.signGroup && placeArtGroup(scene, options.signGroup)) return;
   scene.add
-    .text(options.x, doorSide === 'bottom' ? top + 38 : bottom - 38, options.label, labelStyle(17))
+    .text(options.x, options.labelY ?? (doorSide === 'bottom' ? top + 38 : bottom - 38), options.label, labelStyle(17))
     .setOrigin(0.5)
-    .setDepth(Math.round(doorSide === 'bottom' ? top + 40 : bottom - 36));
+    .setDepth(options.labelY !== undefined ? 3 : Math.round(doorSide === 'bottom' ? top + 40 : bottom - 36));
 }
 
 function addWall(

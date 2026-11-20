@@ -34,8 +34,9 @@ describe('Hubi animation configuration', () => {
     const frames = HUBI_ANIMATION_DEFINITIONS.flatMap((definition) => definition.frames);
     expect(new Set(keys).size).toBe(keys.length);
     expect(Math.min(...frames)).toBe(0);
-    expect(Math.max(...frames)).toBe(71);
-    expect(new Set(frames).size).toBe(72);
+    // 16 rows × 6 columns: idle, walk, sprint and phone for four directions.
+    expect(Math.max(...frames)).toBe(95);
+    expect(new Set(frames).size).toBe(96);
   });
 });
 

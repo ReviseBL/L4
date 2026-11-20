@@ -19,4 +19,6 @@ export interface HomeVisualDefinition {
   color: number;
   label: string;
   unlock: HomeUnlockCondition;
+  /** Sprite used instead of the labelled placeholder when it is loaded. */
+  textureKey?: string;
 }

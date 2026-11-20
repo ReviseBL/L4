@@ -75,6 +75,9 @@ function createArt(
   scene: Phaser.Scene,
   definition: HomeVisualDefinition,
 ): Phaser.GameObjects.GameObject[] | null {
+  if ('textureKey' in definition && definition.textureKey && scene.textures.exists(definition.textureKey)) {
+    return [scene.add.image(0, 0, definition.textureKey)];
+  }
   if (definition.kind === 'filament-spool' && scene.textures.exists(HOME_ART.spool.key)) {
     const spool = scene.add.image(0, 0, HOME_ART.spool.key).setTint(definition.color);
     const label = scene.add

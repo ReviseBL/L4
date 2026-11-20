@@ -2,7 +2,7 @@ import type { PlayerDirection, PlayerVisualAction } from '../../domain/player/pl
 
 export const HUBI_TEXTURE_KEY = 'hubi-spritesheet';
 export const HUBI_SPRITESHEET_URL = 'assets/characters/hubi-spritesheet.png';
-// Character Pass 1.2: 6 kolumn × 12 wierszy (idle / walk / sprint × down, up, left, right).
+// Character Pass 1.2: 6 kolumn × 16 wierszy (idle / walk / sprint / phone × down, up, left, right).
 // Szersza klatka mieści sprint z boku; Hubi ma na ekranie tę samą wysokość co poprzedni draft.
 export const HUBI_FRAME_WIDTH = 64;
 export const HUBI_FRAME_HEIGHT = 48;
@@ -32,11 +32,11 @@ const actionLayout: Readonly<Record<PlayerVisualAction, { start: number; count: 
   idle: { start: 0, count: 6, frameRate: 3, repeat: -1 },
   walk: { start: 24, count: 6, frameRate: 12, repeat: -1 },
   sprint: { start: 48, count: 6, frameRate: 12, repeat: -1 },
-  // Character Pass 1.2 nie ma jeszcze osobnych klatek carry/phone/interact.
-  // Do czasu kolejnej planszy korzystają z idle/walk; przedmiot pokazuje osobna nakładka.
+  // Carry and interact still reuse idle/walk; the carried item is a separate overlay.
   'carry-idle': { start: 0, count: 6, frameRate: 3, repeat: -1 },
   'carry-walk': { start: 24, count: 6, frameRate: 12, repeat: -1 },
-  phone: { start: 0, count: 6, frameRate: 3, repeat: -1 },
+  // Rows 12-15: Hubi standing with the phone at his ear (art round 4).
+  phone: { start: 72, count: 6, frameRate: 3, repeat: -1 },
   interact: { start: 0, count: 6, frameRate: 10, repeat: 0 },
 };
 
