@@ -13,6 +13,7 @@ import type {
   ThreadingVariantConfig,
   TimingVariantConfig,
 } from '../domain/minigames/minigame-types';
+import { MINIGAME_ART_ANCHORS } from '../data/minigames/minigame-art';
 import { ThreadingMinigame } from '../systems/minigames/threading-minigame';
 import { TimingMinigame } from '../systems/minigames/timing-minigame';
 
@@ -29,10 +30,11 @@ export interface MinigameSceneData {
 export const MINIGAME_TEXTURES = {
   extruder: 'mg-extruder',
   hotend: 'mg-hotend',
+  hotendLarge: 'mg-hotend-large',
   hand: 'mg-hand',
   handTense: 'mg-hand-tense',
-  snap: 'mg-snap',
-  fumes: 'mg-fumes',
+  snapFrames: ['mg-snap-0', 'mg-snap-1', 'mg-snap-2'],
+  fumes: ['mg-fumes-0', 'mg-fumes-1', 'mg-fumes-2'],
   wrench: 'mg-wrench',
   printBed: 'mg-print-bed',
   spatula: 'mg-spatula',
@@ -40,9 +42,14 @@ export const MINIGAME_TEXTURES = {
 
 const CENTER_X = 480;
 const PANEL = { x: 120, y: 56, width: 720, height: 428 };
-const HOLE_Y = 228;
-const TIP_REST_Y = 296;
-const HAND_Y = 388;
+/** Hubi feeds the filament from above, like loading a real printer. */
+const PINCH_Y = 186;
+const TIP_REST_Y = 236;
+const HOLE_Y = 290;
+const HAND_SCALE = 0.85;
+const BAR_Y = 388;
+const NOZZLE_Y = 320;
+const BED_CENTER_Y = 232;
 const PUSH_MS = 170;
 const SUCCESS_CLOSE_MS = 1_500;
 const SNAP_PAUSE_MS = 650;
@@ -109,22 +116,23 @@ export class MinigameScene extends Phaser.Scene {
       .rectangle(PANEL.x, PANEL.y, PANEL.width, PANEL.height, 0x0b0f14, 0.96)
       .setOrigin(0)
       .setStrokeStyle(2, 0xf4a261, 0.9);
-    this.graphics = this.add.graphics();
+    this.graphics = this.add.graphics().setDepth(2);
     this.titleText = this.add.text(PANEL.x + 16, PANEL.y + 12, '', style(15, '#ffd166'));
     this.stageText = this.add.text(PANEL.x + PANEL.width - 16, PANEL.y + 14, '', style(12, '#8ecae6')).setOrigin(1, 0);
     this.infoText = this.add
       .text(PANEL.x + 16, PANEL.y + 34, '', style(11, '#f4f1de'))
       .setWordWrapWidth(PANEL.width - 32);
     this.feedbackText = this.add
-      .text(CENTER_X, PANEL.y + PANEL.height - 44, '', style(13, '#f4f1de'))
+      .text(CENTER_X, PANEL.y + PANEL.height - 34, '', style(13, '#f4f1de'))
       .setOrigin(0.5);
     this.controlsText = this.add
-      .text(CENTER_X, PANEL.y + PANEL.height - 18, '', style(11, '#8ecae6'))
+      .text(CENTER_X, PANEL.y + PANEL.height - 13, '', style(11, '#8ecae6'))
       .setOrigin(0.5);
 
     if (this.request.kind === 'threading') this.setupThreading();
     else this.setupTiming();
 
+    for (const text of [this.titleText, this.stageText, this.infoText, this.feedbackText, this.controlsText]) text.setDepth(6);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup());
   }
 
@@ -147,7 +155,6 @@ export class MinigameScene extends Phaser.Scene {
       : '';
     this.infoText.setText(`${variant.hint}${stressNote}`);
     this.controlsText.setText('[A/D] celuj    [E] wsuń filament');
-    this.addArt(MINIGAME_TEXTURES.extruder, CENTER_X, 196, 640, 230);
   }
 
   private updateThreading(delta: number): void {
@@ -176,6 +183,7 @@ export class MinigameScene extends Phaser.Scene {
           this.phase = 'aiming';
           this.pushProgress = 0;
           this.snapAt = null;
+          this.named.get('snap')?.setVisible(false);
         }
       }
     }
@@ -211,37 +219,41 @@ export class MinigameScene extends Phaser.Scene {
       `${stageCount > 1 ? `${stage.label} ${Math.min(game.getStageIndex() + 1, stageCount)}/${stageCount}  ·  ` : ''}PODEJŚCIE ${game.getAttempt()}`,
     );
 
-    if (!this.hasArt(MINIGAME_TEXTURES.extruder)) {
-      // Placeholder extruder body.
-      g.fillStyle(0x2b3138, 1).fillRect(CENTER_X - 150, 110, 300, HOLE_Y - 110 + 6);
-      g.fillStyle(0x3a424b, 1).fillRect(CENTER_X - 150, 110, 300, 16);
-      g.lineStyle(2, 0x11161b, 1).strokeRect(CENTER_X - 150, 110, 300, HOLE_Y - 110 + 6);
+    // Printer part: extruder for the first hole, hotend for the second (L4).
+    const useHotend = game.getStageIndex() >= 1;
+    const artKey = useHotend ? MINIGAME_TEXTURES.hotend : MINIGAME_TEXTURES.extruder;
+    if (this.hasArt(artKey)) {
+      const anchor = useHotend ? MINIGAME_ART_ANCHORS.hotendHole : MINIGAME_ART_ANCHORS.extruderHole;
+      const art = this.placeSprite('printer-part', artKey, holeX, HOLE_Y, 0, 0);
+      art.setOrigin(anchor.x / art.width, anchor.y / art.height).setDepth(1);
+      g.lineStyle(2, 0xffd166, 0.85).strokeCircle(holeX, HOLE_Y + 2, stage.holeRadius + 4);
+    } else {
+      g.fillStyle(0x2b3138, 1).fillRect(holeX - 150, HOLE_Y, 300, 140);
+      g.lineStyle(2, 0x11161b, 1).strokeRect(holeX - 150, HOLE_Y, 300, 140);
+      g.fillStyle(0xf1faee, 0.9).fillCircle(holeX, HOLE_Y, stage.holeRadius + 5);
+      g.fillStyle(0x05080c, 1).fillCircle(holeX, HOLE_Y, stage.holeRadius + 1);
     }
-    // Hole marker (always drawn so it reads clearly over any art).
-    g.fillStyle(0xf1faee, 0.9).fillCircle(holeX, HOLE_Y, stage.holeRadius + 5);
-    g.fillStyle(0x05080c, 1).fillCircle(holeX, HOLE_Y, stage.holeRadius + 1);
 
     const handX = CENTER_X + game.getHandX();
     const restTipX = CENTER_X + game.getTipX();
     const pushing = this.phase === 'pushing' || (this.phase === 'feedback' && !this.snapAt);
-    const tipY = pushing ? Phaser.Math.Linear(TIP_REST_Y, HOLE_Y, this.pushProgress) : TIP_REST_Y;
+    const tipY = pushing ? Phaser.Math.Linear(TIP_REST_Y, HOLE_Y + 4, this.pushProgress) : TIP_REST_Y;
 
     if (this.snapAt) {
-      // Broken stub and the piece that snapped off.
-      this.drawFilament(g, handX, HAND_Y - 18, handX, TIP_REST_Y + 40, variant.filamentColor);
+      // Short stub left in the fingers and the piece that snapped off.
+      this.drawFilament(g, handX, PINCH_Y, handX, PINCH_Y + 22, variant.filamentColor);
       const fall = Math.min(1, this.phaseTimerMs / SNAP_PAUSE_MS);
       g.lineStyle(4, variant.filamentColor, 1 - fall).lineBetween(
-        this.snapAt.x - 6, this.snapAt.y + fall * 60, this.snapAt.x + 8, this.snapAt.y + 22 + fall * 70,
+        this.snapAt.x - 8 - fall * 30, this.snapAt.y - 18 + fall * 40, this.snapAt.x + 4 - fall * 26, this.snapAt.y + fall * 60,
       );
       this.drawSnapBurst(g, this.snapAt.x, this.snapAt.y, fall);
-    } else if (!(this.phase === 'feedback' && game.isFinished() && this.phaseTimerMs > 300)) {
-      this.drawFilament(g, handX, HAND_Y - 18, restTipX, tipY, variant.filamentColor);
+    } else {
+      this.drawFilament(g, handX, PINCH_Y, restTipX, tipY, variant.filamentColor);
     }
 
     const fumes = game.getFumesOpacity();
-    if (fumes > 0) this.drawFumes(g, holeX, fumes);
-
-    this.drawHand(g, handX, HAND_Y);
+    this.drawFumes(g, holeX, fumes);
+    this.drawHand(g, handX, PINCH_Y);
   }
 
   private drawFilament(g: Phaser.GameObjects.Graphics, fromX: number, fromY: number, toX: number, toY: number, color: number): void {
@@ -259,22 +271,25 @@ export class MinigameScene extends Phaser.Scene {
     curve.draw(g, 24);
   }
 
-  private drawHand(g: Phaser.GameObjects.Graphics, x: number, y: number): void {
-    const key = this.isDown(this.keys.action) ? MINIGAME_TEXTURES.handTense : MINIGAME_TEXTURES.hand;
-    if (this.hasArt(key) || this.hasArt(MINIGAME_TEXTURES.hand)) {
-      this.placeSprite('hand', this.hasArt(key) ? key : MINIGAME_TEXTURES.hand, x, y + 24, 0.5, 0.5);
+  private drawHand(g: Phaser.GameObjects.Graphics, x: number, pinchY: number): void {
+    const tense = this.isDown(this.keys.action) || this.phase === 'pushing';
+    const key = tense && this.hasArt(MINIGAME_TEXTURES.handTense) ? MINIGAME_TEXTURES.handTense : MINIGAME_TEXTURES.hand;
+    if (this.hasArt(key)) {
+      const pinch = key === MINIGAME_TEXTURES.handTense ? MINIGAME_ART_ANCHORS.handTensePinch : MINIGAME_ART_ANCHORS.handPinch;
+      const push = this.phase === 'pushing' ? this.pushProgress * (HOLE_Y - TIP_REST_Y) : 0;
+      this.placeSprite('hand', key, x, pinchY + push, pinch.x, pinch.y).setOrigin(pinch.x, pinch.y).setScale(HAND_SCALE).setDepth(3);
       return;
     }
-    g.fillStyle(0xf2c9a0, 1).fillRoundedRect(x - 26, y - 14, 52, 46, 10);
-    g.fillStyle(0xe0b088, 1).fillRoundedRect(x - 9, y - 26, 18, 22, 6);
-    g.fillStyle(0x8ecae6, 1).fillRect(x - 30, y + 28, 60, 20);
-    g.lineStyle(2, 0x2b1d14, 1).strokeRoundedRect(x - 26, y - 14, 52, 46, 10);
+    g.fillStyle(0xf2c9a0, 1).fillRoundedRect(x - 26, pinchY - 50, 52, 46, 10);
+    g.fillStyle(0x8ecae6, 1).fillRect(x - 30, pinchY - 70, 60, 20);
+    g.lineStyle(2, 0x2b1d14, 1).strokeRoundedRect(x - 26, pinchY - 50, 52, 46, 10);
   }
 
   private drawSnapBurst(g: Phaser.GameObjects.Graphics, x: number, y: number, progress: number): void {
-    if (this.hasArt(MINIGAME_TEXTURES.snap)) {
-      const sprite = this.placeSprite('snap', MINIGAME_TEXTURES.snap, x, y, 0.5, 0.5);
-      sprite.setAlpha(1 - progress);
+    const frames = MINIGAME_TEXTURES.snapFrames;
+    const frameKey = frames[Math.min(frames.length - 1, Math.floor(progress * frames.length))]!;
+    if (this.hasArt(frameKey)) {
+      this.placeSprite('snap', frameKey, x, y, 0.5, 0.5).setAlpha(progress > 0.8 ? (1 - progress) * 5 : 1).setVisible(true).setDepth(4);
       return;
     }
     const radius = 10 + progress * 18;
@@ -287,10 +302,19 @@ export class MinigameScene extends Phaser.Scene {
 
   private drawFumes(g: Phaser.GameObjects.Graphics, x: number, opacity: number): void {
     const t = this.time.now / 1000;
+    const puffs = MINIGAME_TEXTURES.fumes;
     for (let puff = 0; puff < 5; puff += 1) {
-      const offsetX = Math.sin(t * 0.9 + puff * 1.7) * 34 + (puff - 2) * 16;
-      const offsetY = Math.cos(t * 0.7 + puff) * 10 - 6;
-      g.fillStyle(0x9aa59a, 0.55 * opacity).fillCircle(x + offsetX, HOLE_Y + offsetY, 26 + puff * 3);
+      const offsetX = Math.sin(t * 0.9 + puff * 1.7) * 34 + (puff - 2) * 18;
+      const offsetY = Math.cos(t * 0.7 + puff) * 10 - 10;
+      const key = puffs[puff % puffs.length]!;
+      if (this.hasArt(key)) {
+        this.placeSprite(`fume-${puff}`, key, x + offsetX, HOLE_Y + offsetY, 0.5, 0.5)
+          .setAlpha(0.85 * opacity)
+          .setVisible(opacity > 0)
+          .setDepth(5);
+      } else if (opacity > 0) {
+        g.fillStyle(0x9aa59a, 0.55 * opacity).fillCircle(x + offsetX, HOLE_Y + offsetY, 26 + puff * 3);
+      }
     }
   }
 
@@ -306,8 +330,15 @@ export class MinigameScene extends Phaser.Scene {
       ? 'Za słabo: będzie kapać. Za mocno: gwint trzeszczy. Celuj w zielone.'
       : 'Wydruk trzyma się stołu jak przyklejony. Podważ go w trzech miejscach.');
     this.controlsText.setText(variant.instruction);
-    if (this.request.variant === 'nozzle') this.addArt(MINIGAME_TEXTURES.hotend, CENTER_X, 196, 640, 230);
-    else this.addArt(MINIGAME_TEXTURES.printBed, CENTER_X, 196, 640, 230);
+    if (this.request.variant === 'nozzle' && this.hasArt(MINIGAME_TEXTURES.hotendLarge)) {
+      const anchor = MINIGAME_ART_ANCHORS.hotendLargeNozzle;
+      const art = this.add.image(CENTER_X, NOZZLE_Y, MINIGAME_TEXTURES.hotendLarge);
+      art.setOrigin(anchor.x / art.width, anchor.y / art.height).setDepth(1);
+      this.sprites.push(art);
+    } else if (this.request.variant === 'print-removal' && this.hasArt(MINIGAME_TEXTURES.printBed)) {
+      const art = this.add.image(CENTER_X, BED_CENTER_Y, MINIGAME_TEXTURES.printBed).setDepth(1);
+      this.sprites.push(art);
+    }
   }
 
   private updateTiming(delta: number): void {
@@ -354,7 +385,7 @@ export class MinigameScene extends Phaser.Scene {
     // Scale.
     const barX = 220;
     const barWidth = 520;
-    const barY = 360;
+    const barY = BAR_Y;
     const zone = game.getZone();
     g.fillStyle(0x3a1d1d, 1).fillRect(barX, barY, barWidth, 20);
     g.fillStyle(0x2d6a4f, 1).fillRect(barX + zone.start * barWidth, barY, (zone.end - zone.start) * barWidth, 20);
@@ -370,52 +401,64 @@ export class MinigameScene extends Phaser.Scene {
   private ensureScaleLabels(barX: number, barWidth: number, barY: number, nozzle: boolean): void {
     if (this.scaleLabels.length > 0) return;
     this.scaleLabels = [
-      this.add.text(barX, barY + 26, nozzle ? 'ZA SŁABO' : 'ZA LEKKO', style(10, '#ff8c69')),
-      this.add.text(barX + barWidth, barY + 26, 'ZA MOCNO', style(10, '#ff8c69')).setOrigin(1, 0),
+      this.add.text(barX, barY + 26, nozzle ? 'ZA SŁABO' : 'ZA LEKKO', style(10, '#ff8c69')).setDepth(6),
+      this.add.text(barX + barWidth, barY + 26, 'ZA MOCNO', style(10, '#ff8c69')).setOrigin(1, 0).setDepth(6),
     ];
   }
 
   private drawNozzleScene(g: Phaser.GameObjects.Graphics, needle: number): void {
-    if (!this.hasArt(MINIGAME_TEXTURES.hotend)) {
-      g.fillStyle(0x6c757d, 1).fillRect(CENTER_X - 70, 110, 140, 70);
-      g.fillStyle(0xadb5bd, 1).fillRect(CENTER_X - 90, 180, 180, 70);
-      g.fillStyle(0xc9a227, 1).fillTriangle(CENTER_X - 26, 250, CENTER_X + 26, 250, CENTER_X, 292);
+    const hasArt = this.hasArt(MINIGAME_TEXTURES.hotendLarge);
+    if (!hasArt) {
+      g.fillStyle(0x6c757d, 1).fillRect(CENTER_X - 70, NOZZLE_Y - 190, 140, 70);
+      g.fillStyle(0xadb5bd, 1).fillRect(CENTER_X - 90, NOZZLE_Y - 120, 180, 100);
+      g.fillStyle(0xc9a227, 1).fillTriangle(CENTER_X - 26, NOZZLE_Y - 20, CENTER_X + 26, NOZZLE_Y - 20, CENTER_X, NOZZLE_Y + 24);
     }
-    // Wrench turns with the needle.
-    const angle = Phaser.Math.DegToRad(-40 + needle * 80);
+    // The wrench turns upward with the needle: further right = tighter.
+    const angle = Phaser.Math.DegToRad(-needle * 55);
     if (this.hasArt(MINIGAME_TEXTURES.wrench)) {
-      this.placeSprite('wrench', MINIGAME_TEXTURES.wrench, CENTER_X, 250, 0.15, 0.5).setRotation(angle);
+      const jaw = MINIGAME_ART_ANCHORS.wrenchJaw;
+      this.placeSprite('wrench', MINIGAME_TEXTURES.wrench, CENTER_X, NOZZLE_Y, jaw.x, jaw.y).setOrigin(jaw.x, jaw.y).setRotation(angle).setDepth(3);
       return;
     }
-    const length = 120;
+    const length = 140;
     const endX = CENTER_X + Math.cos(angle) * length;
-    const endY = 250 + Math.sin(angle) * length;
-    g.lineStyle(14, 0x2b3138, 1).lineBetween(CENTER_X, 250, endX, endY);
-    g.lineStyle(10, 0xb0b8bf, 1).lineBetween(CENTER_X, 250, endX, endY);
+    const endY = NOZZLE_Y + Math.sin(angle) * length;
+    g.lineStyle(14, 0x2b3138, 1).lineBetween(CENTER_X, NOZZLE_Y, endX, endY);
+    g.lineStyle(10, 0xb0b8bf, 1).lineBetween(CENTER_X, NOZZLE_Y, endX, endY);
     g.fillStyle(0xd62828, 1).fillCircle(endX, endY, 9);
   }
 
   private drawPrintBedScene(g: Phaser.GameObjects.Graphics, needle: number, peeled: number): void {
-    if (!this.hasArt(MINIGAME_TEXTURES.printBed)) {
-      g.fillStyle(0xb08d57, 1).fillRect(CENTER_X - 230, 104, 460, 200);
-      g.lineStyle(2, 0x5c4422, 1).strokeRect(CENTER_X - 230, 104, 460, 200);
+    const bed = this.hasArt(MINIGAME_TEXTURES.printBed) ? this.textures.getFrame(MINIGAME_TEXTURES.printBed) : null;
+    let edgeFrom: number;
+    let edgeTo: number;
+    let edgeY: number;
+    if (bed) {
+      const left = CENTER_X - bed.width / 2;
+      const top = BED_CENTER_Y - bed.height / 2;
+      const edge = MINIGAME_ART_ANCHORS.printBottom;
+      edgeFrom = left + edge.fromX;
+      edgeTo = left + edge.toX;
+      edgeY = top + edge.y;
+    } else {
+      g.fillStyle(0xb08d57, 1).fillRect(CENTER_X - 230, 110, 460, 200);
+      g.fillStyle(0xe63946, 1).fillRect(CENTER_X - 110, 150, 34, 110).fillRect(CENTER_X - 110, 226, 96, 34);
+      g.fillRect(CENTER_X + 20, 150, 34, 70).fillRect(CENTER_X + 20, 198, 100, 30).fillRect(CENTER_X + 80, 150, 34, 110);
+      edgeFrom = CENTER_X - 110;
+      edgeTo = CENTER_X + 114;
+      edgeY = 262;
     }
-    // The red L4 sign lifts a little more with every good press.
-    const lift = peeled * 18;
-    g.fillStyle(0x000000, 0.25 + peeled * 0.2).fillRect(CENTER_X - 110 + lift, 148 + lift, 220, 110);
-    g.fillStyle(0xe63946, 1).fillRect(CENTER_X - 110, 148 - lift, 34, 110);
-    g.fillRect(CENTER_X - 110, 224 - lift, 96, 34);
-    g.fillRect(CENTER_X + 10, 148 - lift, 34, 70);
-    g.fillRect(CENTER_X + 10, 196 - lift, 100, 30);
-    g.fillRect(CENTER_X + 70, 148 - lift, 34, 110);
-    // Spatula slides along the bottom edge with the needle.
-    const spatulaX = CENTER_X - 200 + needle * 400;
+    // A dark gap opens under the print with every good press.
+    if (peeled > 0) {
+      g.fillStyle(0x05080c, 0.85).fillRect(edgeFrom, edgeY - 1, (edgeTo - edgeFrom) * peeled, 3 + peeled * 5);
+    }
+    const spatulaX = edgeFrom + needle * (edgeTo - edgeFrom);
     if (this.hasArt(MINIGAME_TEXTURES.spatula)) {
-      this.placeSprite('spatula', MINIGAME_TEXTURES.spatula, spatulaX, 300, 0.5, 0.2);
+      this.placeSprite('spatula', MINIGAME_TEXTURES.spatula, spatulaX, edgeY, 0.5, 0.03).setOrigin(0.5, 0.03).setScale(0.8).setDepth(3);
       return;
     }
-    g.fillStyle(0xced4da, 1).fillRect(spatulaX - 18, 262, 36, 26);
-    g.fillStyle(0x212529, 1).fillRect(spatulaX - 7, 288, 14, 40);
+    g.fillStyle(0xced4da, 1).fillRect(spatulaX - 18, edgeY, 36, 26);
+    g.fillStyle(0x212529, 1).fillRect(spatulaX - 7, edgeY + 26, 14, 40);
   }
 
   // ------------------------------------------------------------ helpers
@@ -430,15 +473,6 @@ export class MinigameScene extends Phaser.Scene {
 
   private hasArt(key: string): boolean {
     return this.textures.exists(key);
-  }
-
-  private addArt(key: string, x: number, y: number, maxWidth: number, maxHeight: number): void {
-    if (!this.hasArt(key)) return;
-    const image = this.add.image(x, y, key).setDepth(-1);
-    const scale = Math.min(maxWidth / image.width, maxHeight / image.height);
-    image.setScale(scale);
-    this.children.sendToBack(image);
-    this.children.bringToTop(this.graphics);
   }
 
   private readonly named = new Map<string, Phaser.GameObjects.Image>();
