@@ -10,7 +10,7 @@ describe('InventorySystem', () => {
 
     expect(inventory.has('petg-spool')).toBe(true);
     expect(inventory.getSprintMultiplier()).toBe(0.86);
-    expect(inventory.getUnavailableHideSpotIds()).toEqual(['hedge-hide', 'parking-hide', 'garden-west-hide', 'garden-east-hide']);
+    expect(inventory.getUnavailableHideSpotIds()).toEqual(['hedge-hide', 'parking-hide', 'garden-west-hide', 'garden-east-hide', 'pharmacy-bush']);
     expect(inventory.getVisibleCarriedItem()?.displayName).toBe('SZPULA PETG');
 
     inventory.remove('petg-spool');

@@ -102,7 +102,7 @@ P = [
     ('decor', 'tree', 640, 330, 92, {}), ('decor', 'birch', 560, 175, 80, {}), ('decor', 'flowerbed', 560, 330, 36, {}),
     ('decor', 'trzepak', 572, 450, 66, {}),
     ('decor', 'bench', 640, 470, 56, {}), ('decor', 'trash-bin', 700, 470, 22, {}),
-    ('decor', 'lamp', 700, 540, 32, {}), ('decor', 'lamp', 1150, 540, 32, {}), ('decor', 'lamp', 2120, 540, 32, {}),
+    ('decor', 'lamp', 560, 540, 32, {}), ('decor', 'lamp', 1150, 540, 32, {}), ('decor', 'lamp', 2120, 540, 32, {}),
     ('decor', 'lamp', 450, 958, 32, {}), ('decor', 'lamp', 1200, 958, 32, {}), ('decor', 'lamp', 1700, 958, 32, {}),
     ('decor', 'bike-rack', 420, 528, 64, {}),
     ('decor', 'young-tree', 880, 532, 30, {}), ('decor', 'young-tree', 1330, 532, 30, {}), ('decor', 'young-tree', 1960, 532, 30, {}),
@@ -119,7 +119,7 @@ P = [
     ('decor', 'boxwood', 1000, 1220, 30, {}),
     ('decor', 'waste-shelter', 1095, 1085, 70, {}), ('decor', 'bench', 1170, 1078, 56, {}),
     ('decor', 'bench', 1572, 1372, 56, {}), ('decor', 'dead-tree', 1690, 1385, 60, {}),
-    ('decor', 'kiosk', 2155, 1045, 72, {}), ('decor', 'spruce', 2165, 1210, 60, {}), ('decor', 'tree', 2170, 1330, 90, {}),
+    ('decor', 'kiosk', 2050, 1488, 72, {}), ('decor', 'spruce', 2182, 1210, 60, {}), ('decor', 'tree', 2184, 1330, 90, {}),
     ('decor', 'hedge', 200, 1398, 76, {}), ('decor', 'hedge', 820, 1398, 76, {}), ('decor', 'hedge', 1400, 1398, 76, {}),
     # Detale na ziemi (płaskie, pod postaciami)
     ('decals', 'manhole', 900, 712, 24, {'depth': 2}), ('decals', 'manhole', 1650, 782, 24, {'depth': 2}),

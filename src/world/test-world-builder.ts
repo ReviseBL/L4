@@ -203,6 +203,8 @@ function createHideSpots(
     // Big bushes in the garden hedges closing the top edge.
     { id: 'garden-west-hide', x: 645, y: 380, radius: 70, label: 'DUŻY KRZAK' },
     { id: 'garden-east-hide', x: 1282, y: 380, radius: 70, label: 'DUŻY KRZAK' },
+    // Lilac by the pharmacy (between block 23 and the pharmacy): Hubi crouches behind it.
+    { id: 'pharmacy-bush', x: 545, y: 1128, radius: 62, label: 'KRZAK BZU', tuckAt: { x: 545, y: 1128 }, tuckDepth: 1146 },
   ];
 
   placeArtGroup(scene, 'hide-hedge');
