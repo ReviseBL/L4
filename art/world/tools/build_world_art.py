@@ -80,7 +80,7 @@ P = [
     ('pharmacy-vitamins', 'pharmacy-cabinet', 670, 1290, 55, {}),
     ('pharmacy-doormat', 'doormat', 780, 1048, 52, {'depth': 1}),
     ('parcel-locker', 'parcel-locker', 1320, 1050, 92, {}),
-    ('kebab-kiosk', 'kebab-kiosk', 980, 1015, 100, {}),
+    ('kebab-kiosk', 'kebab-kiosk', 1610, 1295, 100, {}),
     ('street-hedge', 'hedge', 760, 573, 76, {}),
     ('hide-hedge', 'hedge', 830, 552, 66, {}),
     ('street-dumpster', 'dumpster', 1270, 626, 84, {}),
@@ -93,7 +93,7 @@ P = [
     ('sign-apteka', 'sign-apteka', 670, 1020, 128, {'center': True, 'depth': 1021}),
     ('sign-3d-print-shop', 'sign-3d-print-shop', 1757, 490, 150, {'center': True, 'depth': 491}),
     ('sign-tech-shop', 'sign-tech-shop', 1785, 140, 96, {'center': True, 'depth': 141}),
-    ('sign-kebab', 'sign-kebab', 980, 930, 64, {'center': True, 'depth': 1016}),
+    ('sign-kebab', 'sign-kebab', 1610, 1210, 64, {'center': True, 'depth': 1296}),
     # Budynki w obrysie dawnych prostokątów (środek, szerokość×wysokość, głębia = dolna krawędź)
     ('building-blok-23', 'blok-23', 275, 1210, 430, {'center': True, 'height': 280, 'depth': 1350}),
     ('building-blok-47', 'blok-47', 1280, 1215, 480, {'center': True, 'height': 250, 'depth': 1340}),
@@ -119,7 +119,7 @@ P = [
     ('decor', 'lilac', 545, 1150, 46, {}), ('decor', 'hydrant', 545, 1245, 16, {}), ('decor', 'tree', 545, 1330, 92, {}),
     ('decor', 'boxwood', 1000, 1220, 30, {}), ('decor', 'trash-bin', 1000, 1330, 22, {}),
     ('decor', 'waste-shelter', 1095, 1085, 70, {}), ('decor', 'bench', 1170, 1078, 56, {}), ('decor', 'trash-bin', 1230, 1078, 22, {}),
-    ('decor', 'garages', 1610, 1205, 170, {}), ('decor', 'bench', 1610, 1330, 56, {}), ('decor', 'dead-tree', 1665, 1335, 60, {}),
+    ('decor', 'bench', 1572, 1372, 56, {}), ('decor', 'dead-tree', 1690, 1385, 60, {}),
     ('decor', 'kiosk', 2155, 1045, 72, {}), ('decor', 'spruce', 2165, 1210, 60, {}), ('decor', 'tree', 2170, 1330, 90, {}),
     ('decor', 'hedge', 200, 1398, 76, {}), ('decor', 'hedge', 820, 1398, 76, {}), ('decor', 'hedge', 1400, 1398, 76, {}),
     # Detale na ziemi (płaskie, pod postaciami)

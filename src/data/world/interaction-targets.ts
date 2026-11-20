@@ -100,8 +100,8 @@ export const worldInteractionTargets = [
   },
   {
     id: 'kebab-counter',
-    x: 980,
-    y: 970,
+    x: 1610,
+    y: 1240,
     radius: 74,
     prompt: '[E] SPRAWDŹ KEBAB',
     message: 'Sos mieszany. Decyzja odważniejsza niż wyjście z domu.',

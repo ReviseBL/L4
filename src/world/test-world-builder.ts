@@ -64,10 +64,19 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   const hideSpots = createHideSpots(scene);
   addWorldLabel(scene);
 
+  // The colleague no longer stays on the asphalt: he also walks the north
+  // sidewalk in front of the shops and the south sidewalk past the pharmacy,
+  // so sneaking along the edges of the map is not a free pass.
   const workColleagueRoute: readonly Point2D[] = [
     { x: 560, y: 655 },
+    { x: 650, y: 585 },
+    { x: 1180, y: 585 },
+    { x: 1200, y: 655 },
     { x: 1980, y: 655 },
     { x: 1980, y: 815 },
+    { x: 1020, y: 815 },
+    { x: 980, y: 930 },
+    { x: 600, y: 930 },
     { x: 560, y: 815 },
   ];
   const workColleaguePatrolRoutes = {
@@ -76,6 +85,17 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
       { x: 560, y: 655 },
       { x: 1160, y: 655 },
       { x: 1320, y: 920 },
+      { x: 1640, y: 920 },
+      { x: 1980, y: 815 },
+      { x: 1180, y: 815 },
+    ],
+    // Food missions: the kebab moved next to the office block.
+    'kebab-loop': [
+      { x: 560, y: 655 },
+      { x: 1160, y: 655 },
+      { x: 1320, y: 875 },
+      { x: 1640, y: 920 },
+      { x: 1610, y: 1150 },
       { x: 1640, y: 920 },
       { x: 1980, y: 815 },
       { x: 1180, y: 815 },
@@ -137,11 +157,11 @@ function addKebabStand(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.Sta
   if (placeArtGroup(scene, 'kebab-kiosk')) {
     placeArtGroup(scene, 'sign-kebab');
     // Budka z grafiką dostaje bryłę przy podstawie; lada (punkt interakcji) zostaje od strony chodnika.
-    addInvisibleObstacle(obstacles, scene, 980, 995, 96, 40);
+    addInvisibleObstacle(obstacles, scene, 1610, 1275, 96, 40);
     return;
   }
-  scene.add.rectangle(980, 970, 118, 74, 0x9d0208).setStrokeStyle(4, 0x370617).setDepth(970);
-  scene.add.text(980, 970, 'KEBAB\nNA WYNOS', labelStyle(13)).setOrigin(0.5).setDepth(971);
+  scene.add.rectangle(1610, 1250, 118, 74, 0x9d0208).setStrokeStyle(4, 0x370617).setDepth(1250);
+  scene.add.text(1610, 1250, 'KEBAB\nNA WYNOS', labelStyle(13)).setOrigin(0.5).setDepth(1251);
 }
 
 function addParcelLocker(

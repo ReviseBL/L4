@@ -21,7 +21,7 @@ const PARCEL = { x: 1320, y: 895 };
 const ASA = { x: 1570, y: 290 };
 const PRINTER = { x: 215, y: 200 };
 const L4_FILAMENT = { x: 1705, y: 405 };
-const KEBAB = { x: 980, y: 970 };
+const KEBAB = { x: 1610, y: 1175 };
 const TPU = { x: 1845, y: 405 };
 
 function twoStepCheckpoints(
