@@ -100,9 +100,9 @@ import { ServiceWait } from '../systems/challenges/service-wait';
 import { ServiceWaitView } from '../entities/challenges/service-wait-view';
 import { StaminaBar } from '../entities/player/stamina-bar';
 import { pickSpawnIndex } from '../systems/navigation/spawn-picker';
-import { DogCameo } from '../systems/easter-eggs/dog-cameo';
-import { dogCameoConfig } from '../data/easter-eggs/dog-config';
-import { RunningDog } from '../entities/easter-eggs/running-dog';
+import { Miodzik } from '../systems/easter-eggs/miodzik';
+import { MIODZIK_SPOTS, miodzikConfig } from '../data/easter-eggs/dog-config';
+import { MiodzikView } from '../entities/easter-eggs/miodzik-view';
 import { HOW_TO_PLAY_SCENE_KEY, type HowToPlaySceneData } from './how-to-play-scene';
 import { HOW_TO_PLAY_SEEN_KEY } from '../data/tutorial/how-to-play';
 import type { RiverView } from '../world/river';
@@ -180,8 +180,8 @@ export class GameScene extends Phaser.Scene {
   private watcherPerception!: PerceptionSystem;
   private serviceView!: ServiceWaitView;
   private staminaBar!: StaminaBar;
-  private readonly dogCameo = new DogCameo(dogCameoConfig, Math.random);
-  private runningDog!: RunningDog;
+  private readonly miodzik = new Miodzik(miodzikConfig, MIODZIK_SPOTS, Math.random);
+  private miodzikView!: MiodzikView;
   private river: RiverView | null = null;
   private hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]> = new Map();
   private readonly windowGlimpses = new WindowGlimpseSystem(
@@ -262,7 +262,7 @@ export class GameScene extends Phaser.Scene {
     this.player = new Player(this, playerStart.x, playerStart.y);
     this.playerController = new PlayerController(this, this.player);
     this.staminaBar = new StaminaBar(this);
-    this.runningDog = new RunningDog(this);
+    this.miodzikView = new MiodzikView(this);
     this.playerCollider = this.physics.add.collider(this.player, world.obstacles);
 
     this.suspicionSystem = new SuspicionSystem(
@@ -452,7 +452,7 @@ export class GameScene extends Phaser.Scene {
       this.pharmacyView.destroy();
       this.serviceView.destroy();
       this.staminaBar.destroy();
-      this.runningDog.clear();
+      this.miodzikView.clear();
       this.river?.destroy();
       this.river = null;
       this.activeService = null;
@@ -483,7 +483,7 @@ export class GameScene extends Phaser.Scene {
       this.startPhoneForMission(missionStart.mission);
       this.applyMissionPatrol(missionStart.mission.coworkerPatrolRouteId);
       this.rollWatchers();
-      this.dogCameo.startMission();
+      this.miodzikView.show(this.miodzik.startMission());
       this.applyHrMissionSetup(missionStart.mission);
       this.applyCompanyCarMissionSetup(missionStart.mission);
       this.applyManagerMissionSetup(missionStart.mission);
@@ -513,6 +513,7 @@ export class GameScene extends Phaser.Scene {
 
   public update(time: number, delta: number): void {
     this.river?.update(delta);
+    this.miodzikView?.update(delta, this.miodzik.update(delta));
     if (Phaser.Input.Keyboard.JustDown(this.helpKey)) {
       this.showHowToPlay();
       return;
@@ -590,7 +591,6 @@ export class GameScene extends Phaser.Scene {
     this.updateParcelChallenge(delta);
     this.updateServiceWait(delta);
     this.updateWindowGlimpses(delta);
-    this.updateDogCameo(delta);
     if (this.updatePharmacyQueue(delta)) {
       this.updateHud(null);
       return;
@@ -782,13 +782,6 @@ export class GameScene extends Phaser.Scene {
     }
     this.pharmacyView.render(active.queue, inZone);
     return handedOver;
-  }
-
-  /** Easter egg: a runaway Pomeranian dashes across the screen once in some missions. */
-  private updateDogCameo(delta: number): void {
-    if (!this.dogCameo.update(delta)) return;
-    const view = this.cameras.main.worldView;
-    this.runningDog.run(this.dogCameo.planRun({ left: view.left, right: view.right, top: view.top, bottom: view.bottom }, this.player.y));
   }
 
   /**
@@ -1001,7 +994,7 @@ export class GameScene extends Phaser.Scene {
       this.startPhoneForMission(nextMission.mission);
       this.applyMissionPatrol(nextMission.mission.coworkerPatrolRouteId);
       this.rollWatchers();
-      this.dogCameo.startMission();
+      this.miodzikView.show(this.miodzik.startMission());
       this.applyHrMissionSetup(nextMission.mission);
       this.applyCompanyCarMissionSetup(nextMission.mission);
       this.applyManagerMissionSetup(nextMission.mission);

@@ -41,6 +41,7 @@ export class BootScene extends Phaser.Scene {
       });
     }
     this.load.spritesheet(DOG_SPRITE.key, DOG_SPRITE.url, { frameWidth: DOG_SPRITE.frameWidth, frameHeight: DOG_SPRITE.frameHeight });
+    // MIODZIK_SPRITE (idle sheet) is loaded here once its file exists.
     for (const texture of [...Object.values(WORLD_TILE_TEXTURES), ...WORLD_ART_TEXTURES, ...MINIGAME_ART_TEXTURES, ...WATCHER_TEXTURES, ...EXTRA_ART_TEXTURES, ...ROUND4_TEXTURES]) {
       this.load.image(texture.key, texture.url);
     }
