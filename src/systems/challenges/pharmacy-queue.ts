@@ -2,6 +2,7 @@ import type {
   PharmacyQueueDefinition,
   PharmacyQueueEvent,
   QueueCustomer,
+  QueueLine,
 } from '../../domain/challenges/pharmacy-queue-types';
 
 /**
@@ -23,7 +24,7 @@ export class PharmacyQueue {
     const events: PharmacyQueueEvent[] = [];
     this.servedMs += deltaMs;
     const current = this.getServingCustomer();
-    if (current && this.servedMs >= current.serviceMs) {
+    if (current && this.servedMs >= this.getServiceMs(current)) {
       events.push({ type: 'served', customerIndex: this.servingIndex });
       this.servingIndex += 1;
       this.servedMs = 0;
@@ -49,11 +50,11 @@ export class PharmacyQueue {
   /** 0..1 progress of the customer at the counter. */
   public getServiceProgress(): number {
     const current = this.getServingCustomer();
-    return current ? Math.min(1, this.servedMs / current.serviceMs) : 1;
+    return current ? Math.min(1, this.servedMs / this.getServiceMs(current)) : 1;
   }
 
-  /** The line the serving senior is saying right now. */
-  public getCurrentLine(): string | null {
+  /** Who is talking at the counter right now, and what. */
+  public getCurrentLine(): QueueLine | null {
     const current = this.getServingCustomer();
     if (!current || current.lines.length === 0) return null;
     const index = Math.min(current.lines.length - 1, Math.floor(this.servedMs / this.lineMs));
@@ -61,5 +62,9 @@ export class PharmacyQueue {
   }
 
   public isDone(): boolean { return this.done; }
+
+  public getServiceMs(customer: QueueCustomer): number {
+    return Math.max(1, customer.lines.length) * this.lineMs;
+  }
   public getDefinition(): PharmacyQueueDefinition { return this.definition; }
 }

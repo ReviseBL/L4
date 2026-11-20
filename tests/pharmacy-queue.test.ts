@@ -9,34 +9,39 @@ describe('PharmacyQueue', () => {
     const queue = new PharmacyQueue(pharmacyQueues['m1-pharmacy'], pharmacyQueueConfig.lineMs);
     expect(queue.update(10_000, false)).toEqual([]);
     expect(queue.getPeopleAhead()).toBe(2);
-    queue.update(3_000, true);
+    queue.update(8_000, true);
     expect(queue.getServiceProgress()).toBeGreaterThan(0.4);
   });
 
   it('serves every senior in order, then it is Hubi\'s turn', () => {
     const queue = new PharmacyQueue(pharmacyQueues['m1-pharmacy'], pharmacyQueueConfig.lineMs);
-    expect(queue.update(6_000, true)).toEqual([{ type: 'served', customerIndex: 0 }]);
+    const first = queue.getServiceMs(pharmacyQueues['m1-pharmacy'].customers[0]);
+    expect(queue.update(first, true)).toEqual([{ type: 'served', customerIndex: 0 }]);
     expect(queue.getServingCustomer()?.seniorId).toBe('zdzislaw');
-    expect(queue.update(6_000, true)).toEqual([{ type: 'served', customerIndex: 1 }, { type: 'your-turn' }]);
+    const second = queue.getServiceMs(pharmacyQueues['m1-pharmacy'].customers[1]);
+    expect(queue.update(second, true)).toEqual([{ type: 'served', customerIndex: 1 }, { type: 'your-turn' }]);
     expect(queue.isDone()).toBe(true);
     expect(queue.getPeopleAhead()).toBe(0);
   });
 
-  it('cycles the senior\'s lines while she is at the counter', () => {
+  it('alternates the senior and the pharmacist in the small talk', () => {
     const queue = new PharmacyQueue(pharmacyQueues['m3-pharmacy'], pharmacyQueueConfig.lineMs);
-    const first = queue.getCurrentLine();
+    expect(queue.getCurrentLine()?.speaker).toBe('senior');
     queue.update(pharmacyQueueConfig.lineMs, true);
-    expect(queue.getCurrentLine()).not.toBe(first);
+    expect(queue.getCurrentLine()?.speaker).toBe('pharmacist');
+  });
+
+  it('is slow on purpose: every senior takes at least 15 seconds', () => {
+    const queue = new PharmacyQueue(pharmacyQueues['m1-pharmacy'], pharmacyQueueConfig.lineMs);
+    for (const customer of pharmacyQueues['m1-pharmacy'].customers) {
+      expect(queue.getServiceMs(customer)).toBeGreaterThanOrEqual(15_000);
+    }
   });
 
   it('month 3 has a longer queue than month 1 and enough spots for everyone', () => {
-    const total = (id: keyof typeof pharmacyQueues) => pharmacyQueues[id].customers.reduce((sum, c) => sum + c.serviceMs, 0);
-    expect(total('m3-pharmacy')).toBeGreaterThan(total('m1-pharmacy'));
+    expect(pharmacyQueues['m3-pharmacy'].customers.length).toBeGreaterThan(pharmacyQueues['m1-pharmacy'].customers.length);
     for (const queue of Object.values(pharmacyQueues)) {
       expect(queue.customers.length).toBeLessThanOrEqual(pharmacyQueueConfig.spots.length);
-      for (const customer of queue.customers) {
-        expect(customer.lines.length * pharmacyQueueConfig.lineMs).toBeLessThanOrEqual(customer.serviceMs + pharmacyQueueConfig.lineMs);
-      }
     }
   });
 

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addStandingNpc } from '../entities/npc/standing-npc';
 import type { ObstacleBounds, Point2D } from '../core/math/geometry-types';
 import type { NpcPatrolSetup } from '../domain/npcs/npc-types';
 import { homeVisualDefinitions } from '../data/home/home-progression';
@@ -280,6 +281,8 @@ function addShop(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.StaticGro
 
   placeArtGroup(scene, 'chwilka-doormat');
   addFurniture(scene, obstacles, 950, 335, 180, 44, 0x33691e, 'LADA: KAWA / PĄCZKI', placeArtGroup(scene, 'chwilka-counter'));
+  // Cashier behind the counter (customers come in from the door at the bottom).
+  addStandingNpc(scene, { x: 950, y: 300, label: 'KASJERKA', textureKey: 'npc-cashier', placeholderColor: 0xe9e3d5, apronColor: 0x2d6a4f });
   addFurniture(scene, obstacles, 1085, 210, 62, 110, 0xffca3a, 'CHIPSY', placeArtGroup(scene, 'chwilka-chips'));
 }
 

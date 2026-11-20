@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { pharmacyQueueConfig, seniors } from '../../data/challenges/pharmacy-queues';
+import { PHARMACIST, pharmacyQueueConfig, seniors } from '../../data/challenges/pharmacy-queues';
 import type { PharmacyQueueDefinition, SeniorDefinition } from '../../domain/challenges/pharmacy-queue-types';
 import type { PharmacyQueue } from '../../systems/challenges/pharmacy-queue';
 
@@ -21,9 +21,25 @@ export class PharmacyQueueView {
   private readonly bubble: Phaser.GameObjects.Text;
   private readonly zoneMarker: Phaser.GameObjects.Ellipse;
   private readonly zoneLabel: Phaser.GameObjects.Text;
+  private readonly pharmacist: Phaser.GameObjects.Image;
+  private readonly pharmacistBubble: Phaser.GameObjects.Text;
 
   public constructor(private readonly scene: Phaser.Scene) {
     for (const senior of Object.values(seniors)) ensurePlaceholderTexture(scene, senior);
+    ensurePlaceholderTexture(scene, { textureKey: PHARMACIST.textureKey, placeholderColor: PHARMACIST.placeholderColor });
+    // Always behind the counter, facing the customers.
+    const desk = pharmacyQueueConfig.pharmacistSpot;
+    const pharmacistKey = scene.textures.exists(PHARMACIST.textureKey) ? PHARMACIST.textureKey : `${PHARMACIST.textureKey}-placeholder`;
+    this.pharmacist = scene.add.image(desk.x, desk.y, pharmacistKey).setOrigin(0.5, 0.9).setDepth(desk.y);
+    scene.add.text(desk.x, desk.y + 12, PHARMACIST.displayName, labelStyle(8, '#f4f1de')).setOrigin(0.5, 0).setDepth(desk.y + 1);
+    this.pharmacistBubble = scene.add
+      .text(desk.x, desk.y + 26, '', labelStyle(10, '#1b1b1b', '#e9f5db'))
+      .setBackgroundColor('#e9f5db')
+      .setPadding(5, 3)
+      .setWordWrapWidth(220)
+      .setOrigin(0.5, 0)
+      .setDepth(99_500)
+      .setVisible(false);
     const spot = pharmacyQueueConfig.playerSpot;
     this.zoneMarker = scene.add
       .ellipse(spot.x, spot.y + 14, pharmacyQueueConfig.playerZoneRadius * 1.6, pharmacyQueueConfig.playerZoneRadius * 0.7)
@@ -66,12 +82,14 @@ export class PharmacyQueueView {
 
   public render(queue: PharmacyQueue, playerInZone: boolean): void {
     const serving = this.actors[queue.getServingIndex()];
-    const line = queue.getCurrentLine();
-    if (serving && line && !queue.isDone()) {
-      this.bubble.setText(line).setPosition(serving.sprite.x, serving.sprite.y - LABEL_OFFSET_Y - 8).setVisible(true);
+    const line = queue.isDone() ? null : queue.getCurrentLine();
+    if (serving && line?.speaker === 'senior') {
+      this.bubble.setText(line.text).setPosition(serving.sprite.x, serving.sprite.y - LABEL_OFFSET_Y - 8).setVisible(true);
     } else {
       this.bubble.setVisible(false);
     }
+    // The pharmacist answers from behind the counter (bubble below her).
+    this.pharmacistBubble.setText(line?.speaker === 'pharmacist' ? line.text : '').setVisible(line?.speaker === 'pharmacist');
     const color = playerInZone ? 0x90be6d : 0xffd166;
     this.zoneMarker.setStrokeStyle(2, color, 0.9).setFillStyle(color, playerInZone ? 0.2 : 0.12);
     this.zoneLabel
@@ -116,6 +134,7 @@ export class PharmacyQueueView {
     }
     this.actors = [];
     this.bubble.setVisible(false);
+    this.pharmacistBubble.setVisible(false);
     this.zoneMarker.setVisible(false);
     this.zoneLabel.setVisible(false);
   }
@@ -123,17 +142,19 @@ export class PharmacyQueueView {
   public destroy(): void {
     this.despawn();
     this.bubble.destroy();
+    this.pharmacistBubble.destroy();
+    this.pharmacist.destroy();
     this.zoneMarker.destroy();
     this.zoneLabel.destroy();
   }
 }
 
-function placeholderKey(senior: SeniorDefinition): string {
+function placeholderKey(senior: Pick<SeniorDefinition, 'textureKey'>): string {
   return `${senior.textureKey}-placeholder`;
 }
 
-/** Simple figure used only if a senior sprite failed to load. */
-function ensurePlaceholderTexture(scene: Phaser.Scene, senior: SeniorDefinition): void {
+/** Simple figure used until/if a character sprite is missing. */
+function ensurePlaceholderTexture(scene: Phaser.Scene, senior: Pick<SeniorDefinition, 'textureKey' | 'placeholderColor'>): void {
   const key = placeholderKey(senior);
   if (scene.textures.exists(key)) return;
   const g = scene.make.graphics({ x: 0, y: 0 }, false);

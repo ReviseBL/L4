@@ -9,11 +9,15 @@ export interface SeniorDefinition {
   textureKey: string;
 }
 
+export interface QueueLine {
+  speaker: 'senior' | 'pharmacist';
+  text: string;
+}
+
 export interface QueueCustomer {
   seniorId: SeniorId;
-  /** Spoken one after another while this customer is being served. */
-  lines: readonly string[];
-  serviceMs: number;
+  /** Small talk at the counter; serving takes lines × lineMs. */
+  lines: readonly QueueLine[];
 }
 
 export interface PharmacyQueueDefinition {
@@ -32,6 +36,8 @@ export interface PharmacyQueueConfig {
   playerSpot: { x: number; y: number };
   /** Where served seniors walk to before disappearing. */
   exit: { x: number; y: number };
+  /** The pharmacist stands behind the counter. */
+  pharmacistSpot: { x: number; y: number };
 }
 
 export type PharmacyQueueEvent =
