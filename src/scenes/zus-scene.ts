@@ -24,12 +24,23 @@ import { InkblotTest } from '../systems/finale/inkblot-test';
 import { ReflexTest } from '../systems/finale/reflex-test';
 import { InkblotView } from './zus/inkblot-view';
 import { ReflexView } from './zus/reflex-view';
+import { ZusBackdrop } from './zus/zus-backdrop';
+import { ZUS_BOARDS, ZUS_ENDING_BOARDS, ZUS_PIXEL_ART, type ZusBoardId } from '../data/finale/zus-art';
+import { HUBI_TEXTURE_KEY, getHubiAnimationKey } from '../data/player/player-animation-config';
 
 interface ZusSceneData {
   phase?: ZusFinalePhase;
   credibility?: number;
   forcedEnding?: FinaleEndingId;
 }
+
+/** Walk test on the corridor art (790×248 at 480,305): Hubi's feet stay on the floor between the walls. */
+const WALK_SCALE = 1.5;
+const WALK_FEET_START_Y = 330;
+const WALK_FEET_MIN_Y = 272;
+const WALK_FEET_MAX_Y = 392;
+/** The red finish line painted on the corridor art. */
+const WALK_FINISH_X = 818;
 
 export class ZusScene extends Phaser.Scene {
   private readonly saveGameService = new SaveGameService(window.localStorage);
@@ -52,7 +63,9 @@ export class ZusScene extends Phaser.Scene {
   private documentContainer: Phaser.GameObjects.Container | null = null;
   private selectedDocumentIndex = 0;
   private walkContainer: Phaser.GameObjects.Container | null = null;
-  private walkPlayer: Phaser.GameObjects.Rectangle | null = null;
+  private walkPlayer: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite | null = null;
+  private walkDirection: 'left' | 'right' | 'up' | 'down' = 'right';
+  private backdrop!: ZusBackdrop;
   private walkMessage: Phaser.GameObjects.Text | null = null;
   private sprintWarningCooldownMs = 0;
   private phase: ZusFinalePhase = ZUS_FINALE_PHASE.Documents;
@@ -68,6 +81,21 @@ export class ZusScene extends Phaser.Scene {
 
   public constructor() { super('ZusScene'); }
 
+  /** The finale's boards are big, so they load here instead of at boot. */
+  public preload(): void {
+    for (const board of [...Object.values(ZUS_BOARDS), ...Object.values(ZUS_ENDING_BOARDS)]) {
+      if (!this.textures.exists(board.key)) this.load.image(board.key, board.url);
+    }
+    const { corridorFloor, doctor, leg } = ZUS_PIXEL_ART;
+    if (!this.textures.exists(corridorFloor.key)) this.load.image(corridorFloor.key, corridorFloor.url);
+    if (!this.textures.exists(doctor.key)) this.load.image(doctor.key, doctor.url);
+    if (!this.textures.exists(leg.key)) this.load.spritesheet(leg.key, leg.url, { frameWidth: leg.frameWidth, frameHeight: leg.frameHeight });
+  }
+
+  private showBoard(board: ZusBoardId, dim: number): void {
+    this.backdrop.show(ZUS_BOARDS[board].key, dim);
+  }
+
   public create(data: ZusSceneData = {}): void {
     this.cameras.main.setBackgroundColor('#090d12');
     const developerToolsEnabled = resolveDeveloperToolsEnabled(import.meta.env.DEV, import.meta.env.VITE_ENABLE_DEBUG);
@@ -81,11 +109,13 @@ export class ZusScene extends Phaser.Scene {
     this.finaleSystem = new ZusFinaleSystem(this.createCampaignContext(), data.credibility);
     this.finaleSystem.setPhase(this.phase);
     this.createInput();
+    this.backdrop = new ZusBackdrop(this);
     this.add.text(28, 22, 'KONTROLA — SATYRYCZNY FINAŁ GRY', uiStyle(14, '#788da1'));
     this.add.text(932, 22, 'ZUS', uiStyle(24, '#f4f1de')).setOrigin(1, 0);
 
     if (data.phase) this.startPhase(data.phase);
-    else this.showDialogue('zus-arrival', [
+    else this.showBoard('arrival', 0.1);
+    if (!data.phase) this.showDialogue('zus-arrival', [
       { speaker: 'DZIEŃ 180', text: 'KONTROLA', tone: 'system' },
       { speaker: 'ZUS', text: 'Proszę przygotować dokumenty.', tone: 'speech' },
     ], () => this.startDocuments());
@@ -134,10 +164,11 @@ export class ZusScene extends Phaser.Scene {
   private startDocuments(): void {
     this.phase = ZUS_FINALE_PHASE.Documents;
     this.finaleSystem.setPhase(this.phase);
+    this.showBoard('counter', 0.7);
     this.documentContainer?.destroy(true);
     const title = this.add.text(480, 74, 'DOKUMENTACJA', uiStyle(30, '#ffd166')).setOrigin(0.5);
     const hint = this.add.text(480, 112, 'WYBIERZ 3 DOKUMENTY  •  W/S LUB ↑/↓  •  E', uiStyle(13, '#8ecae6')).setOrigin(0.5);
-    const panel = this.add.rectangle(480, 290, 690, 315, 0x111820).setStrokeStyle(4, 0x8ecae6);
+    const panel = this.add.rectangle(480, 290, 690, 315, 0x111820, 0.92).setStrokeStyle(4, 0x8ecae6);
     this.documentContainer = this.add.container(0, 0, [panel, title, hint]);
     this.refreshDocumentList();
   }
@@ -177,6 +208,7 @@ export class ZusScene extends Phaser.Scene {
   private startQuestions(): void {
     this.phase = ZUS_FINALE_PHASE.Questions;
     this.finaleSystem.setPhase(this.phase);
+    this.showBoard('interview', 0.3);
     const definition: DialogueSequenceDefinition = {
       id: 'zus-main-questions', pauseWorld: true, lockPlayerMovement: true,
       lines: [
@@ -241,6 +273,7 @@ export class ZusScene extends Phaser.Scene {
   }
 
   private introInkblots(): void {
+    this.showBoard('psychologist', 0.15);
     this.showDialogue('zus-inkblots-intro', [
       { speaker: 'ZUS', text: 'Teraz pani psycholog. Krótki test.', tone: 'speech' },
       { speaker: 'PSYCHOLOG', text: 'Pokażę panu kilka kart. Proszę mówić pierwsze, co przyjdzie do głowy.', tone: 'speech' },
@@ -250,6 +283,7 @@ export class ZusScene extends Phaser.Scene {
   private startInkblots(): void {
     this.phase = ZUS_FINALE_PHASE.Inkblots;
     this.finaleSystem.setPhase(this.phase);
+    this.showBoard('psychologist', 0.78);
     this.inkblotTest = new InkblotTest(INKBLOT_CARDS, inkblotTestConfig);
     this.inkblotView = new InkblotView(this);
     this.inkblotChoice = 0;
@@ -274,6 +308,7 @@ export class ZusScene extends Phaser.Scene {
       this.inkblotView?.destroy();
       this.inkblotView = null;
       this.inkblotTest = null;
+      this.showBoard('doctor', 0.15);
       this.showDialogue('zus-reflex-intro', [
         { speaker: 'PSYCHOLOG', text: 'Dziękuję. To wszystko.', tone: 'speech' },
         { speaker: 'LEKARZ', text: 'Teraz odruchy. Proszę usiąść na kozetce.', tone: 'speech' },
@@ -285,6 +320,7 @@ export class ZusScene extends Phaser.Scene {
   private startReflex(): void {
     this.phase = ZUS_FINALE_PHASE.Reflex;
     this.finaleSystem.setPhase(this.phase);
+    this.showBoard('doctor', 0.8);
     this.reflexTest = new ReflexTest(reflexTestConfig, Math.random);
     this.reflexView = new ReflexView(this, reflexTestConfig);
     this.reflexAnimating = false;
@@ -309,6 +345,7 @@ export class ZusScene extends Phaser.Scene {
         this.reflexView?.destroy();
         this.reflexView = null;
         this.reflexTest = null;
+        this.showBoard('corridor', 0.15);
         this.showDialogue('zus-walk-intro', [
           { speaker: 'LEKARZ', text: 'Na koniec proszę przejść do zaznaczonego miejsca.', tone: 'speech' },
         ], () => this.startWalkTest());
@@ -319,15 +356,27 @@ export class ZusScene extends Phaser.Scene {
   private startWalkTest(): void {
     this.phase = ZUS_FINALE_PHASE.WalkTest;
     this.finaleSystem.setPhase(this.phase);
-    const floor = this.add.rectangle(480, 305, 790, 250, 0x263238).setStrokeStyle(5, 0x90a4ae);
-    const start = this.add.rectangle(145, 305, 70, 150, 0x2a9d8f, 0.42);
-    const finish = this.add.rectangle(815, 305, 70, 150, 0xe9c46a, 0.42);
+    this.showBoard('corridor', 0.82);
+    const corridorArt = this.textures.exists(ZUS_PIXEL_ART.corridorFloor.key);
+    const parts: Phaser.GameObjects.GameObject[] = [];
+    if (corridorArt) {
+      parts.push(this.add.image(480, 305, ZUS_PIXEL_ART.corridorFloor.key));
+    } else {
+      parts.push(
+        this.add.rectangle(480, 305, 790, 250, 0x263238).setStrokeStyle(5, 0x90a4ae),
+        this.add.rectangle(145, 305, 70, 150, 0x2a9d8f, 0.42),
+        this.add.rectangle(815, 305, 70, 150, 0xe9c46a, 0.42),
+      );
+    }
     const title = this.add.text(480, 80, 'BADANIE', uiStyle(30, '#ffd166')).setOrigin(0.5);
     const objective = this.add.text(480, 120, 'ZACHOWUJ SIĘ NATURALNIE', uiStyle(18, '#f4f1de')).setOrigin(0.5);
-    const hint = this.add.text(480, 485, 'PRZEJDŹ DO ZAZNACZONEGO MIEJSCA  •  SHIFT = SPRINT', uiStyle(13, '#8ecae6')).setOrigin(0.5);
-    this.walkPlayer = this.add.rectangle(150, 305, 34, 46, 0xf4f1de).setStrokeStyle(4, 0x111820);
+    const hint = this.add.text(480, 485, 'PRZEJDŹ DO CZERWONEJ LINII  •  SHIFT = SPRINT (ZUS PATRZY)', uiStyle(13, '#8ecae6')).setOrigin(0.5);
+    this.walkPlayer = this.textures.exists(HUBI_TEXTURE_KEY)
+      ? this.add.sprite(150, WALK_FEET_START_Y, HUBI_TEXTURE_KEY).setOrigin(0.5, 0.92).setScale(WALK_SCALE).play(getHubiAnimationKey('idle', 'right'))
+      : this.add.rectangle(150, 305, 34, 46, 0xf4f1de).setStrokeStyle(4, 0x111820);
+    this.walkDirection = 'right';
     this.walkMessage = this.add.text(480, 165, '', uiStyle(16, '#ff8c69')).setOrigin(0.5);
-    this.walkContainer = this.add.container(0, 0, [floor, start, finish, title, objective, hint, this.walkPlayer, this.walkMessage]);
+    this.walkContainer = this.add.container(0, 0, [...parts, title, objective, hint, this.walkPlayer, this.walkMessage]);
   }
 
   private updateWalkTest(delta: number): void {
@@ -335,10 +384,22 @@ export class ZusScene extends Phaser.Scene {
     const horizontal = Number(this.rightKey.isDown || this.dKey.isDown) - Number(this.leftKey.isDown || this.aKey.isDown);
     const vertical = Number(this.downKey.isDown || this.sKey.isDown) - Number(this.upKey.isDown || this.wKey.isDown);
     const length = Math.hypot(horizontal, vertical) || 1;
-    const sprinting = this.shiftKey.isDown && (horizontal !== 0 || vertical !== 0);
+    const moving = horizontal !== 0 || vertical !== 0;
+    const sprinting = this.shiftKey.isDown && moving;
     const speed = sprinting ? 215 : 105;
+    const sprite = this.walkPlayer instanceof Phaser.GameObjects.Sprite ? this.walkPlayer : null;
+    const [minY, maxY] = sprite ? [WALK_FEET_MIN_Y, WALK_FEET_MAX_Y] : [220, 390];
     this.walkPlayer.x = Phaser.Math.Clamp(this.walkPlayer.x + horizontal / length * speed * delta / 1000, 115, 845);
-    this.walkPlayer.y = Phaser.Math.Clamp(this.walkPlayer.y + vertical / length * speed * delta / 1000, 220, 390);
+    this.walkPlayer.y = Phaser.Math.Clamp(this.walkPlayer.y + vertical / length * speed * delta / 1000, minY, maxY);
+    if (sprite) {
+      if (horizontal < 0) this.walkDirection = 'left';
+      else if (horizontal > 0) this.walkDirection = 'right';
+      else if (vertical < 0) this.walkDirection = 'up';
+      else if (vertical > 0) this.walkDirection = 'down';
+      const key = getHubiAnimationKey(sprinting ? 'sprint' : moving ? 'walk' : 'idle', this.walkDirection);
+      if (sprite.anims.currentAnim?.key !== key) sprite.play(key, true);
+      sprite.setDepth(sprite.y);
+    }
     this.sprintWarningCooldownMs -= delta;
     if (sprinting && this.sprintWarningCooldownMs <= 0) {
       this.finaleSystem.recordSprintIncident();
@@ -348,7 +409,7 @@ export class ZusScene extends Phaser.Scene {
     } else if (!sprinting && this.sprintWarningCooldownMs <= 250) {
       this.walkMessage?.setText('');
     }
-    if (this.walkPlayer.x >= 800) {
+    if (this.walkPlayer.x >= WALK_FINISH_X) {
       this.walkContainer?.destroy(true);
       this.walkContainer = null;
       this.walkPlayer = null;
@@ -360,6 +421,7 @@ export class ZusScene extends Phaser.Scene {
   private startAnalysis(): void {
     this.phase = ZUS_FINALE_PHASE.Analysis;
     this.finaleSystem.setPhase(this.phase);
+    this.showBoard('analysis', 0.3);
     const snapshot = this.gameState.getSnapshot();
     const stats = snapshot.campaignStats;
     const lines = [
@@ -377,6 +439,7 @@ export class ZusScene extends Phaser.Scene {
     this.phase = ZUS_FINALE_PHASE.Verdict;
     this.finaleSystem.setPhase(this.phase);
     const result = this.finaleSystem.calculateResult(this.forcedEnding);
+    this.backdrop.show(ZUS_ENDING_BOARDS[result.endingId].key, 0.08);
     const lines = endingDialogue(result.endingId);
     this.showDialogue(`zus-ending-${result.endingId}`, lines, () => this.showFinalSummary(result));
   }
@@ -384,6 +447,7 @@ export class ZusScene extends Phaser.Scene {
   private showFinalSummary(result: FinaleResult): void {
     this.phase = ZUS_FINALE_PHASE.Summary;
     this.finaleSystem.setPhase(this.phase);
+    this.backdrop.show(ZUS_ENDING_BOARDS[result.endingId].key, 0.55);
     this.gameState.setCampaignProgress(180, 6, [1, 2, 3, 4, 5, 6]);
     this.gameState.completeCampaign(result.endingId, result.score, result.rank);
     const debugRuntime = this.debugRuntimeActive ? this.debugStateService.loadActive() : null;
@@ -392,7 +456,7 @@ export class ZusScene extends Phaser.Scene {
     } else {
       this.saveGameService.saveGame(this.gameState);
     }
-    this.add.rectangle(480, 270, 760, 420, 0x111820).setStrokeStyle(5, 0xffd166);
+    this.add.rectangle(480, 270, 760, 420, 0x111820, 0.88).setStrokeStyle(5, 0xffd166);
     this.add.text(480, 105, 'L4: THE OFFICE ESCAPE', uiStyle(32, '#f4f1de')).setOrigin(0.5);
     this.add.text(480, 160, '180 DNI', uiStyle(20, '#8ecae6')).setOrigin(0.5);
     this.add.text(480, 225, `L4 SCORE: ${result.score.toLocaleString('pl-PL')}`, uiStyle(28, '#90be6d')).setOrigin(0.5);
@@ -443,6 +507,7 @@ export class ZusScene extends Phaser.Scene {
   private shutdown(): void {
     this.inkblotView?.destroy();
     this.reflexView?.destroy();
+    this.backdrop?.destroy();
     this.dialogueSystem.clear();
     this.dialogueBox.destroy();
     [this.advanceKey, this.spaceKey, this.upKey, this.downKey, this.leftKey, this.rightKey, this.wKey, this.sKey, this.aKey, this.dKey, this.shiftKey].forEach((key) => key.destroy());

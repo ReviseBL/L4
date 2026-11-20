@@ -16,7 +16,7 @@ export class InkblotView {
   private shownCardId: string | null = null;
 
   public constructor(private readonly scene: Phaser.Scene) {
-    const panel = scene.add.rectangle(480, 290, 760, 400, 0x111820).setStrokeStyle(4, 0x8ecae6);
+    const panel = scene.add.rectangle(480, 290, 760, 400, 0x111820, 0.92).setStrokeStyle(4, 0x8ecae6);
     this.title = scene.add.text(480, 104, '', style(22, '#ffd166')).setOrigin(0.5);
     const cardBack = scene.add.rectangle(CARD.x, CARD.y, CARD.width + 16, CARD.height + 16, 0xf3ead2).setStrokeStyle(3, 0x5a4a36);
     this.blot = scene.add.image(CARD.x, CARD.y, '__DEFAULT');
