@@ -9,6 +9,7 @@ import {
 } from '../../data/player/player-animation-config';
 import { PLAYER_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { resolvePlayerVisualState } from './player-visual-state';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly carriedBox: Phaser.GameObjects.Rectangle;
@@ -44,7 +45,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       .setVisible(false);
     this.carriedLabel = scene.add
       .text(x + 23, y + 8, '', {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '10px',
         fontStyle: 'bold',
         color: '#ffffff',

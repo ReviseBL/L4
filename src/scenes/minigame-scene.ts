@@ -16,6 +16,7 @@ import type {
 import { MINIGAME_ART_ANCHORS } from '../data/minigames/minigame-art';
 import { ThreadingMinigame } from '../systems/minigames/threading-minigame';
 import { TimingMinigame } from '../systems/minigames/timing-minigame';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export const MINIGAME_SCENE_KEY = 'MinigameScene';
 
@@ -51,7 +52,8 @@ const BAR_Y = 388;
 const NOZZLE_Y = 320;
 const BED_CENTER_Y = 232;
 const PUSH_MS = 170;
-const SUCCESS_CLOSE_MS = 1_500;
+/** Ignore E for a moment after success, so the winning press does not close it. */
+const CLOSE_LOCK_MS = 300;
 const SNAP_PAUSE_MS = 650;
 
 type Phase = 'aiming' | 'pushing' | 'feedback' | 'done';
@@ -117,16 +119,16 @@ export class MinigameScene extends Phaser.Scene {
       .setOrigin(0)
       .setStrokeStyle(2, 0xf4a261, 0.9);
     this.graphics = this.add.graphics().setDepth(2);
-    this.titleText = this.add.text(PANEL.x + 16, PANEL.y + 12, '', style(15, '#ffd166'));
-    this.stageText = this.add.text(PANEL.x + PANEL.width - 16, PANEL.y + 14, '', style(12, '#8ecae6')).setOrigin(1, 0);
+    this.titleText = this.add.text(PANEL.x + 16, PANEL.y + 12, '', style(17, '#ffd166'));
+    this.stageText = this.add.text(PANEL.x + PANEL.width - 16, PANEL.y + 14, '', style(13, '#8ecae6')).setOrigin(1, 0);
     this.infoText = this.add
-      .text(PANEL.x + 16, PANEL.y + 34, '', style(11, '#f4f1de'))
+      .text(PANEL.x + 16, PANEL.y + 34, '', style(13, '#f4f1de'))
       .setWordWrapWidth(PANEL.width - 32);
     this.feedbackText = this.add
-      .text(CENTER_X, PANEL.y + PANEL.height - 34, '', style(13, '#f4f1de'))
+      .text(CENTER_X, PANEL.y + PANEL.height - 34, '', style(15, '#f4f1de'))
       .setOrigin(0.5);
     this.controlsText = this.add
-      .text(CENTER_X, PANEL.y + PANEL.height - 13, '', style(11, '#8ecae6'))
+      .text(CENTER_X, PANEL.y + PANEL.height - 13, '', style(13, '#8ecae6'))
       .setOrigin(0.5);
 
     if (this.request.kind === 'threading') this.setupThreading();
@@ -176,15 +178,16 @@ export class MinigameScene extends Phaser.Scene {
     } else if (this.phase === 'feedback') {
       this.phaseTimerMs += delta;
       game.update(delta, 0);
-      const limit = game.isFinished() ? SUCCESS_CLOSE_MS : SNAP_PAUSE_MS;
-      if (this.phaseTimerMs >= limit) {
-        if (game.isFinished()) this.finish({ kind: 'threading', attempts: game.getAttempt() });
-        else {
-          this.phase = 'aiming';
-          this.pushProgress = 0;
-          this.snapAt = null;
-          this.named.get('snap')?.setVisible(false);
+      if (game.isFinished()) {
+        // The player closes the window themselves, after reading the result.
+        if (this.phaseTimerMs >= CLOSE_LOCK_MS && this.justDown(this.keys.action)) {
+          this.finish({ kind: 'threading', attempts: game.getAttempt() });
         }
+      } else if (this.phaseTimerMs >= SNAP_PAUSE_MS) {
+        this.phase = 'aiming';
+        this.pushProgress = 0;
+        this.snapAt = null;
+        this.named.get('snap')?.setVisible(false);
       }
     }
     this.drawThreading(game, variant);
@@ -205,6 +208,7 @@ export class MinigameScene extends Phaser.Scene {
       this.feedbackText.setText('Jest! Teraz drugi otwór.').setColor('#90be6d');
     } else {
       this.feedbackText.setText(`„${threadingSuccessLines[variant.id]}”`).setColor('#90be6d');
+      this.controlsText.setText('[E] DALEJ');
     }
     // Keep the filament in the hole while the result is shown.
     this.pushProgress = 1;
@@ -355,6 +359,7 @@ export class MinigameScene extends Phaser.Scene {
         const outcome = game.press();
         if (outcome === 'complete') {
           this.feedbackText.setText(`„${feedback.complete}”`).setColor('#90be6d');
+          this.controlsText.setText('[E] DALEJ');
           this.phase = 'feedback';
           this.phaseTimerMs = 0;
         } else if (outcome === 'hit') {
@@ -367,7 +372,9 @@ export class MinigameScene extends Phaser.Scene {
       }
     } else if (this.phase === 'feedback') {
       this.phaseTimerMs += delta;
-      if (this.phaseTimerMs >= SUCCESS_CLOSE_MS) this.finish({ kind: 'timing', attempts: game.getAttempts() });
+      if (this.phaseTimerMs >= CLOSE_LOCK_MS && this.justDown(this.keys.action)) {
+        this.finish({ kind: 'timing', attempts: game.getAttempts() });
+      }
     }
     this.drawTiming(game, variant);
   }
@@ -403,8 +410,8 @@ export class MinigameScene extends Phaser.Scene {
   private ensureScaleLabels(barX: number, barWidth: number, barY: number, nozzle: boolean): void {
     if (this.scaleLabels.length > 0) return;
     this.scaleLabels = [
-      this.add.text(barX, barY + 26, nozzle ? 'ZA SŁABO' : 'ZA LEKKO', style(10, '#ff8c69')).setDepth(6),
-      this.add.text(barX + barWidth, barY + 26, 'ZA MOCNO', style(10, '#ff8c69')).setOrigin(1, 0).setDepth(6),
+      this.add.text(barX, barY + 26, nozzle ? 'ZA SŁABO' : 'ZA LEKKO', style(11, '#ff8c69')).setDepth(6),
+      this.add.text(barX + barWidth, barY + 26, 'ZA MOCNO', style(11, '#ff8c69')).setOrigin(1, 0).setDepth(6),
     ];
   }
 
@@ -514,7 +521,7 @@ export class MinigameScene extends Phaser.Scene {
 
 function style(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

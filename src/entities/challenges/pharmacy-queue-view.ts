@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { PHARMACIST, pharmacyQueueConfig, seniors } from '../../data/challenges/pharmacy-queues';
 import type { PharmacyQueueDefinition, SeniorDefinition } from '../../domain/challenges/pharmacy-queue-types';
 import type { PharmacyQueue } from '../../systems/challenges/pharmacy-queue';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 interface SeniorActor {
   sprite: Phaser.GameObjects.Image;
@@ -31,7 +32,7 @@ export class PharmacyQueueView {
     const desk = pharmacyQueueConfig.pharmacistSpot;
     const pharmacistKey = scene.textures.exists(PHARMACIST.textureKey) ? PHARMACIST.textureKey : `${PHARMACIST.textureKey}-placeholder`;
     this.pharmacist = scene.add.image(desk.x, desk.y, pharmacistKey).setOrigin(0.5, 0.9).setDepth(desk.y);
-    scene.add.text(desk.x, desk.y + 12, PHARMACIST.displayName, labelStyle(8, '#f4f1de')).setOrigin(0.5, 0).setDepth(desk.y + 1);
+    scene.add.text(desk.x, desk.y + 12, PHARMACIST.displayName, labelStyle(9, '#f4f1de')).setOrigin(0.5, 0).setDepth(desk.y + 1);
     this.pharmacistBubble = scene.add
       .text(desk.x, desk.y + 26, '', labelStyle(10, '#1b1b1b', '#e9f5db'))
       .setBackgroundColor('#e9f5db')
@@ -71,7 +72,7 @@ export class PharmacyQueueView {
       // Art faces right; the queue faces the counter on the left.
       const sprite = this.scene.add.image(spot.x, spot.y, key).setOrigin(0.5, 0.9).setFlipX(true).setDepth(spot.y);
       const label = this.scene.add
-        .text(spot.x, spot.y - LABEL_OFFSET_Y, senior.displayName, labelStyle(8, '#f4f1de'))
+        .text(spot.x, spot.y - LABEL_OFFSET_Y, senior.displayName, labelStyle(9, '#f4f1de'))
         .setOrigin(0.5)
         .setDepth(spot.y + 1);
       return { sprite, label };
@@ -167,5 +168,5 @@ function ensurePlaceholderTexture(scene: Phaser.Scene, senior: Pick<SeniorDefini
 }
 
 function labelStyle(fontSize: number, color: string, stroke = '#06090d'): Phaser.Types.GameObjects.Text.TextStyle {
-  return { fontFamily: 'Courier New, monospace', fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke, strokeThickness: 2 };
+  return { fontFamily: UI_FONT_FAMILY, fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke, strokeThickness: 2 };
 }

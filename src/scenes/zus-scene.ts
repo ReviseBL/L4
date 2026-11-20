@@ -18,6 +18,7 @@ import { DialogueSystem } from '../systems/dialogue-system';
 import { resolveTitleFlowScene } from '../systems/title-flow-system';
 import { ZusFinaleSystem } from '../systems/zus-finale-system';
 import { DialogueBox } from '../ui/dialogue-box';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 interface ZusSceneData {
   phase?: ZusFinalePhase;
@@ -387,5 +388,5 @@ function endingDialogue(endingId: FinaleEndingId): DialogueSequenceDefinition['l
 }
 
 function uiStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
-  return { fontFamily: 'Courier New, monospace', fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke: '#02070b', strokeThickness: 3 };
+  return { fontFamily: UI_FONT_FAMILY, fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke: '#02070b', strokeThickness: 3 };
 }

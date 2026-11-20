@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { ParcelCodeChallenge } from '../systems/challenges/parcel-code-challenge';
+import { UI_FONT_FAMILY } from './text-style';
 
 const PANEL_X = 16;
 const PANEL_Y = 132;
@@ -29,14 +30,14 @@ export class ParcelLockerPanel {
       art.setScale(Math.min(WIDTH / art.width, HEIGHT / art.height)).setAlpha(0.35);
       children.push(art);
     }
-    const heading = scene.add.text(12, 9, 'AUTOMAT PACZKOWY', style(12, '#e9c46a'));
+    const heading = scene.add.text(12, 9, 'AUTOMAT PACZKOWY', style(13, '#e9c46a'));
     this.smsBox = scene.add.rectangle(12, 32, WIDTH - 24, 70, 0x264653, 0.95).setOrigin(0).setStrokeStyle(1, 0x8ecae6, 0.8);
-    this.smsText = scene.add.text(20, 37, '', style(11, '#f4f1de')).setLineSpacing(30);
+    this.smsText = scene.add.text(20, 37, '', style(12, '#f4f1de')).setLineSpacing(30);
     this.smsCode = scene.add.text(WIDTH / 2, 66, '', style(22, '#ffd166')).setOrigin(0.5);
     const screen = scene.add.rectangle(12, 112, WIDTH - 24, 44, 0x10261a, 1).setOrigin(0).setStrokeStyle(1, 0x90be6d, 0.8);
     this.screenText = scene.add.text(WIDTH / 2, 134, '', style(20, '#90be6d')).setOrigin(0.5);
-    this.statusText = scene.add.text(12, 164, '', style(11, '#ffd166')).setWordWrapWidth(WIDTH - 24);
-    this.helpText = scene.add.text(12, 196, '', style(10, '#8ecae6')).setWordWrapWidth(WIDTH - 24).setLineSpacing(2);
+    this.statusText = scene.add.text(12, 164, '', style(12, '#ffd166')).setWordWrapWidth(WIDTH - 24);
+    this.helpText = scene.add.text(12, 196, '', style(11, '#8ecae6')).setWordWrapWidth(WIDTH - 24).setLineSpacing(2);
     children.push(heading, this.smsBox, this.smsText, this.smsCode, screen, this.screenText, this.statusText, this.helpText);
     this.container = scene.add.container(PANEL_X, PANEL_Y, children).setScrollFactor(0).setDepth(100_020).setVisible(false);
   }
@@ -90,7 +91,7 @@ export class ParcelLockerPanel {
 
 function style(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

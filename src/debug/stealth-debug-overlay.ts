@@ -3,6 +3,7 @@ import type { ObstacleBounds } from '../core/math/geometry-types';
 import type { Player } from '../entities/player/player';
 import type { NpcController } from '../entities/npc/npc-controller';
 import type { HrController } from '../entities/npc/hr-controller';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export class StealthDebugOverlay {
   private readonly graphics: Phaser.GameObjects.Graphics;
@@ -24,7 +25,7 @@ export class StealthDebugOverlay {
     this.graphics = scene.add.graphics().setDepth(99_990);
     this.statusText = scene.add
       .text(942, 18, '', {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '14px',
         fontStyle: 'bold',
         color: '#8ecae6',

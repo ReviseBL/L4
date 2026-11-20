@@ -6,6 +6,7 @@ import { COMPANY_CAR_TEXTURE_KEY } from '../../game/create-placeholder-textures'
 import { CompanyCarStateMachine } from '../../systems/company-car-state-machine';
 import { PerceptionSystem } from '../../systems/perception-system';
 import type { PlayerStealthTarget } from './npc-controller';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 export interface CompanyCarCallbacks { onDetected: (position: Point2D) => void; }
 
@@ -38,7 +39,7 @@ export class CompanyCarController {
     this.brain = new CompanyCarStateMachine(definition);
     this.visionGraphics = scene.add.graphics().setDepth(90_000);
     this.routeGraphics = scene.add.graphics().setDepth(89_999);
-    this.statusText = scene.add.text(spawn.x, spawn.y - 48, '', { fontFamily: 'Courier New, monospace', fontSize: '30px', fontStyle: 'bold', color: '#ffd166', stroke: '#111820', strokeThickness: 5 }).setOrigin(0.5).setDepth(99_001);
+    this.statusText = scene.add.text(spawn.x, spawn.y - 48, '', { fontFamily: UI_FONT_FAMILY, fontSize: '30px', fontStyle: 'bold', color: '#ffd166', stroke: '#111820', strokeThickness: 5 }).setOrigin(0.5).setDepth(99_001);
     this.collider = scene.physics.add.collider(this.sprite, obstacles);
     this.setEnabled(false);
   }

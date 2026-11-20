@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { CampaignMonthId } from '../domain/campaign/campaign-types';
 import type { CompanySuspicionLevel } from '../domain/suspicion/suspicion-types';
+import { UI_FONT_FAMILY } from './text-style';
 
 /** Kompaktowy HUD: lewy górny róg, ~370×50 px zamiast 610×154, żeby nie zasłaniać mapy. */
 const PANEL_X = 10;
@@ -44,9 +45,9 @@ export class GameHud {
       100_000,
     );
 
-    this.dayText = fixed(scene.add.text(left, PANEL_Y + 6, 'M1 · DZIEŃ 23', hudStyle(12, '#f4f1de')));
+    this.dayText = fixed(scene.add.text(left, PANEL_Y + 6, 'M1 · DZIEŃ 23', hudStyle(13, '#f4f1de')));
     this.suspicionText = fixed(
-      scene.add.text(right, PANEL_Y + 6, '0%', hudStyle(12, '#8ecae6')).setOrigin(1, 0),
+      scene.add.text(right, PANEL_Y + 6, '0%', hudStyle(13, '#8ecae6')).setOrigin(1, 0),
     );
     const barX = right - 34 - SUSPICION_BAR_WIDTH;
     fixed(
@@ -59,19 +60,19 @@ export class GameHud {
       scene.add.rectangle(barX, PANEL_Y + 10, 0, SUSPICION_BAR_HEIGHT, 0x90be6d).setOrigin(0),
       100_002,
     );
-    fixed(scene.add.text(barX - 6, PANEL_Y + 7, 'PODEJRZ.', hudStyle(10, '#8ecae6')).setOrigin(1, 0));
+    fixed(scene.add.text(barX - 6, PANEL_Y + 7, 'PODEJRZ.', hudStyle(11, '#8ecae6')).setOrigin(1, 0));
 
-    this.missionText = fixed(scene.add.text(left, PANEL_Y + 22, '', hudStyle(10, '#f4a261')));
+    this.missionText = fixed(scene.add.text(left, PANEL_Y + 22, '', hudStyle(11, '#f4a261')));
     this.objectiveText = fixed(
       scene.add
-        .text(left, PANEL_Y + 34, '', hudStyle(11, '#ffd166'))
+        .text(left, PANEL_Y + 34, '', hudStyle(12, '#ffd166'))
         .setWordWrapWidth(PANEL_WIDTH - PANEL_PADDING * 2, true),
     );
-    this.inventoryText = fixed(scene.add.text(left, PANEL_Y + 48, '', hudStyle(10, '#8ecae6')));
+    this.inventoryText = fixed(scene.add.text(left, PANEL_Y + 48, '', hudStyle(11, '#8ecae6')));
 
     this.companyStatusText = fixed(
       scene.add
-        .text(950, 100, 'FIRMA: NORMAL', hudStyle(11, '#90be6d'))
+        .text(950, 100, 'FIRMA: NORMAL', hudStyle(12, '#90be6d'))
         .setOrigin(1, 0)
         .setPadding(6, 4)
         .setBackgroundColor('#0b0f14cc'),
@@ -79,7 +80,7 @@ export class GameHud {
 
     this.interactionText = fixed(
       scene.add
-        .text(480, 512, '', hudStyle(13, '#ffffff'))
+        .text(480, 512, '', hudStyle(14, '#ffffff'))
         .setOrigin(0.5)
         .setPadding(10, 5)
         .setBackgroundColor('#111820cc'),
@@ -87,7 +88,7 @@ export class GameHud {
 
     this.messageText = fixed(
       scene.add
-        .text(480, 440, '', hudStyle(12, '#f4f1de'))
+        .text(480, 440, '', hudStyle(13, '#f4f1de'))
         .setOrigin(0.5)
         .setPadding(10, 6)
         .setBackgroundColor('#264653e6')
@@ -96,7 +97,7 @@ export class GameHud {
 
     this.alertText = fixed(
       scene.add
-        .text(480, 96, '', hudStyle(15, '#ffffff'))
+        .text(480, 96, '', hudStyle(16, '#ffffff'))
         .setOrigin(0.5)
         .setPadding(12, 7)
         .setBackgroundColor('#b00020e6')
@@ -106,7 +107,7 @@ export class GameHud {
 
     this.hiddenText = fixed(
       scene.add
-        .text(950, 74, 'STATUS: UKRYTY', hudStyle(11, '#8ecae6'))
+        .text(950, 74, 'STATUS: UKRYTY', hudStyle(12, '#8ecae6'))
         .setOrigin(1, 0)
         .setPadding(6, 4)
         .setBackgroundColor('#0b0f14cc')
@@ -115,7 +116,7 @@ export class GameHud {
 
     this.managerNearbyText = fixed(
       scene.add
-        .text(950, 126, 'KIEROWNIK W POBLIŻU', hudStyle(11, '#ffb703'))
+        .text(950, 126, 'KIEROWNIK W POBLIŻU', hudStyle(12, '#ffb703'))
         .setOrigin(1, 0)
         .setPadding(6, 4)
         .setBackgroundColor('#0b0f14cc')
@@ -216,7 +217,7 @@ function levelColor(level: CompanySuspicionLevel): string {
 
 function hudStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

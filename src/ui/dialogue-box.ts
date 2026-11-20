@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { DialogueSnapshot, DialogueTone } from '../domain/dialogue/dialogue-types';
+import { UI_FONT_FAMILY } from './text-style';
 
 const DIALOGUE_DEPTH = 150_000;
 const BOX_WIDTH = 720;
@@ -38,23 +39,23 @@ export class DialogueBox {
       .setOrigin(0);
 
     this.speakerText = scene.add
-      .text(BOX_LEFT + 14, 0, '', dialogueStyle(12, '#ffd166'))
+      .text(BOX_LEFT + 14, 0, '', dialogueStyle(13, '#ffd166'))
       .setPadding(6, 2)
       .setBackgroundColor('#264653')
       .setVisible(false);
     this.bodyText = scene.add
-      .text(TEXT_LEFT, 0, '', dialogueStyle(14, '#f4f1de'))
+      .text(TEXT_LEFT, 0, '', dialogueStyle(15, '#f4f1de'))
       .setWordWrapWidth(TEXT_WIDTH, true)
       .setLineSpacing(4);
     this.choicesText = scene.add
-      .text(TEXT_LEFT + 8, 0, '', dialogueStyle(13, '#ffffff'))
+      .text(TEXT_LEFT + 8, 0, '', dialogueStyle(14, '#ffffff'))
       .setWordWrapWidth(TEXT_WIDTH - 8, true)
       .setLineSpacing(4);
     this.continueText = scene.add
-      .text(BOX_LEFT + BOX_WIDTH - PAD_X, BOX_BOTTOM - 5, '[E] DALEJ ▼', dialogueStyle(11, '#8ecae6'))
+      .text(BOX_LEFT + BOX_WIDTH - PAD_X, BOX_BOTTOM - 5, '[E] DALEJ ▼', dialogueStyle(12, '#8ecae6'))
       .setOrigin(1, 1);
     this.pageText = scene.add
-      .text(TEXT_LEFT, BOX_BOTTOM - 5, '', dialogueStyle(10, '#6c8295'))
+      .text(TEXT_LEFT, BOX_BOTTOM - 5, '', dialogueStyle(11, '#6c8295'))
       .setOrigin(0, 1);
 
     this.container = scene.add
@@ -172,7 +173,7 @@ function dialogueStyle(
   color: string,
 ): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

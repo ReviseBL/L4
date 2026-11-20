@@ -3,6 +3,7 @@ import { PLAYER_DIRECTIONS } from '../data/player/player-animation-config';
 import type { CarryVisualDefinition } from '../domain/items/item-types';
 import type { PlayerDirection, PlayerVisualAction } from '../domain/player/player-visual-types';
 import { Player } from '../entities/player/player';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 const SHOWCASE_ROWS: readonly {
   label: string;
@@ -78,7 +79,7 @@ export class HubiShowcaseScene extends Phaser.Scene {
 
 function style(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

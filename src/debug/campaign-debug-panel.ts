@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { CampaignMonthId } from '../domain/campaign/campaign-types';
 import type { CompanySuspicionLevel } from '../domain/suspicion/suspicion-types';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export interface CampaignDebugStatus {
   month: CampaignMonthId;
@@ -46,7 +47,7 @@ export class CampaignDebugPanel {
 
     this.panelText = scene.add
       .text(942, 145, '', {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '12px',
         fontStyle: 'bold',
         color: '#8ecae6',

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { PrintJobDefinition } from '../../domain/printing/print-job-types';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 export class Printer3DView {
   private readonly glow: Phaser.GameObjects.Rectangle;
@@ -22,7 +23,7 @@ export class Printer3DView {
       .setVisible(false);
     this.statusText = scene.add
       .text(x, y + 36, '', {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '10px',
         fontStyle: 'bold',
         color: '#00f5d4',

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { DialogueSnapshot } from '../domain/dialogue/dialogue-types';
 import type { OpeningPanelDefinition, OpeningVisual } from '../data/narrative/opening-sequence';
 import { calculateCoverPlacement } from './title-cover-layout';
+import { UI_FONT_FAMILY } from './text-style';
 
 const DEPTH = 120_000;
 
@@ -235,7 +236,7 @@ function drawRainAndGrain(graphics: Phaser.GameObjects.Graphics, seed: number): 
 
 function textStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

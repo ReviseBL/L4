@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { HR_STATE, type HrState } from '../domain/npcs/hr-types';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export interface HrDebugActions {
   getStatus: () => { enabled: boolean; state: HrState; lastKnown: { x: number; y: number } | null; visionVisible: boolean };
@@ -37,7 +38,7 @@ export class HrDebugPanel {
       keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N),
     ];
     this.text = scene.add.text(520, 340, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#e0aaff',
+      fontFamily: UI_FONT_FAMILY, fontSize: '12px', color: '#e0aaff',
       backgroundColor: '#12051fdd', padding: { x: 8, y: 7 },
     }).setScrollFactor(0).setDepth(100_020).setVisible(false);
   }

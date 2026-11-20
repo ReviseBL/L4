@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 export interface StandingNpcOptions {
   x: number;
@@ -20,8 +21,8 @@ export function addStandingNpc(scene: Phaser.Scene, options: StandingNpcOptions)
   const sprite = scene.add.image(options.x, options.y, key).setOrigin(0.5, 0.9).setDepth(options.y);
   scene.add
     .text(options.x, options.y - 50, options.label, {
-      fontFamily: 'Courier New, monospace',
-      fontSize: '8px',
+      fontFamily: UI_FONT_FAMILY,
+      fontSize: '9px',
       fontStyle: 'bold',
       color: '#f4f1de',
       stroke: '#06090d',

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { MissionCompletionSummary } from '../domain/missions/mission-types';
+import { UI_FONT_FAMILY } from './text-style';
 
 export class MissionSummaryOverlay {
   private readonly container: Phaser.GameObjects.Container;
@@ -137,7 +138,7 @@ function formatSigned(delta: number): string {
 
 function summaryStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

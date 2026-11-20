@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { CampaignMonthDefinition } from '../domain/campaign/campaign-types';
+import { UI_FONT_FAMILY } from './text-style';
 
 export class MonthTransitionOverlay {
   private readonly container: Phaser.GameObjects.Container;
@@ -54,7 +55,7 @@ export class MonthTransitionOverlay {
 
 function transitionStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

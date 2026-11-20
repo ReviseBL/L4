@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Point2D } from '../../core/math/geometry-types';
 import type { WatcherDefinition } from '../../domain/watchers/watcher-types';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 interface WatcherActor {
   definition: WatcherDefinition;
@@ -25,7 +26,7 @@ export class WatcherView {
         ? definition.textureKey
         : ensurePlaceholder(this.scene, definition);
       const sprite = this.scene.add.image(x, y, key).setOrigin(0.5, 0.9).setDepth(y);
-      const label = this.scene.add.text(x, y - 50, definition.displayName, textStyle(8, '#f4f1de')).setOrigin(0.5).setDepth(y + 1);
+      const label = this.scene.add.text(x, y - 50, definition.displayName, textStyle(9, '#f4f1de')).setOrigin(0.5).setDepth(y + 1);
       const cone = this.scene.add.graphics().setDepth(y - 2);
       const bubble = this.scene.add
         .text(x, y - 60, '', textStyle(11, '#1b1b1b', '#fff3b0'))
@@ -88,5 +89,5 @@ function ensurePlaceholder(scene: Phaser.Scene, definition: WatcherDefinition): 
 }
 
 function textStyle(fontSize: number, color: string, stroke = '#06090d'): Phaser.Types.GameObjects.Text.TextStyle {
-  return { fontFamily: 'Courier New, monospace', fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke, strokeThickness: 2 };
+  return { fontFamily: UI_FONT_FAMILY, fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke, strokeThickness: 2 };
 }

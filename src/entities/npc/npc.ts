@@ -11,6 +11,7 @@ import { NPC_STATE, type NpcState } from '../../domain/npcs/npc-types';
 import type { PlayerDirection } from '../../domain/player/player-visual-types';
 import { WORK_COLLEAGUE_TEXTURE_KEY } from '../../game/create-placeholder-textures';
 import { NPC_MOVING_SPEED_THRESHOLD, resolveNpcDirection } from './npc-visual-direction';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 export type NpcPresentationState = NpcState | 'APPROACHING' | 'CONVERSATION';
 
@@ -50,7 +51,7 @@ export class Npc extends Phaser.Physics.Arcade.Sprite {
     this.visionGraphics = scene.add.graphics();
     this.nameText = scene.add
       .text(x, y - 46, displayName, {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '13px',
         fontStyle: 'bold',
         color: '#ffffff',
@@ -61,7 +62,7 @@ export class Npc extends Phaser.Physics.Arcade.Sprite {
       .setDepth(99_000);
     this.statusText = scene.add
       .text(x, y - 72, '', {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '34px',
         fontStyle: 'bold',
         color: '#ffd166',

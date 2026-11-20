@@ -11,6 +11,7 @@ import type { AreaDefinition } from '../systems/area-trigger-system';
 import type { HideSpot } from '../systems/hiding-system';
 import type { InteractionTarget } from '../systems/interaction-system';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export interface TestWorld {
   obstacles: Phaser.Physics.Arcade.StaticGroup;
@@ -623,7 +624,7 @@ function addWorldLabel(scene: Phaser.Scene): void {
 
 function labelStyle(fontSize: number): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color: '#ffffff',

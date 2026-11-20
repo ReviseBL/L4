@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { DebugHomePreset, DebugMissionStage, DebugRuntimeState, DebugTestSelection } from '../domain/debug/debug-test-types';
 import type { DebugMissionTestDefinition, DebugScenarioDefinition } from '../domain/debug/debug-test-types';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export interface DeveloperDebugPanelActions {
   applySelection: (selection: DebugTestSelection) => void;
@@ -204,5 +205,5 @@ export class DeveloperDebugPanel {
 }
 
 function textStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
-  return { fontFamily: 'Courier New, monospace', fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke: '#02070b', strokeThickness: 3 };
+  return { fontFamily: UI_FONT_FAMILY, fontSize: `${fontSize}px`, fontStyle: 'bold', color, stroke: '#02070b', strokeThickness: 3 };
 }

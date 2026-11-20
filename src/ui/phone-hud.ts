@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { PhoneSnapshot } from '../domain/phone/phone-types';
+import { UI_FONT_FAMILY } from './text-style';
 
 export class PhoneHud {
   private readonly icon: Phaser.GameObjects.Text;
@@ -124,7 +125,7 @@ function formatSeconds(milliseconds: number): string {
 
 function phoneStyle(fontSize: number, color: string): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Courier New, monospace',
+    fontFamily: UI_FONT_FAMILY,
     fontSize: `${fontSize}px`,
     fontStyle: 'bold',
     color,

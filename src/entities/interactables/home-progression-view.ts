@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { HOME_ART } from '../../data/world/world-art';
 import type { HomeVisualDefinition } from '../../domain/home/home-progression-types';
+import { UI_FONT_FAMILY } from '../../ui/text-style';
 
 export class HomeProgressionView {
   private readonly objects = new Map<string, Phaser.GameObjects.Container>();
@@ -25,7 +26,7 @@ export class HomeProgressionView {
         .setStrokeStyle(2, 0x252422);
       const label = scene.add
         .text(0, 0, definition.label, {
-          fontFamily: 'Courier New, monospace',
+          fontFamily: UI_FONT_FAMILY,
           fontSize: definition.kind === 'filament-spool' ? '8px' : '7px',
           fontStyle: 'bold',
           color: '#ffffff',
@@ -78,7 +79,7 @@ function createArt(
     const spool = scene.add.image(0, 0, HOME_ART.spool.key).setTint(definition.color);
     const label = scene.add
       .text(0, HOME_ART.spool.height / 2 + 5, definition.label, {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '7px',
         fontStyle: 'bold',
         color: '#ffffff',

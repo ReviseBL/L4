@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { PhoneState } from '../domain/phone/phone-types';
+import { UI_FONT_FAMILY } from '../ui/text-style';
 
 export interface PhoneDebugStatus {
   state: PhoneState;
@@ -33,7 +34,7 @@ export class PhoneDebugPanel {
     }
     this.panel = scene.add
       .text(18, 184, '', {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '12px',
         fontStyle: 'bold',
         color: '#90e0ef',
@@ -110,7 +111,7 @@ export class PhoneDebugPanel {
   ): Phaser.GameObjects.Text {
     return scene.add
       .text(x, y, label, {
-        fontFamily: 'Courier New, monospace',
+        fontFamily: UI_FONT_FAMILY,
         fontSize: '12px',
         fontStyle: 'bold',
         color: '#ffffff',
