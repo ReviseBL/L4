@@ -43,6 +43,8 @@ export const neighborWatchers = [
     peripheralRangeMultiplier: 0.7,
     recognitionMs: 400,
     seatedTextureKey: 'npc-neighbor-grazyna-bench',
+    // Her bench art sits over the estate bench in front of block 47.
+    seatedAnchor: { x: 1170, y: 1079 },
     shoutLines: ['Cześć Hubi! Już zdrowy?', 'Hubert! A co ty tak o tej porze?', 'O, Hubi! Pozdrów mamę!'],
   },
 ] as const satisfies readonly WatcherDefinition[];
@@ -52,4 +54,5 @@ export const WATCHER_TEXTURES = [
   { key: 'npc-neighbor-seba-side', url: 'assets/characters/npc-neighbor-seba-side.png' },
   { key: 'npc-neighbor-grazyna', url: 'assets/characters/npc-neighbor-grazyna.png' },
   { key: 'npc-neighbor-grazyna-side', url: 'assets/characters/npc-neighbor-grazyna-side.png' },
+  { key: 'npc-neighbor-grazyna-bench', url: 'assets/characters/npc-neighbor-grazyna-bench.png' },
 ] as const;

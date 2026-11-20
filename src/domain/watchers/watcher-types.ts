@@ -25,6 +25,8 @@ export interface WatcherDefinition {
   recognitionMs?: number;
   /** One fixed sprite whatever the head does (e.g. seen from behind, sitting on a bench). */
   seatedTextureKey?: string;
+  /** Bottom-centre of the seated sprite (the bench's feet), when it has one. */
+  seatedAnchor?: Point2D;
 }
 
 export interface WatcherConfig {

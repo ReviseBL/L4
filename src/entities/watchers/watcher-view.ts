@@ -25,7 +25,11 @@ export class WatcherView {
       const key = this.scene.textures.exists(definition.textureKey)
         ? definition.textureKey
         : ensurePlaceholder(this.scene, definition);
-      const sprite = this.scene.add.image(x, y, key).setOrigin(0.5, 0.9).setDepth(y);
+      const seatedKey = definition.seatedTextureKey;
+      const seated = seatedKey !== undefined && definition.seatedAnchor !== undefined && this.scene.textures.exists(seatedKey);
+      const sprite = seated && definition.seatedAnchor && seatedKey
+        ? this.scene.add.image(definition.seatedAnchor.x, definition.seatedAnchor.y, seatedKey).setOrigin(0.5, 1).setDepth(definition.seatedAnchor.y)
+        : this.scene.add.image(x, y, key).setOrigin(0.5, 0.9).setDepth(y);
       const label = this.scene.add.text(x, y - 50, definition.displayName, textStyle(11, '#f4f1de')).setOrigin(0.5).setDepth(y + 1);
       const cone = this.scene.add.graphics().setDepth(y - 2);
       const bubble = this.scene.add

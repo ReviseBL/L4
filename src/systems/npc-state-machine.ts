@@ -133,6 +133,16 @@ export class NpcStateMachine {
     return this.graceRemainingMs > 0;
   }
 
+  /** A new day: forget yesterday's chase completely and start patrolling. */
+  public resetForNewDay(): void {
+    this.awarenessMs = 0;
+    this.lostSightMs = 0;
+    this.detectionCooldownRemainingMs = 0;
+    this.graceRemainingMs = 0;
+    this.lastKnownPosition = null;
+    this.transitionTo(NPC_STATE.Patrol);
+  }
+
   public getState(): NpcState {
     return this.state;
   }

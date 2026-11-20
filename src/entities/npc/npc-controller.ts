@@ -187,6 +187,21 @@ export class NpcController {
     this.patrolIndex = 0;
   }
 
+  /** Starts a new day at waypoint `index` of the current route, with a clean head. */
+  public startDayAt(index: number): void {
+    const point = this.patrol.route[index] ?? this.patrol.route[0];
+    if (!point) return;
+    this.npc.setPosition(point.x, point.y);
+    (this.npc.body as Phaser.Physics.Arcade.Body | null)?.reset(point.x, point.y);
+    this.patrolIndex = (index + 1) % this.patrol.route.length;
+    this.brain.resetForNewDay();
+    this.avoider.reset();
+  }
+
+  public getPatrolRoute(): readonly Point2D[] {
+    return this.patrol.route;
+  }
+
   public destroy(): void {
     this.collider.destroy();
     this.npc.destroyNpc();

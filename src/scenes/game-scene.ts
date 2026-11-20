@@ -97,6 +97,9 @@ import { WindowWatchSystem } from '../systems/world/window-watch-system';
 import { ServiceWait } from '../systems/challenges/service-wait';
 import { ServiceWaitView } from '../entities/challenges/service-wait-view';
 import { StaminaBar } from '../entities/player/stamina-bar';
+import { pickSpawnIndex } from '../systems/navigation/spawn-picker';
+import { HOW_TO_PLAY_SCENE_KEY, type HowToPlaySceneData } from './how-to-play-scene';
+import { HOW_TO_PLAY_SEEN_KEY } from '../data/tutorial/how-to-play';
 import type { RiverView } from '../world/river';
 import { STAMINA_LINES } from '../data/player/stamina-config';
 import { neighborWatchers, watcherConfig } from '../data/watchers/neighbor-watchers';
@@ -106,6 +109,26 @@ import type { WatcherVisibility } from '../domain/watchers/watcher-types';
 import { PerceptionSystem, VISIBILITY_LEVEL } from '../systems/perception-system';
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
+
+/** New-day spawns of patrolling NPCs keep at least this far from Hubi and his door. */
+const DAY_SPAWN_MIN_DISTANCE = 450;
+const HOME_DOOR: Point2D = { x: 285, y: 480 };
+
+function howToPlaySeen(): boolean {
+  try {
+    return window.localStorage.getItem(HOW_TO_PLAY_SEEN_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+
+function rememberHowToPlaySeen(): void {
+  try {
+    window.localStorage.setItem(HOW_TO_PLAY_SEEN_KEY, '1');
+  } catch {
+    // Private mode: the board just shows again next time.
+  }
+}
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -175,6 +198,7 @@ export class GameScene extends Phaser.Scene {
   private phoneDeclineKey!: Phaser.Input.Keyboard.Key;
   private phoneAirplaneKey!: Phaser.Input.Keyboard.Key;
   private actionKey!: Phaser.Input.Keyboard.Key;
+  private helpKey!: Phaser.Input.Keyboard.Key;
   private dialogueSpaceKey!: Phaser.Input.Keyboard.Key;
   private dialogueUpKey!: Phaser.Input.Keyboard.Key;
   private dialogueDownKey!: Phaser.Input.Keyboard.Key;
@@ -324,6 +348,7 @@ export class GameScene extends Phaser.Scene {
     this.phoneDeclineKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
     this.phoneAirplaneKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
     this.actionKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.helpKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
     this.dialogueSpaceKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.dialogueUpKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
     this.dialogueDownKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
@@ -396,7 +421,12 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setRoundPixels(true);
     this.cameras.main.fadeIn(350, 17, 24, 32);
 
+    // Keys released while the scene was paused (minigame, help board) would
+    // otherwise stay "down" and keep Hubi walking on his own.
+    const resetKeys = (): void => { this.input.keyboard?.resetKeys(); };
+    this.events.on(Phaser.Scenes.Events.RESUME, resetKeys);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off(Phaser.Scenes.Events.RESUME, resetKeys);
       world.printerView.destroy();
       world.homeProgressionView.destroy();
       this.input.keyboard?.off('keydown', this.onTypedKey);
@@ -443,6 +473,7 @@ export class GameScene extends Phaser.Scene {
         ? []
         : missionStart.effects;
       this.missionEffectExecutor.apply(introEffects, () => this.persistCurrentState());
+      if (!this.debugRuntimeState && !howToPlaySeen()) this.showHowToPlay();
       if (this.debugRuntimeState?.triggerZusSummons) {
         this.time.delayedCall(0, () => this.startZusSummons());
       }
@@ -462,6 +493,10 @@ export class GameScene extends Phaser.Scene {
 
   public update(time: number, delta: number): void {
     this.river?.update(delta);
+    if (Phaser.Input.Keyboard.JustDown(this.helpKey)) {
+      this.showHowToPlay();
+      return;
+    }
     if (
       this.hubiShowcaseKey &&
       Phaser.Input.Keyboard.JustDown(this.hubiShowcaseKey)
@@ -1271,9 +1306,19 @@ export class GameScene extends Phaser.Scene {
     this.phoneSystem.startMission(mission.id, mission.phoneCalls ?? []);
   }
 
+  /**
+   * Every mission is a new day: the colleague does not carry on from where
+   * yesterday's chase ended but starts somewhere on his route, away from Hubi.
+   */
   private applyMissionPatrol(routeId = 'standard'): void {
     const route = this.workColleaguePatrolRoutes[routeId] ?? this.workColleaguePatrolRoutes.standard;
-    if (route) this.npcController.setPatrolRoute(route);
+    if (!route) return;
+    this.npcController.setPatrolRoute(route);
+    this.npcController.startDayAt(pickSpawnIndex(route, this.daySpawnAvoidPoints(), DAY_SPAWN_MIN_DISTANCE, Math.random));
+  }
+
+  private daySpawnAvoidPoints(): Point2D[] {
+    return [{ x: this.player.x, y: this.player.y }, HOME_DOOR];
   }
 
   private applyHrMissionSetup(mission: MissionDefinition): void {
@@ -1284,7 +1329,12 @@ export class GameScene extends Phaser.Scene {
       this.gameState.unlockHr();
     }
     const route = this.hrPatrolRoutes[mission.hrPatrolRouteId ?? 'pharmacy-loop'];
-    if (route) this.hrController.setPatrolRoute(route);
+    if (route) {
+      this.hrController.setPatrolRoute(route);
+      const index = pickSpawnIndex(route, this.daySpawnAvoidPoints(), DAY_SPAWN_MIN_DISTANCE, Math.random);
+      const start = route[index];
+      if (start) this.hrController.teleportTo(start);
+    }
     this.hrController.forceState(HR_STATE.Patrol);
   }
 
@@ -1394,6 +1444,19 @@ export class GameScene extends Phaser.Scene {
     if (this.hrController.isEnabled()) people.push(this.hrController.getNpc());
     if (this.managerController.isEnabled()) people.push(this.managerController.getPosition());
     return people;
+  }
+
+  /** Opens the controls/rules board over the paused game. */
+  private showHowToPlay(): void {
+    if (this.scene.isActive(HOW_TO_PLAY_SCENE_KEY)) return;
+    rememberHowToPlaySeen();
+    const data: HowToPlaySceneData = { onClose: () => this.scene.resume() };
+    // Deferred one tick: pausing is ignored while the scene is still in create().
+    this.time.delayedCall(0, () => {
+      this.scene.launch(HOW_TO_PLAY_SCENE_KEY, data);
+      this.scene.bringToTop(HOW_TO_PLAY_SCENE_KEY);
+      this.scene.pause();
+    });
   }
 
   private createMinigameRunner(): MinigameRunner {

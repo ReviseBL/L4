@@ -26,7 +26,7 @@ export class RiverView {
     const waterHeight = RIVER.bottom - RIVER.waterTop;
     this.water = scene.textures.exists(WATER_KEY)
       ? scene.add.tileSprite(worldWidth / 2, RIVER.waterTop + waterHeight / 2, worldWidth, waterHeight, WATER_KEY).setDepth(1)
-      : scene.add.rectangle(worldWidth / 2, RIVER.waterTop + waterHeight / 2, worldWidth, waterHeight, 0x4d5b3a).setDepth(1);
+      : scene.add.rectangle(worldWidth / 2, RIVER.waterTop + waterHeight / 2, worldWidth, waterHeight, 0x3d6c86).setDepth(1);
     addReeds(scene, worldWidth);
     for (const outfall of SEWAGE_OUTFALLS) addOutfall(scene, outfall.x);
     addNoSwimmingSign(scene, SEWAGE_OUTFALLS[1]?.x ?? 1280);
@@ -53,7 +53,7 @@ export class RiverView {
       let sprite = this.trashSprites.get(item);
       if (!sprite) {
         if (!this.scene.textures.exists(item.key)) continue;
-        sprite = this.scene.add.image(item.x, item.y, item.key).setDepth(3).setTint(0xb8b59a).setAlpha(0.92);
+        sprite = this.scene.add.image(item.x, item.y, item.key).setDepth(3).setTint(0xc9c7b0).setAlpha(0.95);
         this.trashSprites.set(item, sprite);
       }
       const wobble = Math.sin(this.elapsedMs / 650 + item.phase);
@@ -67,21 +67,28 @@ export class RiverView {
     this.plumes.destroy();
   }
 
-  /** Brown sewage clouds pouring from the pipes and smearing downstream. */
+  /** A narrow dirty streak from each pipe, widening and fading downstream. */
   private drawPlumes(): void {
     const g = this.plumes.clear();
-    const pulse = 0.5 + 0.5 * Math.sin(this.elapsedMs / 900);
+    const t = this.elapsedMs / 1_000;
     for (const outfall of SEWAGE_OUTFALLS) {
-      for (let index = 0; index < 9; index += 1) {
-        const spread = index / 8;
-        const x = outfall.x + 10 + index * 38 + ((this.elapsedMs / 55 + index * 11) % 14);
-        const y = RIVER.waterTop + 12 + spread * 40;
-        g.fillStyle(index % 2 === 0 ? 0x7a5528 : 0x8a6a2e, (0.78 - spread * 0.55) * (0.85 + pulse * 0.15));
-        g.fillEllipse(x, y, 30 + spread * 60, 12 + spread * 22);
+      const segments = 34;
+      for (let index = 0; index < segments; index += 1) {
+        const k = index / segments;
+        const x = outfall.x + 4 + index * 10;
+        const centre = RIVER.waterTop + 7 + index * 0.85 + Math.sin(t * 1.4 + index * 0.45) * (1 + k * 2.5);
+        const halfWidth = 2 + k * 9;
+        g.fillStyle(index % 3 === 0 ? 0x6e5126 : 0x7d5e2c, 0.9 * (1 - k) + 0.12);
+        g.fillRect(Math.round(x), Math.round(centre - halfWidth), 11, Math.max(2, Math.round(halfWidth * 2)));
+        // Greasy scum flecks along the streak.
+        if (index % 5 === 2) {
+          g.fillStyle(0xc9bf8f, 0.5 * (1 - k));
+          g.fillRect(Math.round(x + 3), Math.round(centre - 1), 3, 1);
+        }
       }
-      // Foam and the gush right under the pipe.
-      g.fillStyle(0x5a3f1f, 0.9).fillEllipse(outfall.x + 2, RIVER.waterTop + 6, 22, 10);
-      g.fillStyle(0xd8cfa8, 0.55 + pulse * 0.25).fillEllipse(outfall.x + 6, RIVER.waterTop + 8, 10, 4);
+      // Gush under the pipe.
+      g.fillStyle(0x5a3f1f, 0.9).fillRect(outfall.x - 3, RIVER.waterTop, 7, 6);
+      g.fillStyle(0xd8cfa8, 0.6).fillRect(outfall.x - 2, RIVER.waterTop + 5, 5, 1);
     }
   }
 }
@@ -92,21 +99,21 @@ function ensureRiverTextures(scene: Phaser.Scene): void {
     const texture = scene.textures.createCanvas(WATER_KEY, 96, 48);
     if (texture) {
       const ctx = texture.getContext();
-      ctx.fillStyle = '#4f5d3c';
+      ctx.fillStyle = '#3d6c86';
       ctx.fillRect(0, 0, 96, 48);
       for (let index = 0; index < 60; index += 1) {
-        ctx.fillStyle = random() < 0.5 ? 'rgba(90, 104, 66, 0.9)' : 'rgba(64, 74, 48, 0.9)';
+        ctx.fillStyle = random() < 0.5 ? 'rgba(70, 120, 146, 0.9)' : 'rgba(48, 92, 116, 0.9)';
         ctx.fillRect(Math.floor(random() * 96), Math.floor(random() * 48), 2 + Math.floor(random() * 4), 1);
       }
       // Lazy ripples.
-      ctx.fillStyle = 'rgba(170, 180, 140, 0.7)';
+      ctx.fillStyle = 'rgba(176, 214, 230, 0.75)';
       for (let index = 0; index < 14; index += 1) {
         const x = Math.floor(random() * 90);
         const y = Math.floor(random() * 46);
         ctx.fillRect(x, y, 6 + Math.floor(random() * 6), 1);
       }
       // A greasy sheen here and there.
-      ctx.fillStyle = 'rgba(120, 96, 140, 0.25)';
+      ctx.fillStyle = 'rgba(110, 120, 80, 0.35)';
       ctx.fillRect(Math.floor(random() * 80), Math.floor(random() * 40), 10, 2);
       texture.refresh();
       texture.setFilter(Phaser.Textures.FilterMode.NEAREST);

@@ -81,7 +81,7 @@ export class HrController {
   public forceState(state: HrState, player?: Point2D): void { this.brain.forceState(state, player); }
   public forceDetection(player: Point2D): void { if (this.brain.forceDetection(player)) this.callbacks.onDetected(); }
   public investigate(position: Point2D): void { this.brain.forceState(HR_STATE.Searching, position); }
-  public teleportTo(point: Point2D): void { this.npc.setPosition(point.x, point.y); }
+  public teleportTo(point: Point2D): void { this.npc.setPosition(point.x, point.y); (this.npc.body as Phaser.Physics.Arcade.Body | null)?.reset(point.x, point.y); this.avoider.reset(); }
   public setPatrolRoute(route: readonly Point2D[]): void { if (!route.length) return; this.patrol = { spawn: this.patrol.spawn, route }; this.patrolIndex = 0; }
   public destroy(): void { this.collider.destroy(); this.npc.destroyNpc(); }
 

@@ -1,3 +1,4 @@
+import { HowToPlayScene } from '../scenes/how-to-play-scene';
 import Phaser from 'phaser';
 import { BootScene } from '../scenes/boot-scene';
 import { GameScene } from '../scenes/game-scene';
@@ -39,6 +40,6 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   scene: DEVELOPER_TOOLS_ENABLED
-    ? [BootScene, MenuScene, OpeningScene, GameScene, MinigameScene, ZusScene, HubiShowcaseScene]
-    : [BootScene, MenuScene, OpeningScene, GameScene, MinigameScene, ZusScene],
+    ? [BootScene, MenuScene, OpeningScene, GameScene, MinigameScene, HowToPlayScene, ZusScene, HubiShowcaseScene]
+    : [BootScene, MenuScene, OpeningScene, GameScene, MinigameScene, HowToPlayScene, ZusScene],
 };
