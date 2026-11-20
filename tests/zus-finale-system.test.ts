@@ -33,8 +33,8 @@ function context(overrides: Partial<FinaleCampaignContext> = {}): FinaleCampaign
 
 describe('ZusFinaleSystem', () => {
   it('derives a bounded starting credibility from the campaign', () => {
-    expect(calculateInitialCredibility(context())).toBe(79);
-    expect(calculateInitialCredibility(context({ suspicion: 100, hrFirstMeetingChoice: 'great', campaignStats: { ...context().campaignStats, managerDetections: 20 } }))).toBe(35);
+    expect(calculateInitialCredibility(context())).toBe(61);
+    expect(calculateInitialCredibility(context({ suspicion: 100, hrFirstMeetingChoice: 'great', campaignStats: { ...context().campaignStats, managerDetections: 20 } }))).toBe(17);
   });
 
   it('scores correct and absurd documents only once', () => {
@@ -46,13 +46,16 @@ describe('ZusFinaleSystem', () => {
   });
 
   it('penalizes repeated sprinting and returns a local score and rank', () => {
-    const system = new ZusFinaleSystem(context(), 80);
+    const system = new ZusFinaleSystem(context(), 84);
     system.recordSprintIncident();
     system.recordSprintIncident();
     system.recordSprintIncident();
     const result = system.calculateResult();
-    expect(result.credibility).toBe(73);
+    expect(result.credibility).toBe(77);
     expect(result.endingId).toBe('extended');
+    // Three more sprints push him under the bar for an extension.
+    system.recordSprintIncident();
+    expect(system.calculateResult().endingId).toBe('back-to-work');
     expect(result.score).toBeGreaterThan(0);
     expect(['S', 'A', 'B', 'C', 'D']).toContain(result.rank);
   });
@@ -81,7 +84,7 @@ describe('ZusFinaleSystem', () => {
     expect(calculateCriticalIncidentCredibilityPenalty(99)).toBe(20);
     expect(calculateInitialCredibility(context({
       campaignStats: { ...context().campaignStats, criticalSuspicionIncidents: 3 },
-    }))).toBe(64);
+    }))).toBe(46);
   });
 
   it('applies a capped score penalty without imposing a hard rank rule', () => {

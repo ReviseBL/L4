@@ -25,3 +25,17 @@ export const zusQuestionEffects: Readonly<Record<string, number>> = {
   l4_technical: -2,
   l4_worth_it: -3,
 };
+
+/**
+ * Balance of the finale. Credibility starts lower than it used to, so the
+ * documents alone no longer decide the verdict: the answers, the cards, the
+ * reflexes and the walk all count.
+ */
+export const zusFinaleBalance = {
+  baseCredibility: 52,
+  hiddenEnding: { minCredibility: 92, maxSuspicion: 20, maxManagerDetections: 1 },
+  extendedMinCredibility: 76,
+  backToWorkMinCredibility: 40,
+  /** At or above this suspicion the only ending below "extended" is HR. */
+  hrSuspicion: 95,
+} as const;

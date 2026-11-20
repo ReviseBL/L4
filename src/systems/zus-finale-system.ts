@@ -7,6 +7,7 @@ import type {
 } from '../domain/finale/zus-finale-types';
 import { ZUS_FINALE_PHASE } from '../domain/finale/zus-finale-types';
 import { suspicionConfig } from '../data/suspicion/suspicion-config';
+import { zusFinaleBalance } from '../data/finale/zus-finale-data';
 
 export class ZusFinaleSystem {
   private phase: ZusFinalePhase = ZUS_FINALE_PHASE.Documents;
@@ -67,7 +68,7 @@ export class ZusFinaleSystem {
 }
 
 export function calculateInitialCredibility(context: FinaleCampaignContext): number {
-  let value = 70;
+  let value: number = zusFinaleBalance.baseCredibility;
   if (context.suspicion < 40) value += 10;
   else if (context.suspicion >= 90) value -= 20;
   else if (context.suspicion >= 70) value -= 10;
@@ -97,10 +98,14 @@ export function calculateCriticalIncidentScorePenalty(incidentCount: number): nu
 }
 
 function selectEnding(credibility: number, context: FinaleCampaignContext): FinaleResult['endingId'] {
-  const hidden = credibility >= 92 && context.suspicion <= 20 && context.l4PrintCompleted && context.campaignStats.managerDetections <= 1;
+  const balance = zusFinaleBalance;
+  const hidden = credibility >= balance.hiddenEnding.minCredibility
+    && context.suspicion <= balance.hiddenEnding.maxSuspicion
+    && context.l4PrintCompleted
+    && context.campaignStats.managerDetections <= balance.hiddenEnding.maxManagerDetections;
   if (hidden) return 'waiting-forever';
-  if (credibility >= 72) return 'extended';
-  if (credibility >= 38 && context.suspicion < 95) return 'back-to-work';
+  if (credibility >= balance.extendedMinCredibility) return 'extended';
+  if (credibility >= balance.backToWorkMinCredibility && context.suspicion < balance.hrSuspicion) return 'back-to-work';
   return 'hr-meeting';
 }
 
