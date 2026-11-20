@@ -53,6 +53,8 @@ export const MIODZIK_SPOTS: readonly MiodzikSpot[] = [
 export const MIODZIK_SPRITE = {
   key: 'npc-miodzik',
   url: 'assets/characters/npc-miodzik.png',
+  frameWidth: 34,
+  frameHeight: 32,
   frames: { stand: [0, 1], sit: [2, 3], pee: [4, 5] },
 } as const;
 

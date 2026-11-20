@@ -1,4 +1,4 @@
-import { DOG_SPRITE } from '../data/easter-eggs/dog-config';
+import { DOG_SPRITE, MIODZIK_SPRITE } from '../data/easter-eggs/dog-config';
 import Phaser from 'phaser';
 import { TITLE_KEY_ART } from '../data/branding/brand-config';
 import { openingPanels } from '../data/narrative/opening-sequence';
@@ -41,7 +41,7 @@ export class BootScene extends Phaser.Scene {
       });
     }
     this.load.spritesheet(DOG_SPRITE.key, DOG_SPRITE.url, { frameWidth: DOG_SPRITE.frameWidth, frameHeight: DOG_SPRITE.frameHeight });
-    // MIODZIK_SPRITE (idle sheet) is loaded here once its file exists.
+    this.load.spritesheet(MIODZIK_SPRITE.key, MIODZIK_SPRITE.url, { frameWidth: MIODZIK_SPRITE.frameWidth, frameHeight: MIODZIK_SPRITE.frameHeight });
     for (const texture of [...Object.values(WORLD_TILE_TEXTURES), ...WORLD_ART_TEXTURES, ...MINIGAME_ART_TEXTURES, ...WATCHER_TEXTURES, ...EXTRA_ART_TEXTURES, ...ROUND4_TEXTURES]) {
       this.load.image(texture.key, texture.url);
     }

@@ -27,7 +27,7 @@ export class MiodzikView {
     if (!this.scene.textures.exists(key)) return;
     this.sprite = this.scene.add.sprite(spot.x, spot.y, key, 0).setOrigin(0.5, 1).setDepth(spot.y).setFlipX(!spot.facingRight);
     this.label = this.scene.add
-      .text(spot.x, spot.y - 34, 'MIODZIK', {
+      .text(spot.x, spot.y + 8, 'MIODZIK', {
         fontFamily: UI_FONT_FAMILY,
         fontSize: '10px',
         fontStyle: 'bold',
@@ -38,7 +38,7 @@ export class MiodzikView {
       .setOrigin(0.5)
       .setDepth(spot.y + 1);
     this.bubble = this.scene.add
-      .text(spot.x, spot.y - 44, '', {
+      .text(spot.x, spot.y - 47, '', {
         fontFamily: UI_FONT_FAMILY,
         fontSize: '13px',
         fontStyle: 'bold',
