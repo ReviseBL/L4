@@ -102,14 +102,14 @@ P = [
     # Dekoracje (bez kolizji, z dala od tras NPC)
     ('decor', 'tree', 640, 330, 92, {}), ('decor', 'birch', 560, 175, 80, {}), ('decor', 'flowerbed', 560, 330, 36, {}),
     ('decor', 'trzepak', 572, 450, 66, {}),
-    ('decor', 'bench', 640, 470, 56, {}), ('decor', 'trash-bin', 700, 470, 22, {}), ('decor', 'trash-bin', 560, 548, 22, {}),
+    ('decor', 'bench', 640, 470, 56, {}), ('decor', 'trash-bin', 700, 470, 22, {}),
     ('decor', 'lamp', 700, 540, 32, {}), ('decor', 'lamp', 1150, 540, 32, {}), ('decor', 'lamp', 2120, 540, 32, {}),
     ('decor', 'lamp', 450, 958, 32, {}), ('decor', 'lamp', 1200, 958, 32, {}), ('decor', 'lamp', 1700, 958, 32, {}),
     ('decor', 'bike-rack', 420, 528, 64, {}), ('decor', 'bollard', 415, 612, 10, {}), ('decor', 'bollard', 595, 612, 10, {}),
     ('decor', 'young-tree', 880, 532, 30, {}), ('decor', 'young-tree', 1330, 532, 30, {}), ('decor', 'young-tree', 1960, 532, 30, {}),
     ('decor', 'poplar', 850, 92, 36, {}), ('decor', 'poplar', 1720, 90, 36, {}),
     ('decor', 'chestnut', 1290, 255, 104, {}), ('decor', 'leaf-pile', 1250, 280, 30, {}), ('decor', 'bench', 1290, 450, 56, {}),
-    ('decor', 'lilac', 1200, 125, 50, {}), ('decor', 'pallets', 1385, 470, 36, {}), ('decor', 'cart', 1210, 500, 28, {}),
+    ('decor', 'lilac', 1200, 125, 50, {}), ('decor', 'pallets', 1385, 470, 36, {}),
     ('decor', 'planter-tree', 1450, 534, 36, {}),
     ('decor', 'sandbox', 1950, 290, 44, {}), ('decor', 'swing', 2050, 300, 64, {}), ('decor', 'tree', 2140, 160, 90, {}),
     ('decor', 'bench', 2030, 482, 56, {}), ('decor', 'boxwood', 1880, 528, 30, {}), ('decor', 'spruce', 2165, 500, 62, {}),
@@ -117,8 +117,8 @@ P = [
     ('decor', 'bus-stop', 110, 948, 100, {}), ('decor', 'tree', 40, 1065, 90, {}), ('decor', 'play-fence', 275, 1062, 96, {}),
     ('decor', 'bench', 400, 1050, 56, {}), ('decor', 'ad-column', 575, 1012, 28, {}),
     ('decor', 'lilac', 545, 1150, 46, {}), ('decor', 'hydrant', 545, 1245, 16, {}), ('decor', 'tree', 545, 1330, 92, {}),
-    ('decor', 'boxwood', 1000, 1220, 30, {}), ('decor', 'trash-bin', 1000, 1330, 22, {}),
-    ('decor', 'waste-shelter', 1095, 1085, 70, {}), ('decor', 'bench', 1170, 1078, 56, {}), ('decor', 'trash-bin', 1230, 1078, 22, {}),
+    ('decor', 'boxwood', 1000, 1220, 30, {}),
+    ('decor', 'waste-shelter', 1095, 1085, 70, {}), ('decor', 'bench', 1170, 1078, 56, {}),
     ('decor', 'bench', 1572, 1372, 56, {}), ('decor', 'dead-tree', 1690, 1385, 60, {}),
     ('decor', 'kiosk', 2155, 1045, 72, {}), ('decor', 'spruce', 2165, 1210, 60, {}), ('decor', 'tree', 2170, 1330, 90, {}),
     ('decor', 'hedge', 200, 1398, 76, {}), ('decor', 'hedge', 820, 1398, 76, {}), ('decor', 'hedge', 1400, 1398, 76, {}),
@@ -126,14 +126,14 @@ P = [
     ('decals', 'manhole', 900, 712, 24, {'depth': 2}), ('decals', 'manhole', 1650, 782, 24, {'depth': 2}),
     ('decals', 'drain', 760, 853, 26, {'depth': 2}), ('decals', 'drain', 1460, 632, 26, {'depth': 2}),
     ('decals', 'puddle', 1060, 604, 56, {'depth': 2}), ('decals', 'puddle-small', 1700, 1075, 34, {'depth': 2}),
-    ('decals', 'puddle-small', 300, 910, 30, {'depth': 2}),
-    ('decals', 'cracks', 320, 776, 60, {'depth': 2}), ('decals', 'cracks', 1900, 716, 56, {'depth': 2}),
+    
+    ('decals', 'cracks', 320, 776, 60, {'depth': 2}),
     ('decals', 'leaves', 1325, 298, 40, {'depth': 2}), ('decals', 'leaves', 700, 918, 36, {'depth': 2}),
-    ('decals', 'litter', 175, 965, 28, {'depth': 2}), ('decals', 'litter', 1040, 958, 26, {'depth': 2}),
+    
     ('decals', 'hopscotch', 340, 600, 28, {'depth': 2}),
-    ('decals', 'oil-stain', 1900, 1030, 40, {'depth': 2}), ('decals', 'oil-stain', 1480, 1064, 34, {'depth': 2}),
+    ('decals', 'oil-stain', 1900, 1030, 40, {'depth': 2}),
     ('decals', 'dandelions', 745, 190, 24, {'depth': 2}), ('decals', 'dandelions', 1350, 440, 22, {'depth': 2}),
-    ('decals', 'missing-pavers', 1290, 915, 34, {'depth': 2}), ('decals', 'missing-pavers', 650, 575, 30, {'depth': 2}),
+    ('decals', 'missing-pavers', 1290, 915, 34, {'depth': 2}),
 ]
 # Warianty dekoracji, żeby powtórzenia nie wyglądały jak kopiuj-wklej:
 # co drugi egzemplarz odbity, drzewa i krzaki w kilku odcieniach i rozmiarach.

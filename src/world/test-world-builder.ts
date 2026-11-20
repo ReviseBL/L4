@@ -13,6 +13,9 @@ import type { InteractionTarget } from '../systems/interaction-system';
 import { joinWalks, NORTH_SIDEWALK_PATH, SOUTH_SIDEWALK_PATH, walkAlong, ZEBRA_CROSSING } from '../data/world/pedestrian-routes';
 import { BUILDING_WINDOWS } from '../data/world/building-windows';
 import { drawBrickWall, drawWindow, ensureBrickTexture } from './building-art';
+import { GREENERY_COUNT, GREENERY_KEEP_OUT, GREENERY_KINDS, GREENERY_MIN_SPACING, GREENERY_SEED, GREENERY_ZONES } from '../data/world/greenery';
+import { createSeededRandom } from '../core/math/seeded-random';
+import { scatterGreenery } from '../systems/world/greenery-scatter';
 import { decorCollisionBox } from '../data/world/decor-footprints';
 import { WORLD_ART_PLACEMENTS, WORLD_TILE_TEXTURES, type WorldTileId } from '../data/world/world-art';
 import { UI_FONT_FAMILY } from '../ui/text-style';
@@ -71,6 +74,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
   placeArtGroup(scene, 'decals');
   if (placeArtGroup(scene, 'decor')) addDecorCollisions(scene, obstacles);
   const hideSpots = createHideSpots(scene);
+  addScatteredGreenery(scene, obstacles, hideSpots);
   addWorldLabel(scene);
 
   // Walkers keep to the sidewalks and cross the street only on the zebra.
@@ -526,6 +530,33 @@ function addGardenHedges(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.S
   for (const x of [645, 1282]) {
     if (scene.textures.exists(bushKey)) scene.add.image(x, 366, bushKey).setScale(1.7).setDepth(366 + 35);
     else scene.add.ellipse(x, 366, 90, 60, 0x40916c).setDepth(401);
+  }
+}
+
+/** Naturally scattered flowerbeds, boxwoods and weeds on the lawns (fixed seed). */
+function addScatteredGreenery(
+  scene: Phaser.Scene,
+  obstacles: Phaser.Physics.Arcade.StaticGroup,
+  hideSpots: readonly HideSpot[],
+): void {
+  const blockers = [
+    ...WORLD_ART_PLACEMENTS.filter((placement) => placement.group !== 'decals').map((placement) => ({ x: placement.x, y: placement.y, radius: 46 })),
+    ...hideSpots.map((spot) => ({ x: spot.x, y: spot.y, radius: spot.radius })),
+    ...worldInteractionTargets.map((target) => ({ x: target.x, y: target.y, radius: target.radius + 20 })),
+  ];
+  const placements = scatterGreenery(createSeededRandom(GREENERY_SEED), {
+    zones: GREENERY_ZONES,
+    kinds: GREENERY_KINDS,
+    blockers,
+    keepOut: GREENERY_KEEP_OUT,
+    count: GREENERY_COUNT,
+    minSpacing: GREENERY_MIN_SPACING,
+  });
+  for (const placement of placements) {
+    if (!scene.textures.exists(placement.key)) continue;
+    scene.add.image(placement.x, placement.y, placement.key).setFlipX(placement.flipX).setDepth(placement.depth);
+    const box = decorCollisionBox(placement.key, placement.x, placement.y);
+    if (box) addInvisibleObstacle(obstacles, scene, box.x, box.y, box.width, box.height);
   }
 }
 
