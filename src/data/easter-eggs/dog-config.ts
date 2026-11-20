@@ -32,6 +32,9 @@ export const DOG_SPRITE = {
   key: 'npc-pomeranian-run',
   url: 'assets/characters/npc-pomeranian-run.png',
   frames: 6,
+  frameWidth: 38,
+  frameHeight: 29,
   frameRate: 14,
-  displayHeight: 24,
+  // Drawn 1:1 so the pixels stay crisp.
+  displayHeight: 29,
 } as const;
