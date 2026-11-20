@@ -2,6 +2,8 @@ export interface CarryVisualDefinition {
   label: string;
   color: number;
   size?: 'small' | 'large';
+  /** Sprite shown instead of the labelled box when the texture is loaded. */
+  sprite?: { key: string; tintWithColor?: boolean; scale?: number };
 }
 
 export interface ItemDefinition {

@@ -14,6 +14,8 @@ import { UI_FONT_FAMILY } from '../../ui/text-style';
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly carriedBox: Phaser.GameObjects.Rectangle;
   private readonly carriedLabel: Phaser.GameObjects.Text;
+  private readonly carriedSprite: Phaser.GameObjects.Image;
+  private carriedSpriteActive = false;
   private readonly animatedTextureAvailable: boolean;
   private carriedVisual: CarryVisualDefinition | null = null;
   private hiddenState = false;
@@ -54,6 +56,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       })
       .setOrigin(0.5)
       .setVisible(false);
+    this.carriedSprite = scene.add.image(x + 23, y + 8, '__DEFAULT').setVisible(false);
 
     this.updatePresentation();
   }
@@ -67,6 +70,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       .setPosition(this.x + carryOffset.x, this.y + carryOffset.y)
       .setDepth(depth + (carryInFront ? 1 : -1));
     this.carriedLabel.setPosition(this.carriedBox.x, this.carriedBox.y).setDepth(depth + 2);
+    this.carriedSprite.setPosition(this.carriedBox.x, this.carriedBox.y).setDepth(this.carriedBox.depth);
     this.applyVisualState();
   }
 
@@ -115,6 +119,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setTint(isHidden ? 0x8ecae6 : 0xffffff);
     this.carriedBox.setAlpha(isHidden ? 0.28 : 1);
     this.carriedLabel.setAlpha(isHidden ? 0.28 : 1);
+    this.carriedSprite.setAlpha(isHidden ? 0.28 : 1);
     this.setVelocity(0, 0);
     this.updatePresentation();
   }
@@ -129,6 +134,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.carriedLabel.setText(visual?.label ?? '');
     this.carriedBox.setAlpha(this.hiddenState ? 0.28 : 1);
     this.carriedLabel.setAlpha(this.hiddenState ? 0.28 : 1);
+    const sprite = visual?.sprite;
+    this.carriedSpriteActive = Boolean(sprite && this.scene.textures.exists(sprite.key));
+    if (sprite && this.carriedSpriteActive) {
+      this.carriedSprite
+        .setTexture(sprite.key)
+        .setScale(sprite.scale ?? 1)
+        .setAlpha(this.hiddenState ? 0.28 : 1);
+      if (sprite.tintWithColor && visual) this.carriedSprite.setTint(visual.color);
+      else this.carriedSprite.clearTint();
+    }
     this.updatePresentation();
   }
 
@@ -152,8 +167,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     });
     const selection = this.forcedVisual ?? resolved;
     const itemVisible = this.carriedVisual !== null && selection.action !== 'phone';
-    this.carriedBox.setVisible(itemVisible);
-    this.carriedLabel.setVisible(itemVisible);
+    this.carriedBox.setVisible(itemVisible && !this.carriedSpriteActive);
+    this.carriedLabel.setVisible(itemVisible && !this.carriedSpriteActive);
+    this.carriedSprite.setVisible(itemVisible && this.carriedSpriteActive);
 
     if (!this.animatedTextureAvailable) {
       if (selection.direction === 'left' || selection.direction === 'right') {

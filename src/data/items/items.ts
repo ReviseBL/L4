@@ -1,5 +1,8 @@
 import type { ItemDefinition } from '../../domain/items/item-types';
 
+/** Grey spool art tinted with the filament colour. */
+const SPOOL_SPRITE = { key: 'world-spool-28x28', tintWithColor: true, scale: 0.9 } as const;
+
 export const itemDefinitions = [
   {
     id: 'medicine',
@@ -35,7 +38,7 @@ export const itemDefinitions = [
     sprintMultiplier: 0.86,
     unavailableHideSpotIds: ['hedge-hide', 'parking-hide', 'garden-west-hide', 'garden-east-hide'],
     heavyCarry: { walkMultiplier: 0.75 },
-    carryVisual: { label: 'PETG', color: 0x2a9d8f },
+    carryVisual: { label: 'PETG', color: 0x2a9d8f, sprite: SPOOL_SPRITE },
   },
   {
     id: 'usb-c-cable',
@@ -48,7 +51,7 @@ export const itemDefinitions = [
     description: 'Nowy kolor, którego absolutnie nie dało się nie kupić.',
     sprintMultiplier: 0.94,
     heavyCarry: { walkMultiplier: 0.8 },
-    carryVisual: { label: 'PLA', color: 0xf77f00 },
+    carryVisual: { label: 'PLA', color: 0xf77f00, sprite: SPOOL_SPRITE },
   },
   {
     id: 'groceries',
@@ -70,7 +73,7 @@ export const itemDefinitions = [
     description: 'Kolejna absolutnie niezbędna szpula do kolekcji.',
     sprintMultiplier: 0.93,
     heavyCarry: { walkMultiplier: 0.8 },
-    carryVisual: { label: 'ASA', color: 0x343a40 },
+    carryVisual: { label: 'ASA', color: 0x343a40, sprite: SPOOL_SPRITE },
   },
   {
     id: 'l4-print-filament',
@@ -93,6 +96,6 @@ export const itemDefinitions = [
     description: 'Naprawdę ostatnia szpula. Tym razem prawie na pewno.',
     sprintMultiplier: 0.93,
     heavyCarry: { walkMultiplier: 0.8 },
-    carryVisual: { label: 'TPU', color: 0x9d4edd },
+    carryVisual: { label: 'TPU', color: 0x9d4edd, sprite: SPOOL_SPRITE },
   },
 ] as const satisfies readonly ItemDefinition[];
