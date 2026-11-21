@@ -39,3 +39,12 @@ export const zusFinaleBalance = {
   /** At or above this suspicion the only ending below "extended" is HR. */
   hrSuspicion: 95,
 } as const;
+
+/** What the final rank letter means on the summary screen (the save keeps the letter). */
+export const zusRankTitles = {
+  S: { title: 'LEGENDA L4', subtitle: 'ZUS wciąż szuka dowodów. Nie znajdzie.' },
+  A: { title: 'MISTRZ KOCA I HERBATKI', subtitle: 'Kaszel wiarygodny, kebab dyskretny.' },
+  B: { title: 'SPRAWNY REKONWALESCENT', subtitle: 'Parę wpadek, ale kto ich nie ma.' },
+  C: { title: 'AMATOR ZWOLNIEŃ', subtitle: 'Szpule widać było z ulicy.' },
+  D: { title: 'PRZYŁAPANY NA KEBABIE', subtitle: 'Mieszany/mieszany. Na oczach kierownika.' },
+} as const;

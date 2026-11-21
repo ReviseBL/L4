@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { dialogueConfig } from '../data/dialogue/dialogue-config';
-import { zusDocumentChoices, zusQuestionEffects } from '../data/finale/zus-finale-data';
+import { zusDocumentChoices, zusQuestionEffects, zusRankTitles } from '../data/finale/zus-finale-data';
 import type { DialogueSequenceDefinition } from '../domain/dialogue/dialogue-types';
 import {
   ZUS_FINALE_PHASE,
@@ -460,7 +460,9 @@ export class ZusScene extends Phaser.Scene {
     this.add.text(480, 105, 'L4: THE OFFICE ESCAPE', uiStyle(32, '#f4f1de')).setOrigin(0.5);
     this.add.text(480, 160, '180 DNI', uiStyle(20, '#8ecae6')).setOrigin(0.5);
     this.add.text(480, 225, `L4 SCORE: ${result.score.toLocaleString('pl-PL')}`, uiStyle(28, '#90be6d')).setOrigin(0.5);
-    this.add.text(480, 275, `RANGA: ${result.rank}`, uiStyle(32, '#ffd166')).setOrigin(0.5);
+    const rank = zusRankTitles[result.rank];
+    this.add.text(480, 268, `RANGA ${result.rank}: ${rank.title}`, uiStyle(28, '#ffd166')).setOrigin(0.5);
+    this.add.text(480, 302, rank.subtitle, uiStyle(15, '#f4f1de')).setOrigin(0.5);
     this.createSummaryButton(360, 360, 'ZAGRAJ PONOWNIE', () => {
       this.debugStateService.clearActive();
       this.saveGameService.resetGame();
