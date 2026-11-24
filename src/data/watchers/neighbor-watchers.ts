@@ -13,6 +13,8 @@ export const neighborWatchers = [
     id: 'seba',
     displayName: 'SĄSIAD SEBA',
     textureKey: 'npc-neighbor-seba',
+    // Seba basically lives outside.
+    spawnChance: 0.8,
     placeholderColor: 0x4f6b3a,
     // Gap between block 23 and the pharmacy: turns his head left and right
     // along the bottom strip (east → south → west), never back at the tree.

@@ -9,6 +9,7 @@ import { homeVisualDefinitions } from '../data/home/home-progression';
 import { itemDefinitions } from '../data/items/items';
 import { verticalSliceMissions } from '../data/missions/vertical-slice-missions';
 import { workColleagueDefinition } from '../data/npcs/work-colleague';
+import { RIVERSIDE_JOGGER_FROM_MONTH, RIVERSIDE_JOGGER_TINT, riversideJoggerDefinition } from '../data/npcs/riverside-jogger';
 import { navigationBuildings } from '../data/world/navigation-buildings';
 import { hrDefinition } from '../data/npcs/hr';
 import { printJobDefinitions } from '../data/printing/print-jobs';
@@ -163,6 +164,9 @@ export class GameScene extends Phaser.Scene {
   private suspicionSystem!: SuspicionSystem;
   private hidingSystem!: HidingSystem;
   private npcController!: NpcController;
+  /** Second colleague jogging along the river (bottom of the map). */
+  private riversideJogger!: NpcController;
+  private lastCatcher: NpcController | null = null;
   private hrController!: HrController;
   private companyCarController!: CompanyCarController;
   private managerController!: ManagerController;
@@ -405,6 +409,16 @@ export class GameScene extends Phaser.Scene {
         },
       },
     );
+    this.riversideJogger = new NpcController(
+      this,
+      riversideJoggerDefinition,
+      { spawn: world.riversideJogRoute[0] ?? { x: 80, y: 1515 }, route: world.riversideJogRoute },
+      world.obstacles,
+      world.occluders,
+      { onDetected: (source) => this.handleNpcDetection(source, 'KOLEGA Z KSIĘGOWOŚCI CIĘ ZAUWAŻYŁ') },
+    );
+    this.riversideJogger.setTint(RIVERSIDE_JOGGER_TINT);
+    this.riversideJogger.setEnabled(false);
     this.hrController = new HrController(
       this,
       hrDefinition,
@@ -716,6 +730,7 @@ export class GameScene extends Phaser.Scene {
     this.missionTransitionPending = true;
     this.playerController.setMovementEnabled(false);
     this.npcController.setPaused(true);
+    this.riversideJogger.setPaused(true);
     this.hrController.setPaused(true);
     this.companyCarController.setPaused(true);
     this.managerController.setPaused(true);
@@ -813,6 +828,10 @@ export class GameScene extends Phaser.Scene {
     if (this.npcController.isEnabled() && calm(this.npcController.getState())) {
       observers.push({ id: 'coworker', name: workColleagueDefinition.displayName, ...this.npcController.getVisionCone(),
         investigate: (at, linger) => this.npcController.investigate(at, linger) });
+    }
+    if (this.riversideJogger.isEnabled() && calm(this.riversideJogger.getState())) {
+      observers.push({ id: 'jogger', name: riversideJoggerDefinition.displayName, ...this.riversideJogger.getVisionCone(),
+        investigate: (at, linger) => this.riversideJogger.investigate(at, linger) });
     }
     if (this.hrController.isEnabled() && calm(this.hrController.getState())) {
       observers.push({ id: 'hr', name: hrDefinition.displayName, ...this.hrController.getVisionCone(),
@@ -1000,6 +1019,7 @@ export class GameScene extends Phaser.Scene {
 
     this.playerController.setMovementEnabled(true);
     this.npcController.setPaused(false);
+    this.riversideJogger.setPaused(false);
     this.hrController.setPaused(false);
     this.companyCarController.setPaused(false);
     this.managerController.setPaused(false);
@@ -1077,6 +1097,7 @@ export class GameScene extends Phaser.Scene {
     this.hubiShowcaseKey = null;
     this.debugOverlay.destroy();
     this.npcController.destroy();
+    this.riversideJogger.destroy();
     this.hrController.destroy();
     this.companyCarController.destroy();
     this.managerController.destroy();
@@ -1164,13 +1185,15 @@ export class GameScene extends Phaser.Scene {
   private applyNpcDifficulty(): void {
     const campaignDifficulty = this.campaignSystem.getCurrentMonth().difficulty;
     const companyAlert = this.suspicionSystem.getThreshold();
-    this.npcController.setDifficultyModifiers({
+    const colleagueModifiers = {
       viewDistanceMultiplier: companyAlert.viewDistanceMultiplier,
       awarenessMultiplier:
         campaignDifficulty.npcAwarenessMultiplier * companyAlert.awarenessMultiplier,
       searchDurationMultiplier:
         campaignDifficulty.npcSearchDurationMultiplier * companyAlert.searchDurationMultiplier,
-    });
+    };
+    this.npcController.setDifficultyModifiers(colleagueModifiers);
+    this.riversideJogger.setDifficultyModifiers(colleagueModifiers);
     this.hrController.setDifficultyModifiers({
       viewDistanceMultiplier: companyAlert.viewDistanceMultiplier,
       awarenessMultiplier:
@@ -1313,6 +1336,7 @@ export class GameScene extends Phaser.Scene {
    */
   private holdNpcsStill(): void {
     this.npcController.holdStill();
+    this.riversideJogger.holdStill();
     this.hrController.holdStill();
     this.companyCarController.holdStill();
     this.managerController.holdStill();
@@ -1326,6 +1350,7 @@ export class GameScene extends Phaser.Scene {
       sprinting: this.playerController.isSprinting(),
     };
     this.npcController.update(delta, target);
+    this.riversideJogger.update(delta, target);
     this.hrController.update(delta, target);
     this.companyCarController.setPedestrians(this.zebraPedestrians());
     this.companyCarController.update(delta, target);
@@ -1364,6 +1389,18 @@ export class GameScene extends Phaser.Scene {
     if (!route) return;
     this.npcController.setPatrolRoute(route);
     this.npcController.startDayAt(pickSpawnIndex(route, this.daySpawnAvoidPoints(), DAY_SPAWN_MIN_DISTANCE, Math.random));
+    this.applyJoggerSetup();
+  }
+
+  /** The riverside jogger is out from month 2 on, starting somewhere on his loop away from Hubi. */
+  private applyJoggerSetup(): void {
+    const month = this.missionSystem.getCurrentMission()?.campaignMonth ?? this.campaignSystem.getCurrentMonth().id;
+    const debugAllows = !this.debugRuntimeState || this.debugRuntimeState.selection.coworkerEnabled;
+    const active = month >= RIVERSIDE_JOGGER_FROM_MONTH && debugAllows;
+    this.riversideJogger.setEnabled(active);
+    if (!active) return;
+    const route = this.riversideJogger.getPatrolRoute();
+    this.riversideJogger.startDayAt(pickSpawnIndex(route, this.daySpawnAvoidPoints(), DAY_SPAWN_MIN_DISTANCE, Math.random));
   }
 
   private daySpawnAvoidPoints(): Point2D[] {
@@ -1438,6 +1475,7 @@ export class GameScene extends Phaser.Scene {
     this.missionTransitionPending = true;
     this.playerController.setMovementEnabled(false);
     this.npcController.setPaused(true);
+    this.riversideJogger.setPaused(true);
     this.hrController.setPaused(true);
     this.companyCarController.setPaused(true);
     this.managerController.setPaused(true);
@@ -1572,6 +1610,9 @@ export class GameScene extends Phaser.Scene {
     if (this.npcController.isEnabled()) {
       candidates.push({ name: workColleagueDefinition.displayName, distance: distanceTo(this.npcController.getNpc()), investigate: () => this.npcController.investigate(playerPosition) });
     }
+    if (this.riversideJogger.isEnabled()) {
+      candidates.push({ name: riversideJoggerDefinition.displayName, distance: distanceTo(this.riversideJogger.getNpc()), investigate: () => this.riversideJogger.investigate(playerPosition) });
+    }
     if (this.hrController.isEnabled()) {
       candidates.push({ name: hrDefinition.displayName, distance: distanceTo(this.hrController.getNpc()), investigate: () => this.hrController.investigate(playerPosition) });
     }
@@ -1587,8 +1628,16 @@ export class GameScene extends Phaser.Scene {
   private checkForConfrontation(target: { x: number; y: number; hidden: boolean }): void {
     if (target.hidden || this.dialogueSystem.isActive() || this.isGameplayLocked()) return;
     const distance = confrontationConfig.catchDistance;
-    if (this.npcController.isCatching(target, distance)) this.startConfrontation('coworker');
-    else if (this.managerController.isCatching(target, distance)) this.startConfrontation('manager');
+    // No grabbing through a wall: the catcher has to actually see Hubi.
+    const sees = (from: { x: number; y: number }) => this.watcherPerception.hasLineOfSight(from, target);
+    for (const colleague of [this.npcController, this.riversideJogger]) {
+      if (colleague.isCatching(target, distance) && sees(colleague.getNpc())) {
+        this.lastCatcher = colleague;
+        this.startConfrontation('coworker');
+        return;
+      }
+    }
+    if (this.managerController.isCatching(target, distance) && sees(this.managerController.getPosition())) this.startConfrontation('manager');
   }
 
   private startConfrontation(source: ConfrontationSource): void {
@@ -1641,7 +1690,7 @@ export class GameScene extends Phaser.Scene {
 
   private releaseConfrontation(source: ConfrontationSource): void {
     const graceMs = confrontationConfig.releaseGraceMs;
-    if (source === 'coworker') this.npcController.releaseAfterConfrontation(graceMs);
+    if (source === 'coworker') (this.lastCatcher ?? this.npcController).releaseAfterConfrontation(graceMs);
     else if (source === 'manager') this.managerController.releaseAfterConfrontation(graceMs);
     else this.hrController.completeConversation();
   }
@@ -1826,6 +1875,7 @@ export class GameScene extends Phaser.Scene {
   private toggleDebugCoworker(): boolean {
     const enabled = !this.npcController.isEnabled();
     this.npcController.setEnabled(enabled);
+    this.riversideJogger.setEnabled(enabled && (this.missionSystem.getCurrentMission()?.campaignMonth ?? 1) >= RIVERSIDE_JOGGER_FROM_MONTH);
     this.updateDebugRuntimeSelection({ coworkerEnabled: enabled });
     return enabled;
   }
@@ -1919,6 +1969,7 @@ export class GameScene extends Phaser.Scene {
     this.phoneSystem.setUnlocked(runtime.selection.phoneEnabled);
     this.phoneSystem.setEnabled(runtime.selection.phoneEnabled);
     this.npcController.setEnabled(runtime.selection.coworkerEnabled);
+    this.applyJoggerSetup();
     this.hrController.setEnabled(runtime.selection.hrEnabled);
     this.companyCarController.setEnabled(runtime.selection.companyCarEnabled);
     this.managerController.setEnabled(runtime.selection.managerEnabled);

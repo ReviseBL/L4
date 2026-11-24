@@ -35,6 +35,7 @@ export interface TestWorld {
   homeProgressionView: HomeProgressionView;
   workColleaguePatrol: NpcPatrolSetup;
   workColleaguePatrolRoutes: Readonly<Record<string, readonly Point2D[]>>;
+  riversideJogRoute: readonly Point2D[];
   hrPatrol: NpcPatrolSetup;
   hrPatrolRoutes: Readonly<Record<string, readonly Point2D[]>>;
   companyCarRoutes: Readonly<Record<string, readonly Point2D[]>>;
@@ -63,6 +64,7 @@ interface BuildingOptions {
 
 export function createTestWorld(scene: Phaser.Scene): TestWorld {
   const obstacles = scene.physics.add.staticGroup();
+  doorwayOccluders = [];
   ensureBrickTexture(scene);
 
   fillArea(scene, 'grass', WORLD_WIDTH / 2, WORLD_HEIGHT / 2, WORLD_WIDTH, WORLD_HEIGHT, 0x54794d);
@@ -124,6 +126,13 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
       north(970, 1100),
     ),
   } as const satisfies Readonly<Record<string, readonly Point2D[]>>;
+  // The jogger: along the lawn and the river bank, up the gap between the
+  // pharmacy and block 47 and up the passage past the office, then back.
+  const riversideJogRoute: readonly Point2D[] = [
+    { x: 80, y: 1515 }, { x: 545, y: 1480 }, { x: 1000, y: 1480 }, { x: 1000, y: 1070 },
+    { x: 1000, y: 1480 }, { x: 1610, y: 1480 }, { x: 1960, y: 1535 }, { x: 2160, y: 1535 },
+    { x: 2160, y: 1000 }, { x: 2160, y: 1535 }, { x: 1300, y: 1565 }, { x: 500, y: 1565 },
+  ];
   const companyCarRoutes = {
     // Turns happen west of the zebra, so the car drives over it and yields.
     'tutorial-road-loop': [
@@ -139,7 +148,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
 
   return {
     obstacles,
-    occluders: extractOccluders(obstacles),
+    occluders: [...extractOccluders(obstacles), ...doorwayOccluders],
     playerSpawn: new Phaser.Math.Vector2(285, 295),
     hideSpots,
     hideSpotMarkers,
@@ -152,6 +161,7 @@ export function createTestWorld(scene: Phaser.Scene): TestWorld {
       route: workColleagueRoute,
     },
     workColleaguePatrolRoutes,
+    riversideJogRoute,
     hrPatrol: { spawn: hrPatrolRoutes['pharmacy-loop'][0] ?? { x: ZEBRA_CROSSING.walkX, y: 878 }, route: hrPatrolRoutes['pharmacy-loop'] },
     hrPatrolRoutes,
     companyCarRoutes,
@@ -468,6 +478,14 @@ function addBuilding(
     );
   }
 
+  const doorY = doorSide === 'bottom' ? bottom : top;
+  doorwayOccluders.push({
+    left: options.doorCenterX - doorWidth / 2,
+    right: options.doorCenterX + doorWidth / 2,
+    top: doorY - wall / 2,
+    bottom: doorY + wall / 2,
+    transparentWithin: DOOR_PEEK_DISTANCE,
+  });
   scene.add
     .rectangle(options.doorCenterX, doorSide === 'bottom' ? bottom - 3 : top + 3, doorWidth - 8, 12, 0xf4a261)
     .setDepth(Math.round(doorSide === 'bottom' ? bottom : top));
@@ -477,6 +495,14 @@ function addBuilding(
     .setOrigin(0.5)
     .setDepth(options.labelY !== undefined ? 3 : Math.round(doorSide === 'bottom' ? top + 40 : bottom - 36));
 }
+
+/**
+ * Doorways of the buildings, collected while they are built. For movement
+ * they are open; for sight they count as closed doors unless the observer
+ * stands at the doorstep (see ObstacleBounds.transparentWithin).
+ */
+const DOOR_PEEK_DISTANCE = 110;
+let doorwayOccluders: ObstacleBounds[] = [];
 
 function addWall(
   scene: Phaser.Scene,

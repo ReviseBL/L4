@@ -35,7 +35,7 @@ export class NeighborWatchSystem {
 
   /** New mission: each neighbour is outside or not, independently. */
   public rollPresence(): readonly WatcherDefinition[] {
-    this.active = this.definitions.filter(() => this.random() < this.config.spawnChance);
+    this.active = this.definitions.filter((watcher) => this.random() < (watcher.spawnChance ?? this.config.spawnChance));
     this.states.clear();
     for (const watcher of this.active) this.states.set(watcher.id, { awarenessMs: 0, cooldownMs: 0, lineIndex: 0 });
     this.elapsedMs = 0;

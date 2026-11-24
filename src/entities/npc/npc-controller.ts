@@ -216,6 +216,11 @@ export class NpcController {
     this.avoider.reset();
   }
 
+  /** Tints the sprite (a second colleague reusing the same sheet). */
+  public setTint(color: number): void {
+    this.npc.setTint(color);
+  }
+
   public getPatrolRoute(): readonly Point2D[] {
     return this.patrol.route;
   }
