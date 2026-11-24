@@ -21,6 +21,7 @@ const interactionTargetIds = new Set([
   'parcel-locker',
   'pharmacy-counter',
   'kebab-counter',
+  'riverside-kiosk',
 ]);
 
 describe('gameplay beta campaign data', () => {

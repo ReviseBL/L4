@@ -106,4 +106,12 @@ export const worldInteractionTargets = [
     prompt: '[E] SPRAWDŹ KEBAB',
     message: 'Sos mieszany. Decyzja odważniejsza niż wyjście z domu.',
   },
+  {
+    id: 'riverside-kiosk',
+    x: 2050,
+    y: 1505,
+    radius: 72,
+    prompt: '[E] KIOSK',
+    message: 'Pani z kiosku wie wszystko o wszystkich. Lepiej nic nie mówić.',
+  },
 ] as const satisfies readonly InteractionTarget[];

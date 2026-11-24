@@ -100,4 +100,14 @@ export const itemDefinitions = [
     heavyCarry: { walkMultiplier: 0.8 },
     carryVisual: { label: 'TPU', color: 0x9d4edd, sprite: sprite(CARRY_TEXTURES.spoolPurple) },
   },
+  {
+    id: 'crossword-newspaper',
+    displayName: 'GAZETA Z KRZYŻÓWKAMI',
+    description: 'Jedyna w okolicy. Kiosk nad rzeką odkłada ją specjalnie dla Hubiego.',
+  },
+  {
+    id: 'scratch-card',
+    displayName: 'ZDRAPKA',
+    description: 'Dziś kumulacja. Zdrapać dopiero w domu, z dala od kierownika.',
+  },
 ] as const satisfies readonly ItemDefinition[];

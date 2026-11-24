@@ -124,6 +124,8 @@ describe('vertical slice mission data', () => {
     const system = new MissionSystem(verticalSliceMissions);
     system.startAt('m3-medicine-run', 0, { nowMs: 0, suspicion: 20 });
     system.handleEvent({ type: 'interaction', targetId: 'pharmacy-counter' }, { nowMs: 1_000, suspicion: 20 });
+    // Out of stock: the medicine waits in the parcel locker.
+    expect(system.handleEvent({ type: 'interaction', targetId: 'parcel-locker' }, { nowMs: 1_500, suspicion: 20 }).effects).toContainEqual({ type: 'add-item', itemId: 'medicine' });
     expect(system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 2_000, suspicion: 20 }).summary?.daysPassed).toBe(10);
 
     system.startNext({ nowMs: 3_000, suspicion: 20 });
@@ -146,6 +148,7 @@ describe('vertical slice mission data', () => {
     const system = new MissionSystem(verticalSliceMissions);
     system.startAt('m4-shopping-run', 0, { nowMs: 0, suspicion: 20 });
     expect(system.handleEvent({ type: 'interaction', targetId: 'grocery-counter' }, { nowMs: 1, suspicion: 20 }).effects).toContainEqual({ type: 'add-item', itemId: 'groceries' });
+    expect(system.handleEvent({ type: 'interaction', targetId: 'riverside-kiosk' }, { nowMs: 1, suspicion: 20 }).effects).toContainEqual({ type: 'add-item', itemId: 'crossword-newspaper' });
     expect(system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 2, suspicion: 20 }).summary?.daysPassed).toBe(10);
     system.startNext({ nowMs: 3, suspicion: 20 });
     expect(system.handleEvent({ type: 'interaction', targetId: 'parcel-locker' }, { nowMs: 4, suspicion: 20 }).effects).toContainEqual({ type: 'add-item', itemId: 'large-package' });
@@ -161,6 +164,7 @@ describe('vertical slice mission data', () => {
   it('completes all month-five loops and starts then completes the L4 400% print', () => {
     const system = new MissionSystem(verticalSliceMissions);
     system.startAt('m5-shopping-run', 0, { nowMs: 0, suspicion: 40 });
+    expect(system.handleEvent({ type: 'interaction', targetId: 'riverside-kiosk' }, { nowMs: 1, suspicion: 40 }).effects).toContainEqual({ type: 'add-item', itemId: 'scratch-card' });
     system.handleEvent({ type: 'interaction', targetId: 'grocery-counter' }, { nowMs: 1, suspicion: 40 });
     expect(system.handleEvent({ type: 'area-entered', areaId: 'home' }, { nowMs: 2, suspicion: 40 }).summary?.daysPassed).toBe(10);
 

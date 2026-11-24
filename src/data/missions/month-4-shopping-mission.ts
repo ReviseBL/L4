@@ -11,7 +11,15 @@ export const month4ShoppingMission = {
     { text: 'Jeśli cię zauważy, może przekazać twoją pozycję innym.', tone: 'system' },
   ] }],
   steps: [
-    { id: 'buy-groceries', objective: 'Zrób zakupy w minimarkecie.', trigger: { type: 'interaction', targetId: 'grocery-counter' }, interactionPrompt: '[E] KUP ZAKUPY', effects: [{ type: 'add-item', itemId: 'groceries' }] },
-    { id: 'return-shopping', objective: 'Wróć z zakupami do mieszkania.', trigger: { type: 'area-entered', areaId: 'home' }, effects: [{ type: 'remove-item', itemId: 'groceries' }, { type: 'show-sequence', entries: [{ text: 'ZAKUPY BEZPIECZNIE W DOMU', tone: 'success' }] }] },
+    { id: 'buy-groceries', objective: 'Zrób zakupy w minimarkecie.', trigger: { type: 'interaction', targetId: 'grocery-counter' }, interactionPrompt: '[E] KUP ZAKUPY', effects: [
+      { type: 'add-item', itemId: 'groceries' },
+      { type: 'show-sequence', entries: [
+        { speaker: 'KASJERKA', text: 'Gazety z krzyżówkami nie ma. Rozeszła się.', tone: 'speech' },
+        { speaker: 'KASJERKA', text: 'Kiosk nad rzeką zawsze ma. Za biurowcem, panie Hubercie.', tone: 'speech' },
+        { speaker: 'BOHATER', text: 'Za biurowcem. Oczywiście.', tone: 'speech' },
+      ] },
+    ] },
+    { id: 'buy-newspaper', objective: 'Kup gazetę z krzyżówkami w kiosku nad rzeką.', trigger: { type: 'interaction', targetId: 'riverside-kiosk' }, interactionPrompt: '[E] KUP GAZETĘ', effects: [{ type: 'add-item', itemId: 'crossword-newspaper' }] },
+    { id: 'return-shopping', objective: 'Wróć z zakupami i gazetą do mieszkania.', trigger: { type: 'area-entered', areaId: 'home' }, effects: [{ type: 'remove-item', itemId: 'groceries' }, { type: 'remove-item', itemId: 'crossword-newspaper' }, { type: 'show-sequence', entries: [{ text: 'ZAKUPY I KRZYŻÓWKI BEZPIECZNIE W DOMU', tone: 'success' }] }] },
   ],
 } as const satisfies MissionDefinition;
