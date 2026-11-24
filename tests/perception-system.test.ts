@@ -111,4 +111,16 @@ describe('PerceptionSystem', () => {
       expect(getVisionRangeFactor(Math.PI / 2, HUMAN_PROFILE)).toBe(0.5);
     });
   });
+
+  it('treats a doorway as a closed door unless the observer stands at the doorstep', () => {
+    const door = { left: 90, right: 110, top: 190, bottom: 210, transparentWithin: 60 };
+    const system = new PerceptionSystem([door]);
+    const inside = { x: 100, y: 120 };
+    const query = (observer: { x: number; y: number }) => system.evaluate({
+      observer, target: inside, facingRadians: Math.atan2(inside.y - observer.y, inside.x - observer.x), range: 500, halfAngleRadians: Math.PI / 2,
+    });
+    expect(query({ x: 100, y: 420 }).blocked).toBe(true);
+    expect(query({ x: 100, y: 245 }).visibility).not.toBe('NONE');
+    expect(system.hasLineOfSight({ x: 100, y: 420 }, inside)).toBe(false);
+  });
 });

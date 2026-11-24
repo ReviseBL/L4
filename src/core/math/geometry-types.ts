@@ -8,4 +8,9 @@ export interface ObstacleBounds {
   right: number;
   top: number;
   bottom: number;
+  /**
+   * Sight only: an observer within this distance of the box's centre sees
+   * through it (a closed door you can peek through from the doorstep).
+   */
+  transparentWithin?: number;
 }

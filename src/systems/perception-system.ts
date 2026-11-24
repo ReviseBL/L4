@@ -124,6 +124,11 @@ export class PerceptionSystem {
     return points;
   }
 
+  /** True when nothing (walls, closed doors) stands between the two points. */
+  public hasLineOfSight(from: Point2D, to: Point2D): boolean {
+    return !this.isLineBlocked(from, to);
+  }
+
   private isLineBlocked(start: Point2D, end: Point2D): boolean {
     const intersection = this.findNearestIntersectionProgress(start, end);
     return intersection !== null && intersection > 0.002 && intersection < 0.98;
@@ -133,6 +138,11 @@ export class PerceptionSystem {
     let nearest: number | null = null;
 
     for (const obstacle of this.obstacles) {
+      if (obstacle.transparentWithin !== undefined) {
+        const cx = (obstacle.left + obstacle.right) / 2;
+        const cy = (obstacle.top + obstacle.bottom) / 2;
+        if (Math.hypot(start.x - cx, start.y - cy) <= obstacle.transparentWithin) continue;
+      }
       const progress = getSegmentBoxIntersectionProgress(start, end, obstacle);
 
       if (progress !== null && progress > 0.002 && (nearest === null || progress < nearest)) {
