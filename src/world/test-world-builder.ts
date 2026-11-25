@@ -215,6 +215,16 @@ function createHideSpots(
     { id: 'garden-east-hide', x: 1282, y: 380, radius: 70, label: 'DUŻY KRZAK' },
     // Lilac by the pharmacy (between block 23 and the pharmacy): Herbi crouches behind it.
     { id: 'pharmacy-bush', x: 545, y: 1128, radius: 62, label: 'KRZAK BZU', tuckAt: { x: 545, y: 1128 }, tuckDepth: 1146 },
+    // The three big bushes on the riverside lawn: Herbi crouches inside, the bush drawn over him.
+    ...[200, 820, 1400].map((x, index) => ({
+      id: ['riverside-bush-west', 'riverside-bush-mid', 'riverside-bush-east'][index] ?? `riverside-bush-${index}`,
+      x,
+      y: 1372,
+      radius: 68,
+      label: 'KRZAKI',
+      tuckAt: { x, y: 1368 },
+      tuckDepth: 1390,
+    })),
   ];
 
   placeArtGroup(scene, 'hide-hedge');
