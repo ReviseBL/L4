@@ -119,7 +119,7 @@ export class MenuScene extends Phaser.Scene {
     const title = this.add.text(480, 140, GAME_BRAND.title, titleStyle(30, '#f2efe8')).setOrigin(0.5);
     const tagline = this.add.text(480, 184, GAME_BRAND.tagline, creditStyle(16, '#c7c3ba')).setOrigin(0.5);
     const body = this.add
-      .text(480, 270, 'GAMEPLAY BETA\n\nDESIGN, CODE & PLACEHOLDER ART\nIN DEVELOPMENT', menuTextStyle(15, '#dedbd2'))
+      .text(480, 270, 'GAMEPLAY BETA\n\nDESIGN, CODE & PLACEHOLDER ART\nIN DEVELOPMENT\n\nALL CHARACTERS AND EVENTS ARE FICTIONAL', menuTextStyle(15, '#dedbd2'))
       .setOrigin(0.5)
       .setAlign('center')
       .setLineSpacing(7);
