@@ -7,7 +7,7 @@ export const FICTION_DISCLAIMER = {
     'Gra nie zachęca do nadużywania zwolnień lekarskich. Herbert też by nie zachęcał. Chyba.',
     'Podczas tworzenia gry nie ucierpiał żaden kierownik. Jeden pies nasikał pod ławką.',
   ],
-  continueHint: '[E] / SPACJA — DALEJ',
-  /** The card moves on by itself after this long. */
-  autoContinueMs: 9_000,
+  continueLabel: '[E] KONTYNUUJ',
+  /** The card stays until E; the button shows up after this long, so the text gets read first. */
+  buttonDelayMs: 1_200,
 } as const;

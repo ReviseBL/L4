@@ -15,7 +15,8 @@ export class OpeningScene extends Phaser.Scene {
   private transitioning = false;
   /** The fiction disclaimer card, shown before the first panel; null once dismissed. */
   private disclaimer: Phaser.GameObjects.Container | null = null;
-  private disclaimerShownAtMs = 0;
+  /** E only works once the pulsing button is on screen. */
+  private disclaimerReady = false;
 
   public constructor() {
     super('OpeningScene');
@@ -50,11 +51,10 @@ export class OpeningScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdown());
   }
 
-  public update(time: number, delta: number): void {
+  public update(_time: number, delta: number): void {
     if (this.disclaimer) {
-      if (!this.disclaimerShownAtMs) this.disclaimerShownAtMs = time;
-      const pressed = [this.advanceKey, this.spaceKey, this.escapeKey].some((key) => Phaser.Input.Keyboard.JustDown(key));
-      if (pressed || time - this.disclaimerShownAtMs > FICTION_DISCLAIMER.autoContinueMs) this.hideDisclaimer();
+      const pressed = [this.advanceKey, this.spaceKey, this.escapeKey].map((key) => Phaser.Input.Keyboard.JustDown(key));
+      if (this.disclaimerReady && (pressed[0] || pressed[1])) this.hideDisclaimer();
       return;
     }
     if (Phaser.Input.Keyboard.JustDown(this.escapeKey)) {
@@ -75,7 +75,6 @@ export class OpeningScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
     const backdrop = this.add.rectangle(width / 2, height / 2, width, height, 0x050607, 1).setInteractive();
-    backdrop.on('pointerdown', () => this.hideDisclaimer());
     const title = this.add
       .text(width / 2, 84, FICTION_DISCLAIMER.title, { fontFamily: UI_FONT_FAMILY, fontSize: '22px', fontStyle: 'bold', color: '#df293f' })
       .setOrigin(0.5);
@@ -89,17 +88,33 @@ export class OpeningScene extends Phaser.Scene {
         lineSpacing: 4,
       })
       .setOrigin(0.5);
-    const hint = this.add
-      .text(width / 2, height - 54, FICTION_DISCLAIMER.continueHint, { fontFamily: UI_FONT_FAMILY, fontSize: '12px', fontStyle: 'bold', color: '#707176' })
+    const label = this.add
+      .text(0, 0, FICTION_DISCLAIMER.continueLabel, { fontFamily: UI_FONT_FAMILY, fontSize: '16px', fontStyle: 'bold', color: '#f2efe8' })
       .setOrigin(0.5);
-    this.disclaimer = this.add.container(0, 0, [backdrop, title, body, hint]).setDepth(1_000_000).setAlpha(0);
+    const plate = this.add
+      .rectangle(0, 0, label.width + 44, 40, 0x1a0b0e, 1)
+      .setStrokeStyle(2, 0xdf293f)
+      .setInteractive({ useHandCursor: true });
+    plate.on('pointerdown', () => this.hideDisclaimer());
+    const button = this.add.container(width / 2, height - 60, [plate, label]).setAlpha(0);
+    this.disclaimer = this.add.container(0, 0, [backdrop, title, body, button]).setDepth(1_000_000).setAlpha(0);
+    this.disclaimerReady = false;
     this.tweens.add({ targets: this.disclaimer, alpha: 1, duration: 450 });
+    this.time.delayedCall(FICTION_DISCLAIMER.buttonDelayMs, () => {
+      if (!this.disclaimer) return;
+      this.disclaimerReady = true;
+      this.tweens.add({ targets: button, alpha: 1, duration: 300 });
+      // Bouncing "press me" pulse.
+      this.tweens.add({ targets: button, scale: 1.12, duration: 520, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
+    });
   }
 
   private hideDisclaimer(): void {
     const card = this.disclaimer;
     if (!card) return;
     this.disclaimer = null;
+    this.disclaimerReady = false;
+    this.tweens.killTweensOf(card.list);
     this.tweens.add({ targets: card, alpha: 0, duration: 350, onComplete: () => card.destroy() });
   }
 
