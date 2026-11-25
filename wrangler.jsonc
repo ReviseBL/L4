@@ -1,0 +1,12 @@
+// Cloudflare Workers (static assets only): the built Vite game in ./dist,
+// served at l4.reviselab.pl. Build: `npm run build`, deploy: `npx wrangler deploy`.
+{
+  "name": "l4",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  },
+  "routes": [
+    { "pattern": "l4.reviselab.pl", "custom_domain": true }
+  ]
+}
