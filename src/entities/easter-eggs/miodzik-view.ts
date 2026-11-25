@@ -7,7 +7,7 @@ const PUDDLE_MS = 9_000;
 const ANIM_FRAME_MS = 450;
 const BUBBLE_MS = 1_800;
 
-/** Miodzik by his bench: pose frames, name tag, bark bubble, short-lived puddles and a yip. */
+/** Miodzik by his bench: pose frames, name tag, bark bubble (text only, the game is silent) and short-lived puddles. */
 export class MiodzikView {
   private sprite: Phaser.GameObjects.Sprite | null = null;
   private label: Phaser.GameObjects.Text | null = null;
@@ -72,7 +72,6 @@ export class MiodzikView {
     if (frame.bark && this.bubble) {
       this.bubble.setText(frame.bark).setVisible(true);
       this.bubbleUntilMs = this.clockMs + BUBBLE_MS;
-      yip(this.scene);
     }
     if (this.bubble && this.clockMs > this.bubbleUntilMs) this.bubble.setVisible(false);
   }
@@ -94,26 +93,5 @@ export class MiodzikView {
     if (!this.sprite || this.sprite.texture.key !== MIODZIK_SPRITE.key) return 0;
     const frames = MIODZIK_SPRITE.frames[pose];
     return frames[Math.floor(this.clockMs / ANIM_FRAME_MS) % frames.length] ?? frames[0];
-  }
-}
-
-/** Two short high "yip"s synthesised on the fly (the game has no audio files). */
-function yip(scene: Phaser.Scene): void {
-  const manager = scene.sound as Phaser.Sound.WebAudioSoundManager;
-  const context = (manager as { context?: AudioContext }).context;
-  if (!context || manager.mute) return;
-  for (const offset of [0, 0.17]) {
-    const start = context.currentTime + offset;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = 'square';
-    oscillator.frequency.setValueAtTime(1_150, start);
-    oscillator.frequency.exponentialRampToValueAtTime(520, start + 0.09);
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.05, start + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.11);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(start);
-    oscillator.stop(start + 0.12);
   }
 }
