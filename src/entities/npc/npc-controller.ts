@@ -60,7 +60,7 @@ export class NpcController {
       patrol.spawn.y,
       definition.displayName,
       WORK_COLLEAGUE_TEXTURE_KEY,
-      'coworker',
+      definition.spriteId ?? 'coworker',
     );
     this.perceptionSystem = new PerceptionSystem(occluders);
     this.brain = new NpcStateMachine(definition);
@@ -214,11 +214,6 @@ export class NpcController {
     this.patrolIndex = (index + 1) % this.patrol.route.length;
     this.brain.resetForNewDay();
     this.avoider.reset();
-  }
-
-  /** Tints the sprite (a second colleague reusing the same sheet). */
-  public setTint(color: number): void {
-    this.npc.setTint(color);
   }
 
   public getPatrolRoute(): readonly Point2D[] {

@@ -1,6 +1,6 @@
 import type { PlayerDirection } from '../../domain/player/player-visual-types';
 
-export type NpcSpriteId = 'coworker' | 'hr' | 'manager';
+export type NpcSpriteId = 'coworker' | 'jogger' | 'hr' | 'manager';
 export type NpcSpriteAction = 'idle' | 'walk';
 
 export interface NpcSpriteDefinition {
@@ -46,6 +46,19 @@ export const NPC_SPRITES: Readonly<Record<NpcSpriteId, NpcSpriteDefinition>> = {
     actions: {
       idle: { startRow: 0, frameRate: 3 },
       walk: { startRow: 4, frameRate: 9 },
+    },
+  },
+  // The riverside jogger: a run cycle in every row; standing still he jogs on the spot.
+  jogger: {
+    id: 'jogger',
+    textureKey: 'jogger-spritesheet',
+    url: 'assets/characters/jogger-spritesheet.png',
+    frameWidth: 64,
+    frameHeight: 48,
+    referenceSpeed: 128,
+    actions: {
+      idle: { startRow: 0, frameRate: 7 },
+      walk: { startRow: 4, frameRate: 12 },
     },
   },
   hr: {

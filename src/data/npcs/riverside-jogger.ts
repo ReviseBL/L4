@@ -10,6 +10,7 @@ export const riversideJoggerDefinition = {
   id: 'riverside-jogger',
   enemyType: 'coworker',
   displayName: 'KOLEGA Z KSIĘGOWOŚCI',
+  spriteId: 'jogger',
   viewDistance: 310,
   viewHalfAngleDegrees: 85,
   focusHalfAngleDegrees: 36,
@@ -23,7 +24,5 @@ export const riversideJoggerDefinition = {
   detectionCooldownMs: 6_000,
 } as const satisfies NpcDefinition;
 
-/** Blue-ish tint so he does not look like the office colleague (same sprite sheet). */
-export const RIVERSIDE_JOGGER_TINT = 0x9ec9ff;
 /** He jogs from this month on (month 1 stays the tutorial). */
 export const RIVERSIDE_JOGGER_FROM_MONTH = 2;

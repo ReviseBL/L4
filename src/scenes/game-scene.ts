@@ -9,7 +9,7 @@ import { homeVisualDefinitions } from '../data/home/home-progression';
 import { itemDefinitions } from '../data/items/items';
 import { verticalSliceMissions } from '../data/missions/vertical-slice-missions';
 import { workColleagueDefinition } from '../data/npcs/work-colleague';
-import { RIVERSIDE_JOGGER_FROM_MONTH, RIVERSIDE_JOGGER_TINT, riversideJoggerDefinition } from '../data/npcs/riverside-jogger';
+import { RIVERSIDE_JOGGER_FROM_MONTH, riversideJoggerDefinition } from '../data/npcs/riverside-jogger';
 import { navigationBuildings } from '../data/world/navigation-buildings';
 import { hrDefinition } from '../data/npcs/hr';
 import { printJobDefinitions } from '../data/printing/print-jobs';
@@ -417,7 +417,6 @@ export class GameScene extends Phaser.Scene {
       world.occluders,
       { onDetected: (source) => this.handleNpcDetection(source, 'KOLEGA Z KSIĘGOWOŚCI CIĘ ZAUWAŻYŁ') },
     );
-    this.riversideJogger.setTint(RIVERSIDE_JOGGER_TINT);
     this.riversideJogger.setEnabled(false);
     this.hrController = new HrController(
       this,

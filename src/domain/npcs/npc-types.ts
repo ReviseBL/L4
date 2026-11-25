@@ -1,5 +1,6 @@
 import type { Point2D } from '../../core/math/geometry-types';
 import type { EnemyType } from '../campaign/campaign-types';
+import type { NpcSpriteId } from '../../data/npcs/npc-sprite-config';
 
 export const NPC_STATE = {
   Patrol: 'PATROL',
@@ -15,6 +16,8 @@ export interface NpcDefinition {
   id: string;
   enemyType: EnemyType;
   displayName: string;
+  /** Animated sheet to use; the colleague's by default. */
+  spriteId?: NpcSpriteId;
   viewDistance: number;
   /** Total field of view (half angle). 90 = 180° like a human. */
   viewHalfAngleDegrees: number;
