@@ -20,7 +20,7 @@ export const seniors = {
 const senior = (text: string): QueueLine => ({ speaker: 'senior', text });
 const pharmacist = (text: string): QueueLine => ({ speaker: 'pharmacist', text });
 
-// Deliberately slow: Hubi has to stand there and suffer, in plain sight.
+// Deliberately slow: Herbi has to stand there and suffer, in plain sight.
 const halinkaLines = [
   senior('Dzień dobry, pani magister! Jak tam wnusia?'),
   pharmacist('Dzień dobry. Dobrze, dziękuję. Co podać?'),

@@ -4,7 +4,7 @@ import { pickSpawnIndex } from '../src/systems/navigation/spawn-picker';
 const route = [{ x: 0, y: 0 }, { x: 300, y: 0 }, { x: 900, y: 0 }, { x: 1500, y: 0 }];
 
 describe('pickSpawnIndex', () => {
-  it('never starts the day next to Hubi', () => {
+  it('never starts the day next to Herbi', () => {
     for (const roll of [0, 0.3, 0.6, 0.99]) {
       const index = pickSpawnIndex(route, [{ x: 50, y: 0 }], 450, () => roll);
       expect([2, 3]).toContain(index);

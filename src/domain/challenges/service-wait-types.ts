@@ -1,14 +1,14 @@
 import type { Point2D } from '../../core/math/geometry-types';
 
 /**
- * An order made while Hubi waits next to the counter (the kebab stand).
+ * An order made while Herbi waits next to the counter (the kebab stand).
  * The estate keeps running; the order only progresses while he stays near.
  */
 export interface ServiceWaitDefinition {
   id: string;
   /** Who talks behind the counter (bubble label). */
   vendorName: string;
-  /** Where Hubi has to stay, and how far he may wander. */
+  /** Where Herbi has to stay, and how far he may wander. */
   spot: Point2D;
   radius: number;
   /** Where the vendor's speech bubble hangs. */

@@ -21,7 +21,7 @@ export function nextWaypoint(
   const toBuilding = buildings.find((building) => isInside(building, to));
 
   if (fromBuilding && fromBuilding !== toBuilding) {
-    // Leave: line up at the inner door point, then step out. Once Hubi's
+    // Leave: line up at the inner door point, then step out. Once Herbi's
     // pursuer is already between the inner point and the door, keep going out
     // (otherwise it would bounce between the two points).
     const doorSpan = distance(fromBuilding.doorInside, fromBuilding.doorOutside);

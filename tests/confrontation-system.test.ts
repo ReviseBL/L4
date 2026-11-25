@@ -87,7 +87,7 @@ describe('ConfrontationSystem', () => {
     }
   });
 
-  it('never asks about carried items when Hubi carries nothing', () => {
+  it('never asks about carried items when Herbi carries nothing', () => {
     const system = new ConfrontationSystem(confrontationScenarios, confrontationConfig, sequence(0, 0.4, 0.8, 0.2));
     for (let index = 0; index < 40; index += 1) {
       for (const source of ['coworker', 'hr', 'manager'] as const) {

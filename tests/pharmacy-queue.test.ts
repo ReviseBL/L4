@@ -5,7 +5,7 @@ import { verticalSliceMissions } from '../src/data/missions/vertical-slice-missi
 import { getPharmacyQueue } from '../src/data/challenges/pharmacy-queues';
 
 describe('PharmacyQueue', () => {
-  it('only moves while Hubi stands in the queue', () => {
+  it('only moves while Herbi stands in the queue', () => {
     const queue = new PharmacyQueue(pharmacyQueues['m1-pharmacy'], pharmacyQueueConfig.lineMs);
     expect(queue.update(10_000, false)).toEqual([]);
     expect(queue.getPeopleAhead()).toBe(2);
@@ -13,7 +13,7 @@ describe('PharmacyQueue', () => {
     expect(queue.getServiceProgress()).toBeGreaterThan(0.4);
   });
 
-  it('serves every senior in order, then it is Hubi\'s turn', () => {
+  it('serves every senior in order, then it is Herbi\'s turn', () => {
     const queue = new PharmacyQueue(pharmacyQueues['m1-pharmacy'], pharmacyQueueConfig.lineMs);
     const first = queue.getServiceMs(pharmacyQueues['m1-pharmacy'].customers[0]);
     expect(queue.update(first, true)).toEqual([{ type: 'served', customerIndex: 0 }]);

@@ -103,7 +103,7 @@ export const itemDefinitions = [
   {
     id: 'crossword-newspaper',
     displayName: 'GAZETA Z KRZYŻÓWKAMI',
-    description: 'Jedyna w okolicy. Kiosk nad rzeką odkłada ją specjalnie dla Hubiego.',
+    description: 'Jedyna w okolicy. Kiosk nad rzeką odkłada ją specjalnie dla Herbiego.',
   },
   {
     id: 'scratch-card',

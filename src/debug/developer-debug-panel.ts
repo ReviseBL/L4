@@ -138,7 +138,7 @@ export class DeveloperDebugPanel {
     addButton(880, 510, 125, 'L4 DONE', () => this.actions.setL4ProjectState('COMPLETED'));
 
     this.container = scene.add.container(0, 0, objects).setScrollFactor(0).setDepth(300_000).setVisible(false);
-    this.launcher = scene.add.text(948, 42, 'DEBUG F1 · HUBI F2', textStyle(11, '#8ecae6'))
+    this.launcher = scene.add.text(948, 42, 'DEBUG F1 · HERBI F2', textStyle(11, '#8ecae6'))
       .setOrigin(1, 0).setScrollFactor(0).setDepth(299_995).setBackgroundColor('#071018dd').setPadding(7, 5)
       .setInteractive({ useHandCursor: true }).on('pointerdown', () => this.setVisible(!this.visible));
     this.activeBadge = scene.add.text(950, 512, '', textStyle(11, '#80ed99'))

@@ -1,7 +1,7 @@
 import type { Point2D } from '../../core/math/geometry-types';
 
 /**
- * A neighbour who just stands around. If they spot Hubi they shout a friendly
+ * A neighbour who just stands around. If they spot Herbi they shout a friendly
  * greeting, which draws the attention of one company NPC. They never chase.
  */
 export interface WatcherDefinition {
@@ -34,7 +34,7 @@ export interface WatcherDefinition {
 export interface WatcherConfig {
   /** Chance that a given neighbour is outside during a mission (rolled per mission). */
   spawnChance: number;
-  /** How long Hubi has to be in clear view before the shout (ms). */
+  /** How long Herbi has to be in clear view before the shout (ms). */
   recognitionMs: number;
   /** Silence after a shout (ms). */
   cooldownMs: number;

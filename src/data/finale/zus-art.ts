@@ -26,6 +26,6 @@ export const ZUS_ENDING_BOARDS: Readonly<Record<FinaleEndingId, { key: string; u
 export const ZUS_PIXEL_ART = {
   corridorFloor: { key: 'zus-corridor-floor', url: 'assets/zus/zus-corridor-floor.png', width: 790, height: 248 },
   doctor: { key: 'zus-reflex-doctor', url: 'assets/zus/zus-reflex-doctor.png', width: 152, height: 230 },
-  /** Hubi on the couch: relaxed, small kick, big kick. */
+  /** Herbi on the couch: relaxed, small kick, big kick. */
   leg: { key: 'zus-reflex-leg', url: 'assets/zus/zus-reflex-leg.png', frameWidth: 185, frameHeight: 202 },
 } as const;

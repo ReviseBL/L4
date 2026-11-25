@@ -1,12 +1,12 @@
-/** NPCs that can catch Hubi in person and demand an explanation. */
+/** NPCs that can catch Herbi in person and demand an explanation. */
 export type ConfrontationSource = 'coworker' | 'hr' | 'manager';
 
 export type ExcuseQuality = 'good' | 'bad';
 
 /**
  * When a scene may be used:
- * - carrying: Hubi visibly holds something (package, spool, kebab...)
- * - heavy: Hubi lugs a heavy item (spools, big boxes)
+ * - carrying: Herbi visibly holds something (package, spool, kebab...)
+ * - heavy: Herbi lugs a heavy item (spools, big boxes)
  * Scenes without a requirement fit any situation.
  */
 export type ConfrontationRequirement = 'carrying' | 'heavy';

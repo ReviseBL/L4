@@ -22,7 +22,7 @@ export const MINIGAME_SCENE_KEY = 'MinigameScene';
 
 export interface MinigameSceneData {
   request: MinigameRequest;
-  /** 0..1, current company suspicion: nervous Hubi shakes more. */
+  /** 0..1, current company suspicion: nervous Herbi shakes more. */
   stress: number;
   onDone: (result: MinigameResult) => void;
 }
@@ -43,7 +43,7 @@ export const MINIGAME_TEXTURES = {
 
 const CENTER_X = 480;
 const PANEL = { x: 120, y: 56, width: 720, height: 428 };
-/** Hubi feeds the filament from above, like loading a real printer. */
+/** Herbi feeds the filament from above, like loading a real printer. */
 const PINCH_Y = 186;
 const TIP_REST_Y = 236;
 const HOLE_Y = 290;

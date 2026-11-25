@@ -9,7 +9,7 @@ import {
   PLAYER_DIRECTIONS,
 } from '../src/data/player/player-animation-config';
 
-describe('Hubi animation configuration', () => {
+describe('Herbi animation configuration', () => {
   it('matches the frozen player frame and physics geometry', () => {
     expect({ width: HUBI_FRAME_WIDTH, height: HUBI_FRAME_HEIGHT }).toEqual({ width: 64, height: 48 });
     expect(HUBI_ORIGIN).toEqual({ x: 0.5, y: 0.5 });

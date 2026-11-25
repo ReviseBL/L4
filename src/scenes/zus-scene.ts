@@ -34,7 +34,7 @@ interface ZusSceneData {
   forcedEnding?: FinaleEndingId;
 }
 
-/** Walk test on the corridor art (790×248 at 480,305): Hubi's feet stay on the floor between the walls. */
+/** Walk test on the corridor art (790×248 at 480,305): Herbi's feet stay on the floor between the walls. */
 const WALK_SCALE = 1.5;
 const WALK_FEET_START_Y = 330;
 const WALK_FEET_MIN_Y = 272;

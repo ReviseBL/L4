@@ -7,13 +7,13 @@ export interface HowToPlaySection {
 export const HOW_TO_PLAY = {
   title: 'JAK PRZETRWAĆ L4',
   pauseNote: 'PAUZA — gra stoi, dopóki nie zamkniesz tej planszy',
-  goal: 'Hubi jest na zwolnieniu. Załatw to, co każe misja, i wróć do mieszkania, zanim ktoś z firmy cię nakryje.',
+  goal: 'Herbi jest na zwolnieniu. Załatw to, co każe misja, i wróć do mieszkania, zanim ktoś z firmy cię nakryje.',
   left: [
     {
       title: 'STEROWANIE',
       lines: [
         'WASD / strzałki — chodzenie',
-        'SHIFT — sprint (krótki! Hubi łapie zadyszkę, pasek nad głową)',
+        'SHIFT — sprint (krótki! Herbi łapie zadyszkę, pasek nad głową)',
         'E — akcja: kup, odbierz, porozmawiaj, schowaj się, dalej',
         'Kryjówki oznacza „H” — E, by wejść i wyjść',
       ],
@@ -33,7 +33,7 @@ export const HOW_TO_PLAY = {
       lines: [
         'Kolega, HR, kierownik i auto służbowe — uważaj na stożki wzroku',
         'Złapany? Wybierz wymówkę. Dobra ratuje, zła kosztuje',
-        'Sąsiedzi krzyczą „Cześć Hubi!” i ściągają uwagę',
+        'Sąsiedzi krzyczą „Cześć Herbi!” i ściągają uwagę',
         'Przez witryny Chwilki i 3D shopu widać cię ze środka: ścigający zajrzy i pokręci się przy sklepie (mieszkanie i apteka są bezpieczne)',
       ],
     },

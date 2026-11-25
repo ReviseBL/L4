@@ -11,7 +11,7 @@ export interface BuildingWindow {
   facing: 'down' | 'up';
   /**
    * Safe windows (home, pharmacy) have curtains / frosted glass: nobody sees
-   * in. Shop windows are clear, so a chaser outside can glimpse Hubi inside.
+   * in. Shop windows are clear, so a chaser outside can glimpse Herbi inside.
    */
   safe: boolean;
 }
@@ -36,7 +36,7 @@ export interface GlimpseObserver {
   halfAngleRadians: number;
 }
 
-/** An interior Hubi can be seen in through its windows. */
+/** An interior Herbi can be seen in through its windows. */
 export interface GlimpseRoom {
   buildingId: string;
   left: number;

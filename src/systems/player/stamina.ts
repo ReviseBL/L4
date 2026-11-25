@@ -17,7 +17,7 @@ export class Stamina {
 
   public constructor(private readonly config: StaminaConfig) {}
 
-  /** Can Hubi sprint this frame (call before update)? */
+  /** Can Herbi sprint this frame (call before update)? */
   public canSprint(): boolean {
     return !this.exhausted && this.level > 0;
   }

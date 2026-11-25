@@ -15,7 +15,7 @@ export const month4ShoppingMission = {
       { type: 'add-item', itemId: 'groceries' },
       { type: 'show-sequence', entries: [
         { speaker: 'KASJERKA', text: 'Gazety z krzyżówkami nie ma. Rozeszła się.', tone: 'speech' },
-        { speaker: 'KASJERKA', text: 'Kiosk nad rzeką zawsze ma. Za biurowcem, panie Hubercie.', tone: 'speech' },
+        { speaker: 'KASJERKA', text: 'Kiosk nad rzeką zawsze ma. Za biurowcem, panie Herbercie.', tone: 'speech' },
         { speaker: 'BOHATER', text: 'Za biurowcem. Oczywiście.', tone: 'speech' },
       ] },
     ] },

@@ -16,7 +16,7 @@ interface WatcherState {
 /**
  * Neighbours who may or may not be outside this mission. Pure logic: the
  * scene supplies what each one sees; the system decides presence, the head
- * sweep and when someone shouts "Cześć Hubi!".
+ * sweep and when someone shouts "Cześć Herbi!".
  */
 export class NeighborWatchSystem {
   private readonly states = new Map<string, WatcherState>();
@@ -66,7 +66,7 @@ export class NeighborWatchSystem {
       }
       state.awarenessMs += deltaMs * (seen === 'CLEAR' ? 1 : 0.4);
       if (state.awarenessMs >= (watcher.recognitionMs ?? this.config.recognitionMs)) {
-        const line = watcher.shoutLines[state.lineIndex % watcher.shoutLines.length] ?? 'Cześć Hubi!';
+        const line = watcher.shoutLines[state.lineIndex % watcher.shoutLines.length] ?? 'Cześć Herbi!';
         state.lineIndex += 1;
         state.awarenessMs = 0;
         state.cooldownMs = this.config.cooldownMs;

@@ -81,7 +81,7 @@ export const threadingSnapLines = [
   'No pięknie.',
   'Ręce jak galareta.',
   'To nie ja. To filament.',
-  'Spokojnie, Hubert. Oddychaj.',
+  'Spokojnie, Herbert. Oddychaj.',
   'Jeszcze raz. Tym razem na serio.',
   'Kto projektuje takie małe dziurki?',
   'Pęknięty. Jak moja cierpliwość.',

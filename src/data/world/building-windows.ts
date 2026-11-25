@@ -3,7 +3,7 @@ import type { BuildingWindow, WindowGlimpseConfig } from '../../domain/world/win
 /**
  * Windows in the street walls (between the door and the shop sign). Home and
  * pharmacy windows are safe (curtains, frosted glass). Through the clear
- * Chwilka and 3D-shop windows a chaser outside can glimpse Hubi inside.
+ * Chwilka and 3D-shop windows a chaser outside can glimpse Herbi inside.
  */
 export const BUILDING_WINDOWS: readonly BuildingWindow[] = [
   { id: 'home-1', buildingId: 'home', x: 135, wallY: 480, facing: 'down', safe: true },

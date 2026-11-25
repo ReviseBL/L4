@@ -1,6 +1,6 @@
 export const GAME_BRAND = {
   title: 'L4: The Office Escape',
-  tagline: 'The story of Hubert “Hubi L4”',
+  tagline: 'The story of Herbert “Herbi L4”',
 } as const;
 
 export const TITLE_KEY_ART = {

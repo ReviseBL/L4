@@ -8,7 +8,7 @@ type Line = readonly [text: string, reply: string];
 
 /**
  * Compact authoring helper: one good excuse, two bad ones.
- * Last argument limits the scene to situations where Hubi carries something
+ * Last argument limits the scene to situations where Herbi carries something
  * ('carrying') or lugs a heavy item ('heavy'); omit it for general scenes.
  */
 function scenario(
@@ -35,12 +35,12 @@ function scenario(
 
 const coworker: ConfrontationScenario[] = [
   scenario('cw-not-sick', 'coworker',
-    'Hubert?! Ty nie na L4? Myślałem, że mi się wydaje.',
+    'Herbert?! Ty nie na L4? Myślałem, że mi się wydaje.',
     ['Byłem w przychodni. Lekarz kazał się pokazać na kontrolę.', 'Aaa, no to zdrowiej. Szef pytał, co z tobą.'],
     ['Ciii... L4 to stan umysłu.', 'Stan umysłu, mówisz... Ciekawe, co szef na to.'],
     ['Pomyliłeś mnie z bratem bliźniakiem.', 'Ty nie masz brata. Byłem na twoich imieninach.']),
   scenario('cw-fast-recovery', 'coworker',
-    'O, Hubi! Myślałem, że leżysz plackiem. Coś szybko wyzdrowiałeś.',
+    'O, Herbi! Myślałem, że leżysz plackiem. Coś szybko wyzdrowiałeś.',
     ['Gdzie tam. Skoczyłem do apteki, zaraz wracam do łóżka.', 'Dobra, to kuruj się. Nie zatrzymuję.'],
     ['Lepiej niż kiedykolwiek, mówię ci!', 'Lepiej niż kiedykolwiek? Na L4? No, no...'],
     ['Leżę. To tylko hologram.', 'Hologram, który stoi na chodniku. Jasne.']),
@@ -50,7 +50,7 @@ const coworker: ConfrontationScenario[] = [
     ['To słońce. Witamina D leczy wszystko.', 'Na grypę też? Muszę to powtórzyć w biurze.'],
     ['Bo jestem żwawy. Po prostu nie chce mi się do roboty.', '...Udam, że tego nie słyszałem. Prawie.']),
   scenario('cw-what-time', 'coworker',
-    'Hubert! Co ty tu robisz o tej porze? Przecież masz zwolnienie.',
+    'Herbert! Co ty tu robisz o tej porze? Przecież masz zwolnienie.',
     ['Mieszkam za rogiem. Lekarz kazał wychodzić na krótkie spacery.', 'A, świeże powietrze. Szybkiego powrotu.'],
     ['Szukam lepszej pracy. Tylko nikomu nie mów.', 'Nie powiem... może.'],
     ['Mógłbym zapytać ciebie o to samo!', 'Ja mam przerwę. Ty masz L4. Widzisz różnicę?']),
@@ -61,7 +61,7 @@ const coworker: ConfrontationScenario[] = [
     ['Nic nie niosę. I ciebie tu też nie ma.', 'Jestem. I wszystko widzę.'],
     'heavy'),
   scenario('cw-simulating', 'coworker',
-    'Hubi, w biurze gadają, że symulujesz. Powiedz, że nie.',
+    'Herbi, w biurze gadają, że symulujesz. Powiedz, że nie.',
     ['Mam papier od lekarza. Mogę ci pokazać diagnozę, jak chcesz.', 'Nie, nie trzeba! Wierzę. Trzymaj się.'],
     ['Symuluję? Ja? *kaszl* *kaszl* Widzisz?', 'To był najgorszy udawany kaszel, jaki słyszałem.'],
     ['A kto tak gada? Podaj nazwiska.', 'Spokojnie... Nerwowy jesteś jak na chorego.']),
@@ -71,7 +71,7 @@ const coworker: ConfrontationScenario[] = [
     ['To mu nie mów, to się nie ucieszy.', 'Przekupstwo? Zapamiętam.'],
     ['Szef mógłby się w końcu nauczyć zarządzać.', 'Ooo, to mu przekażę. Słowo w słowo.']),
   scenario('cw-contagious', 'coworker',
-    'Hubert? Myślałem, że masz grypę. Nie zarazisz mnie?',
+    'Herbert? Myślałem, że masz grypę. Nie zarazisz mnie?',
     ['Lepiej się odsuń, jeszcze kaszlę. Wyszedłem tylko po leki.', 'O, to ja już lecę. Zdrowiej!'],
     ['Grypa? A, tak... grypa. Na pewno grypa.', 'Na pewno grypa, co? Brzmisz bardzo pewnie.'],
     ['Spoko, przeszło mi. Już tydzień temu.', 'Tydzień temu? A L4 masz do końca miesiąca...']),
@@ -81,7 +81,7 @@ const coworker: ConfrontationScenario[] = [
     ['Przepisy są dla ludzi bez wyobraźni.', 'Wyobraźnię to pokażesz na rozmowie z HR.'],
     ['Ja nie łażę. Ja dryfuję.', 'Dryfujesz... Aha.']),
   scenario('cw-help', 'coworker',
-    'Hubi! Dobrze, że cię widzę. Pomożesz mi z jednym tematem z roboty?',
+    'Herbi! Dobrze, że cię widzę. Pomożesz mi z jednym tematem z roboty?',
     ['Sorry, na tych lekach ledwo myślę. Napisz po moim L4.', 'Racja, nie męczę. Zdrowiej.'],
     ['Jasne, dawaj! I tak się nudzę.', 'Nudzisz się? Na L4? Ciekawe...'],
     ['Za stówkę pomogę. Gotówką.', 'Fuchy na L4? Odważnie.']),
@@ -98,7 +98,7 @@ const coworker: ConfrontationScenario[] = [
 
   // --- general (fit any mission) ---
   scenario('cw-coffee', 'coworker',
-    'Hubi, chodź na kawę! Skoro już chodzisz po mieście, to chyba możesz?',
+    'Herbi, chodź na kawę! Skoro już chodzisz po mieście, to chyba możesz?',
     ['Nie mogę, za chwilę biorę leki. Kawa mi teraz szkodzi.', 'Szkoda. To innym razem, jak wyzdrowiejesz.'],
     ['Jasne, tylko nie mów nikomu w biurze.', 'Kawa z chorym na L4. Będzie o czym opowiadać.'],
     ['Ty stawiasz? To idę nawet z gorączką.', 'Z gorączką, mówisz... Wyglądasz kwitnąco.']),
@@ -108,7 +108,7 @@ const coworker: ConfrontationScenario[] = [
     ['Domowe spa. Maseczka, herbatka, serial.', 'Serial na L4... Szef by chciał to usłyszeć.'],
     ['Bo w końcu odpocząłem od was.', 'Dzięki. Przekażę zespołowi.']),
   scenario('cw-photo', 'coworker',
-    'Hubert, mogę ci zrobić zdjęcie? Chłopaki w biurze nie uwierzą.',
+    'Herbert, mogę ci zrobić zdjęcie? Chłopaki w biurze nie uwierzą.',
     ['Lepiej nie, wyglądam okropnie. Wracam prosto do domu.', 'Dobra, nie męczę. Kuruj się.'],
     ['Jasne! Zrób dobre ujęcie, z profilu.', 'Gotowe. Wrzucam na grupę firmową.'],
     ['Zrobisz, to powiem, co ty robisz w godzinach pracy.', 'Spoko, spoko... Ale zapamiętam.']),
@@ -141,7 +141,7 @@ const coworker: ConfrontationScenario[] = [
 
 const manager: ConfrontationScenario[] = [
   scenario('mg-on-street', 'manager',
-    'Hubert. Zwolnienie lekarskie, tak? A ja widzę pana na ulicy.',
+    'Herbert. Zwolnienie lekarskie, tak? A ja widzę pana na ulicy.',
     ['Wracam od lekarza, panie kierowniku. Mam zalecenia na piśmie.', 'Hm. Proszę dbać o siebie. I o te zalecenia.'],
     ['Ulica to też element terapii.', 'Interesująca terapia. Porozmawiamy o niej.'],
     ['To nie ja. To sobowtór.', 'Sobowtór z pana twarzą i w pana kurtce. Ciekawe.']),
@@ -166,13 +166,13 @@ const manager: ConfrontationScenario[] = [
     ['Trenuję do maratonu. Na L4 mam wreszcie czas.', 'Maraton na zwolnieniu. Gratuluję pomysłu.'],
     ['To adrenalina. Na pana widok.', 'Mam nadzieję, że to nie była ironia.']),
   scenario('mg-shopping', 'manager',
-    'Panie Hubercie, a co pan tam niesie? Na zwolnieniu?',
+    'Panie Herbercie, a co pan tam niesie? Na zwolnieniu?',
     ['Rzeczy pierwszej potrzeby. Mieszkam sam, nikt mi nie przyniesie.', 'No... dobrze. Ale tylko to, co niezbędne.'],
     ['To nie zakupy. To inwestycja.', 'Inwestycja w kłopoty, jak sądzę.'],
     ['Pan też robi zakupy w godzinach pracy, prawda?', 'To ja tu zadaję pytania.'],
     'carrying'),
   scenario('mg-avoiding', 'manager',
-    'Hubert, mam wrażenie, że pan mnie unika.',
+    'Herbert, mam wrażenie, że pan mnie unika.',
     ['Nie chcę pana zarazić. Lekarz kazał unikać kontaktów.', 'Hm. Rozsądnie. Proszę się kurować.'],
     ['Ale pan ma intuicję, kierowniku!', 'Intuicja mówi mi, że coś tu nie gra.'],
     ['Unikam wszystkich. To nic osobistego.', 'Wszystkich poza sklepem, jak widzę.']),
@@ -194,7 +194,7 @@ const manager: ConfrontationScenario[] = [
 
   // --- general ---
   scenario('mg-deadline', 'manager',
-    'Hubert, ten projekt ma termin w piątek. Pan wie, że bez pana stoi?',
+    'Herbert, ten projekt ma termin w piątek. Pan wie, że bez pana stoi?',
     ['Przekazałem notatki przed zwolnieniem. Wszystko jest na dysku.', 'Hm. Sprawdzę. Dobrze, że pan pomyślał.'],
     ['To niech stoi. Ja też stoję. Na przystanku.', 'Bardzo zabawne. Zapamiętam przy premii.'],
     ['Mogę coś podziałać wieczorami, jeśli pan dorzuci.', 'Praca na zwolnieniu? Sam się pan podkłada.']),
@@ -210,7 +210,7 @@ const manager: ConfrontationScenario[] = [
     ['Niech szepczą. Ja mam L4, oni mają robotę.', 'Sam pan to powiedział. Zanotowane.']),
   // --- only while lugging something heavy ---
   scenario('mg-parcel', 'manager',
-    'A co to za pakunek? Na zwolnieniu się nie dźwiga, panie Hubercie.',
+    'A co to za pakunek? Na zwolnieniu się nie dźwiga, panie Herbercie.',
     ['Odebrałem paczkę z automatu. Nie mam nikogo, kto by to zrobił.', 'Hm. Niech pan nie przesadza z wysiłkiem.'],
     ['Sprzęt do domowego biura. Dla firmy, oczywiście!', 'Dla firmy? To czemu pan nie w firmie?'],
     ['To nie pakunek. To moja nowa przyjaciółka.', '...Nie skomentuję tego. Na razie.'],
@@ -219,7 +219,7 @@ const manager: ConfrontationScenario[] = [
 
 const hr: ConfrontationScenario[] = [
   scenario('hr-again', 'hr',
-    'Panie Hubercie, znowu się widzimy. Jak samopoczucie?',
+    'Panie Herbercie, znowu się widzimy. Jak samopoczucie?',
     ['Bez zmian. Lekarz mówi, że to jeszcze potrwa.', 'Rozumiem. Proszę pamiętać o dokumentach.'],
     ['Rewelacyjne! Nigdy nie czułem się lepiej.', 'Rewelacyjne... Zanotuję to w aktach.'],
     ['A co, zbieracie haki?', 'Zbieramy informacje. To różnica.']),

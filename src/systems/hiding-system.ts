@@ -4,7 +4,7 @@ export interface HideSpot extends Point2D {
   id: string;
   radius: number;
   label: string;
-  /** Where Hubi crouches when he hides here (behind the object), if not where he stands. */
+  /** Where Herbi crouches when he hides here (behind the object), if not where he stands. */
   tuckAt?: Point2D;
   /** Draw depth while tucked in, just below the object's art, so it covers him. */
   tuckDepth?: number;

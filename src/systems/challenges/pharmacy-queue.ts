@@ -6,7 +6,7 @@ import type {
 } from '../../domain/challenges/pharmacy-queue-types';
 
 /**
- * Seniors ahead of Hubi are served one by one, but only while he actually
+ * Seniors ahead of Herbi are served one by one, but only while he actually
  * stands in the queue: stepping out pauses it. Pure logic.
  */
 export class PharmacyQueue {

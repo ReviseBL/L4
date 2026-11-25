@@ -15,7 +15,7 @@ export interface MiodzikConfig {
   barkEveryMs: readonly [number, number];
   barkShowMs: number;
   barkLines: readonly string[];
-  /** His very first appearance is guaranteed, at this spot (by the bin next to Hubi's flat). */
+  /** His very first appearance is guaranteed, at this spot (by the bin next to Herbi's flat). */
   firstSpotId: string;
 }
 

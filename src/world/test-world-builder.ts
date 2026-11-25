@@ -28,7 +28,7 @@ export interface TestWorld {
   interactionTargets: readonly InteractionTarget[];
   hideSpots: readonly HideSpot[];
   river: RiverView;
-  /** The H marker of each hiding spot, dimmed while Hubi hides there. */
+  /** The H marker of each hiding spot, dimmed while Herbi hides there. */
   hideSpotMarkers: ReadonlyMap<string, readonly Phaser.GameObjects.Components.AlphaSingle[]>;
   areas: readonly AreaDefinition[];
   printerView: Printer3DView;
@@ -206,14 +206,14 @@ function createHideSpots(
 ): readonly HideSpot[] {
   const spots: readonly HideSpot[] = [
     { id: 'hedge-hide', x: 830, y: 530, radius: 72, label: 'KRZAKI' },
-    // Behind the dumpster (north of it), so its lid covers Hubi.
+    // Behind the dumpster (north of it), so its lid covers Herbi.
     { id: 'dumpster-hide', x: 1270, y: 550, radius: 80, label: 'KONTENER', tuckAt: { x: 1270, y: 550 }, tuckDepth: 600 },
     // Crouched by the driver's door of the red car, not in front of its bonnet.
     { id: 'parking-hide', x: 1772, y: 1004, radius: 76, label: 'SAMOCHÓD', tuckAt: { x: 1773, y: 1004 }, tuckDepth: 1040 },
     // Big bushes in the garden hedges closing the top edge.
     { id: 'garden-west-hide', x: 645, y: 380, radius: 70, label: 'DUŻY KRZAK' },
     { id: 'garden-east-hide', x: 1282, y: 380, radius: 70, label: 'DUŻY KRZAK' },
-    // Lilac by the pharmacy (between block 23 and the pharmacy): Hubi crouches behind it.
+    // Lilac by the pharmacy (between block 23 and the pharmacy): Herbi crouches behind it.
     { id: 'pharmacy-bush', x: 545, y: 1128, radius: 62, label: 'KRZAK BZU', tuckAt: { x: 545, y: 1128 }, tuckDepth: 1146 },
   ];
 
@@ -575,7 +575,7 @@ function placeExtraArt(scene: Phaser.Scene, key: string, x: number, y: number): 
 /**
  * Allotment gardens close the top edge of the map: one hedge row per gap
  * between the north buildings (and to the map edges), wall to wall, so the
- * strip behind the buildings is no longer a hidden highway. Hubi has to come
+ * strip behind the buildings is no longer a hidden highway. Herbi has to come
  * down towards the sidewalk; the big bush in the two middle rows is a hiding
  * spot (see createHideSpots).
  */
@@ -593,7 +593,7 @@ function addGardenHedges(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.S
   const hasArt = scene.textures.exists(hedgeKey);
   for (const row of GARDEN_HEDGE_ROWS) {
     const width = row.toX - row.fromX;
-    // Reaches a little below the art so Hubi stops in front of the hedge
+    // Reaches a little below the art so Herbi stops in front of the hedge
     // instead of sinking behind it (feet box is y-5..y+20, hedge depth y+27).
     addInvisibleObstacle(obstacles, scene, row.fromX + width / 2, row.y + 6, width, HEDGE_COLLISION_HEIGHT);
     if (!hasArt) {
@@ -606,7 +606,7 @@ function addGardenHedges(scene: Phaser.Scene, obstacles: Phaser.Physics.Arcade.S
       scene.add.image(x, row.y, hedgeKey).setFlipX(index % 2 === 1).setDepth(row.y + 27);
     }
   }
-  // The two big bushes Hubi can hide in (in front of the middle rows).
+  // The two big bushes Herbi can hide in (in front of the middle rows).
   const bushKey = 'world-lilac-50x41';
   for (const x of [645, 1282]) {
     if (scene.textures.exists(bushKey)) scene.add.image(x, 366, bushKey).setScale(1.7).setDepth(366 + 35);

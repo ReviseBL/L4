@@ -15,7 +15,7 @@ const LABEL_OFFSET_Y = 50;
 
 /**
  * Seniors waiting at the pharmacy counter, the speech bubble of the one being
- * served and the "end of the queue" marker where Hubi has to stand.
+ * served and the "end of the queue" marker where Herbi has to stand.
  */
 export class PharmacyQueueView {
   private actors: (SeniorActor | null)[] = [];

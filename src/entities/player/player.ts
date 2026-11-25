@@ -115,7 +115,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
-   * Hidden Hubi turns translucent and blue. Tucked behind an object he is
+   * Hidden Herbi turns translucent and blue. Tucked behind an object he is
    * drawn under it instead (depth override) and stays a bit more visible,
    * because the object already covers most of him.
    */

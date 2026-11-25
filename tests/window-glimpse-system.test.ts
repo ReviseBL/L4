@@ -10,14 +10,14 @@ const insideShop = { x: 840, y: 420 };
 const lookingUp = { id: 'coworker', position: { x: 830, y: 583 }, facingRadians: -Math.PI / 2, range: 400, halfAngleRadians: Math.PI / 2 };
 
 describe('WindowGlimpseSystem', () => {
-  it('lets a chaser outside glimpse Hubi through a shop window and sends him to look around', () => {
+  it('lets a chaser outside glimpse Herbi through a shop window and sends him to look around', () => {
     const system = new WindowGlimpseSystem(BUILDING_WINDOWS, rooms, WINDOW_GLIMPSE_CONFIG);
     const [glimpse] = system.update(16, insideShop, false, [lookingUp]);
     expect(glimpse?.window.buildingId).toBe('chwilka');
     expect(glimpse?.lookFrom.y).toBeGreaterThan(480);
   });
 
-  it('cannot see through home windows, solid wall, behind its back or while Hubi hides', () => {
+  it('cannot see through home windows, solid wall, behind its back or while Herbi hides', () => {
     const system = new WindowGlimpseSystem(BUILDING_WINDOWS, rooms, WINDOW_GLIMPSE_CONFIG);
     expect(system.update(16, { x: 140, y: 420 }, false, [{ ...lookingUp, position: { x: 140, y: 583 } }])).toEqual([]);
     expect(system.update(16, { x: 1000, y: 420 }, false, [{ ...lookingUp, position: { x: 1000, y: 583 } }])).toEqual([]);

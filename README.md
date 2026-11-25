@@ -1,6 +1,6 @@
 # L4: The Office Escape
 
-**The story of Hubert “Hubi L4”**
+**The story of Herbert “Herbi L4”**
 
 Kompletna, edytowalna wersja przeglądarkowej gry stealth 2D zbudowanej w TypeScript, Phaser 3 i Vite. Repozytorium zawiera kampanię M1–M6, finał ZUS, zapis lokalny, narzędzia developerskie, testy oraz wszystkie używane assety.
 
@@ -74,7 +74,7 @@ npm run build
 
 - Title key art: `public/assets/branding/title-key-art.png`
 - 15 ilustracji openingu: `public/assets/intro/`
-- Sprite Hubiego: `public/assets/characters/hubi-spritesheet.png`
+- Sprite Herbiego: `public/assets/characters/hubi-spritesheet.png`
 - Fonty title screen: `src/assets/fonts/`
 - Pozostałe obiekty gameplayowe są generowane lub renderowane przez bieżące moduły placeholderów opisane w `ASSET_MANIFEST.md`.
 
@@ -85,7 +85,7 @@ Assety są lokalne. Projekt nie pobiera grafik z tymczasowych ścieżek Codex an
 W `npm run dev` narzędzia developerskie są włączone automatycznie:
 
 - `F1` — panel test states,
-- `F2` — showcase animacji Hubiego,
+- `F2` — showcase animacji Herbiego,
 - `F3` — geometria stealth i stany AI.
 
 Produkcja domyślnie nie zawiera aktywnych narzędzi debug. Opcjonalna zmienna `VITE_ENABLE_DEBUG=true` służy wyłącznie do świadomego przygotowania testowego buildu. Nie ustawiaj jej na produkcji.

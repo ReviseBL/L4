@@ -25,7 +25,7 @@ export class ThreadingMinigame {
   public constructor(
     private readonly variant: ThreadingVariantConfig,
     private readonly rules: ThreadingRules,
-    /** 0..1, e.g. current suspicion / 100: nervous Hubi shakes more. */
+    /** 0..1, e.g. current suspicion / 100: nervous Herbi shakes more. */
     private readonly stress: number,
     private readonly random: RandomSource = Math.random,
   ) {

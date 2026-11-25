@@ -1,4 +1,4 @@
-/** Hubi's verdict on the delivered coffee, best first. */
+/** Herbi's verdict on the delivered coffee, best first. */
 export const coffeeDeliveryComments = [
   { minFullness: 1, line: 'Ani kropli. Barista byłby dumny.' },
   { minFullness: 0.6, line: 'Trochę się rozlało. Da się pić.' },

@@ -22,7 +22,7 @@ describe('HrStateMachine', () => {
     expect(brain.getState()).toBe(HR_STATE.Patrol);
   });
 
-  it('leaves Hubi alone for a while after a talk so he can walk away', () => {
+  it('leaves Herbi alone for a while after a talk so he can walk away', () => {
     const brain = new HrStateMachine(hrDefinition);
     brain.update(16, VISIBILITY_LEVEL.Clear, player, 200);
     brain.update(hrDefinition.recognitionTimeMs + 100, VISIBILITY_LEVEL.Clear, player, 200);

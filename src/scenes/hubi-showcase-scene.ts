@@ -28,7 +28,7 @@ export class HubiShowcaseScene extends Phaser.Scene {
   public create(): void {
     this.cameras.main.setBackgroundColor('#111820');
     this.add.rectangle(480, 270, 920, 500, 0x18232c).setStrokeStyle(3, 0x8ecae6);
-    this.add.text(480, 26, 'HUBI ANIMATION SHOWCASE', style(22, '#f0ede4')).setOrigin(0.5);
+    this.add.text(480, 26, 'HERBI ANIMATION SHOWCASE', style(22, '#f0ede4')).setOrigin(0.5);
     this.add.text(480, 54, 'F2 / ESC — POWRÓT DO GRY', style(12, '#8ecae6')).setOrigin(0.5);
 
     PLAYER_DIRECTIONS.forEach((direction, column) => {
@@ -44,7 +44,7 @@ export class HubiShowcaseScene extends Phaser.Scene {
     });
 
     const keyboard = this.input.keyboard;
-    if (!keyboard) throw new Error('Keyboard input is required for the Hubi showcase.');
+    if (!keyboard) throw new Error('Keyboard input is required for the Herbi showcase.');
     this.exitKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F2);
     this.escapeKey = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {

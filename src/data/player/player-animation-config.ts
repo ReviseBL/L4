@@ -3,7 +3,7 @@ import type { PlayerDirection, PlayerVisualAction } from '../../domain/player/pl
 export const HUBI_TEXTURE_KEY = 'hubi-spritesheet';
 export const HUBI_SPRITESHEET_URL = 'assets/characters/hubi-spritesheet.png';
 // Character Pass 1.2: 6 kolumn × 16 wierszy (idle / walk / sprint / phone × down, up, left, right).
-// Szersza klatka mieści sprint z boku; Hubi ma na ekranie tę samą wysokość co poprzedni draft.
+// Szersza klatka mieści sprint z boku; Herbi ma na ekranie tę samą wysokość co poprzedni draft.
 export const HUBI_FRAME_WIDTH = 64;
 export const HUBI_FRAME_HEIGHT = 48;
 export const HUBI_ORIGIN = { x: 0.5, y: 0.5 } as const;
@@ -35,7 +35,7 @@ const actionLayout: Readonly<Record<PlayerVisualAction, { start: number; count: 
   // Carry and interact still reuse idle/walk; the carried item is a separate overlay.
   'carry-idle': { start: 0, count: 6, frameRate: 3, repeat: -1 },
   'carry-walk': { start: 24, count: 6, frameRate: 12, repeat: -1 },
-  // Rows 12-15: Hubi standing with the phone at his ear (art round 4).
+  // Rows 12-15: Herbi standing with the phone at his ear (art round 4).
   phone: { start: 72, count: 6, frameRate: 3, repeat: -1 },
   interact: { start: 0, count: 6, frameRate: 10, repeat: 0 },
 };

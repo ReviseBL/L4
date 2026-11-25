@@ -29,7 +29,7 @@ export class PlayerController {
   private lastStaminaEvent: StaminaEvent = null;
   /**
    * Shift as the browser last reported it. Phaser misses the key-up when it
-   * happens while the scene is paused (minigame, overlay), which left Hubi
+   * happens while the scene is paused (minigame, overlay), which left Herbi
    * sprinting on his own afterwards; the raw modifier state fixes that.
    */
   private shiftHeld = false;
@@ -120,7 +120,7 @@ export class PlayerController {
     return this.sprinting;
   }
 
-  /** 0..1 sprint stamina, and whether Hubi is out of breath. */
+  /** 0..1 sprint stamina, and whether Herbi is out of breath. */
   public getStamina(): { level: number; exhausted: boolean } {
     return { level: this.stamina.getLevel(), exhausted: this.stamina.isExhausted() };
   }

@@ -50,7 +50,7 @@ describe('ThreadingMinigame', () => {
     expect(game.getTremorFactor()).toBeCloseTo(threadingRules.minimumMercyFactor, 5);
   });
 
-  it('shakes more when the company suspects Hubi', () => {
+  it('shakes more when the company suspects Herbi', () => {
     const calm = new ThreadingMinigame(threadingVariants.petg, threadingRules, 0, fixed(0.5));
     const stressed = new ThreadingMinigame(threadingVariants.petg, threadingRules, 1, fixed(0.5));
     expect(stressed.getTremorFactor()).toBeCloseTo(calm.getTremorFactor() * (1 + threadingRules.stressTremorBonus), 5);

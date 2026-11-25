@@ -7,7 +7,7 @@ export interface DeliveredSpillable {
 }
 
 /**
- * Tracks how full an open cup is while Hubi carries it. Only sprinting spills.
+ * Tracks how full an open cup is while Herbi carries it. Only sprinting spills.
  * When the item leaves the inventory, the final fullness is kept for the
  * mission summary. Pure logic: the scene feeds it the carried item each frame.
  */

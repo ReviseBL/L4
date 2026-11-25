@@ -26,7 +26,7 @@ export const neighborWatchers = [
     viewHalfAngleDegrees: 70,
     focusHalfAngleDegrees: 32,
     peripheralRangeMultiplier: 0.6,
-    shoutLines: ['Siema Hubi!', 'Ej, Hubi! Nie w robocie?', 'Cześć Hubi! Gramy dziś w Fifę?'],
+    shoutLines: ['Siema Herbi!', 'Ej, Herbi! Nie w robocie?', 'Cześć Herbi! Gramy dziś w Fifę?'],
   },
   {
     id: 'grazyna',
@@ -47,7 +47,7 @@ export const neighborWatchers = [
     seatedTextureKey: 'npc-neighbor-grazyna-bench',
     // Her bench art sits over the estate bench in front of block 47.
     seatedAnchor: { x: 1170, y: 1079 },
-    shoutLines: ['Cześć Hubi! Już zdrowy?', 'Hubert! A co ty tak o tej porze?', 'O, Hubi! Pozdrów mamę!'],
+    shoutLines: ['Cześć Herbi! Już zdrowy?', 'Herbert! A co ty tak o tej porze?', 'O, Herbi! Pozdrów mamę!'],
   },
 ] as const satisfies readonly WatcherDefinition[];
 

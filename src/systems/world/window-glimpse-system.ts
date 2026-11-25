@@ -8,7 +8,7 @@ import type {
 } from '../../domain/world/window-types';
 
 /**
- * Chasers outside a shop can glimpse Hubi through its clear windows. A
+ * Chasers outside a shop can glimpse Herbi through its clear windows. A
  * glimpse is only a hint: the NPC comes over to look around the shop for a
  * while and leaves, it does not start a chase. Pure logic.
  */

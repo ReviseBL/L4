@@ -7,10 +7,10 @@ import { TITLE_FLOW_SCENE, resolveTitleFlowScene } from '../src/systems/title-fl
 import { calculateCoverPlacement } from '../src/ui/title-cover-layout';
 
 describe('title and opening flow', () => {
-  it('uses the canonical title and Hubi L4 tagline', () => {
+  it('uses the canonical title and Herbi L4 tagline', () => {
     expect(GAME_BRAND).toEqual({
       title: 'L4: The Office Escape',
-      tagline: 'The story of Hubert “Hubi L4”',
+      tagline: 'The story of Herbert “Herbi L4”',
     });
   });
 

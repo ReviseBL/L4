@@ -2,7 +2,7 @@ import { CARRY_TEXTURES, HOME_PROP_TEXTURES } from '../art/round4-art';
 
 /**
  * The estate now ends with a lawn and a dirty river instead of a wall of
- * blocks. Hubi can walk on the muddy bank but not into the water.
+ * blocks. Herbi can walk on the muddy bank but not into the water.
  */
 export const RIVER = {
   bankTop: 1588,

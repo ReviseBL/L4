@@ -116,7 +116,7 @@ import { PerceptionSystem, VISIBILITY_LEVEL } from '../systems/perception-system
 import type { MinigameRequest, MinigameResult, MinigameRunner } from '../domain/minigames/minigame-types';
 import { MINIGAME_SCENE_KEY, type MinigameSceneData } from './minigame-scene';
 
-/** New-day spawns of patrolling NPCs keep at least this far from Hubi and his door. */
+/** New-day spawns of patrolling NPCs keep at least this far from Herbi and his door. */
 const DAY_SPAWN_MIN_DISTANCE = 450;
 const HOME_DOOR: Point2D = { x: 285, y: 480 };
 
@@ -471,7 +471,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.fadeIn(350, 17, 24, 32);
 
     // Keys released while the scene was paused (minigame, help board) would
-    // otherwise stay "down" and keep Hubi walking on his own.
+    // otherwise stay "down" and keep Herbi walking on his own.
     const resetKeys = (): void => { this.input.keyboard?.resetKeys(); };
     this.events.on(Phaser.Scenes.Events.RESUME, resetKeys);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -764,7 +764,7 @@ export class GameScene extends Phaser.Scene {
       this.startServiceWait(challenge.serviceId, onSolved);
       return;
     }
-    // Pharmacy queue: the counter only serves Hubi once the seniors are done.
+    // Pharmacy queue: the counter only serves Herbi once the seniors are done.
     if (this.activeQueue && !this.activeQueue.queue.isDone()) {
       this.hud.showMessage('Najpierw kolejka. Stań na końcu, za seniorami.');
       return;
@@ -774,7 +774,7 @@ export class GameScene extends Phaser.Scene {
 
   /**
    * Spawns the queue while the current step needs it and serves the seniors
-   * while Hubi waits at the end. Returns true when it just handed over to the
+   * while Herbi waits at the end. Returns true when it just handed over to the
    * counter (mission event fired this frame).
    */
   private updatePharmacyQueue(delta: number): boolean {
@@ -818,7 +818,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Chasers walking past a shop can glimpse Hubi inside through its clear
+   * Chasers walking past a shop can glimpse Herbi inside through its clear
    * windows. No chase and no suspicion: they come over, look around the shop
    * for a while and move on.
    */
@@ -891,7 +891,7 @@ export class GameScene extends Phaser.Scene {
       : `${active.wait.getDefinition().promptLabel} — WRÓĆ POD BUDKĘ (${percent}%)`;
   }
 
-  /** Queue status for the prompt line while Hubi is near the pharmacy queue. */
+  /** Queue status for the prompt line while Herbi is near the pharmacy queue. */
   private getQueuePrompt(): string | null {
     const active = this.activeQueue;
     if (!active || active.queue.isDone()) return null;
@@ -1382,7 +1382,7 @@ export class GameScene extends Phaser.Scene {
 
   /**
    * Every mission is a new day: the colleague does not carry on from where
-   * yesterday's chase ended but starts somewhere on his route, away from Hubi.
+   * yesterday's chase ended but starts somewhere on his route, away from Herbi.
    */
   private applyMissionPatrol(routeId = 'standard'): void {
     const route = this.workColleaguePatrolRoutes[routeId] ?? this.workColleaguePatrolRoutes.standard;
@@ -1392,7 +1392,7 @@ export class GameScene extends Phaser.Scene {
     this.applyJoggerSetup();
   }
 
-  /** The riverside jogger is out from month 2 on, starting somewhere on his loop away from Hubi. */
+  /** The riverside jogger is out from month 2 on, starting somewhere on his loop away from Herbi. */
   private applyJoggerSetup(): void {
     const month = this.missionSystem.getCurrentMission()?.campaignMonth ?? this.campaignSystem.getCurrentMonth().id;
     const debugAllows = !this.debugRuntimeState || this.debugRuntimeState.selection.coworkerEnabled;
@@ -1522,7 +1522,7 @@ export class GameScene extends Phaser.Scene {
 
   /**
    * At-home minigames run in their own overlay scene; the whole estate is
-   * paused meanwhile, so nothing can catch Hubi mid-threading.
+   * paused meanwhile, so nothing can catch Herbi mid-threading.
    */
   /** Everyone the company car should stop for on the zebra. */
   private zebraPedestrians(): Point2D[] {
@@ -1574,7 +1574,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * A neighbour who spots Hubi shouts a greeting; exactly one company NPC
+   * A neighbour who spots Herbi shouts a greeting; exactly one company NPC
    * (the nearest active one) hears it and comes to check.
    */
   private updateWatchers(delta: number, target: { x: number; y: number; hidden: boolean }): void {
@@ -1603,7 +1603,7 @@ export class GameScene extends Phaser.Scene {
     for (const view of views) this.watcherView.render(view.id, view.facing, view.points, this.time.now);
   }
 
-  /** Sends only the nearest active company NPC to check Hubi's position. */
+  /** Sends only the nearest active company NPC to check Herbi's position. */
   private alertNearestNpc(origin: { x: number; y: number }, playerPosition: { x: number; y: number }): string | null {
     const candidates: { name: string; distance: number; investigate: () => void }[] = [];
     const distanceTo = (p: { x: number; y: number }) => Math.hypot(p.x - origin.x, p.y - origin.y);
@@ -1624,11 +1624,11 @@ export class GameScene extends Phaser.Scene {
     return nearest?.name ?? null;
   }
 
-  /** A chasing colleague or manager who reaches Hubi stops him for a talk. */
+  /** A chasing colleague or manager who reaches Herbi stops him for a talk. */
   private checkForConfrontation(target: { x: number; y: number; hidden: boolean }): void {
     if (target.hidden || this.dialogueSystem.isActive() || this.isGameplayLocked()) return;
     const distance = confrontationConfig.catchDistance;
-    // No grabbing through a wall: the catcher has to actually see Hubi.
+    // No grabbing through a wall: the catcher has to actually see Herbi.
     const sees = (from: { x: number; y: number }) => this.watcherPerception.hasLineOfSight(from, target);
     for (const colleague of [this.npcController, this.riversideJogger]) {
       if (colleague.isCatching(target, distance) && sees(colleague.getNpc())) {

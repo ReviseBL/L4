@@ -17,7 +17,7 @@ describe('NeighborWatchSystem', () => {
     expect(system.rollPresence().map((w) => w.id)).toEqual(['seba', 'grazyna']);
   });
 
-  it('shouts once Hubi stays in clear view long enough, then goes quiet', () => {
+  it('shouts once Herbi stays in clear view long enough, then goes quiet', () => {
     const system = new NeighborWatchSystem(neighborWatchers, watcherConfig, () => 0);
     system.rollPresence();
     expect(system.update(watcherConfig.recognitionMs / 2, seen('seba', 'CLEAR'))).toEqual([]);
@@ -50,7 +50,7 @@ describe('NeighborWatchSystem', () => {
     expect(system.getFacingRadians(seba)).not.toBeCloseTo(start, 3);
   });
 
-  it('lets the bench grandma recognise Hubi faster than Seba and scan 180° without looking at the blocks', () => {
+  it('lets the bench grandma recognise Herbi faster than Seba and scan 180° without looking at the blocks', () => {
     const grazyna = neighborWatchers.find((watcher) => watcher.id === 'grazyna')!;
     const seba = neighborWatchers.find((watcher) => watcher.id === 'seba')!;
     expect(grazyna.recognitionMs).toBeLessThan(watcherConfig.recognitionMs);

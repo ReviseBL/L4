@@ -4,7 +4,7 @@ const WIDTH = 26;
 const HEIGHT = 4;
 const OFFSET_Y = -30;
 
-/** Small breath bar over Hubi's head; only shown while it is not full. */
+/** Small breath bar over Herbi's head; only shown while it is not full. */
 export class StaminaBar {
   private readonly graphics: Phaser.GameObjects.Graphics;
 

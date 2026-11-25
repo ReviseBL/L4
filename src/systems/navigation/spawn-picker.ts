@@ -2,7 +2,7 @@ import type { Point2D } from '../../core/math/geometry-types';
 
 /**
  * Where a patrolling NPC starts a new day: a random waypoint of its route
- * that is at least minDistance from everything in `avoid` (Hubi, his door),
+ * that is at least minDistance from everything in `avoid` (Herbi, his door),
  * or the farthest waypoint when none is far enough.
  */
 export function pickSpawnIndex(

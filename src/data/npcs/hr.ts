@@ -10,7 +10,7 @@ export const hrDefinition = {
   patrolSpeed: 98,
   approachSpeed: 130,
   searchSpeed: 112,
-  // Needs about a second of clear view before she recognises Hubi.
+  // Needs about a second of clear view before she recognises Herbi.
   recognitionTimeMs: 1_000,
   loseSightTimeMs: 850,
   searchDurationMs: 5_200,

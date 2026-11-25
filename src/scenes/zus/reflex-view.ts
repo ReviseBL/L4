@@ -10,12 +10,12 @@ const GROUND_Y = 392;
 /** Close enough that the hammer reaches the knee. */
 const DOCTOR_X = 560;
 
-/** The doctor's hammer over Hubi's knee and the kick-strength bar. */
+/** The doctor's hammer over Herbi's knee and the kick-strength bar. */
 export class ReflexView {
   private readonly root: Phaser.GameObjects.Container;
   private readonly title: Phaser.GameObjects.Text;
   private readonly needle: Phaser.GameObjects.Graphics;
-  /** Pixel-art version: Hubi on the couch (3 kick frames) and the doctor. */
+  /** Pixel-art version: Herbi on the couch (3 kick frames) and the doctor. */
   private readonly leg: Phaser.GameObjects.Sprite | null = null;
   private readonly doctor: Phaser.GameObjects.Image | null = null;
   /** Fallback version drawn with shapes. */
